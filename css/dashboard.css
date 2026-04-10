@@ -1,0 +1,73 @@
+body {
+    margin: 0;
+    font-family: Arial;
+}
+
+/* Navbar */
+.navbar {
+    background: #1a1a1a;
+    color: white;
+    padding: 15px;
+}
+
+/* Layout */
+.container {
+    display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 200px;
+    height: 100vh;
+    background: #333;
+    color: white;
+    padding: 20px;
+    position: fixed; /* keeps it in place */
+}
+
+/* Sidebar links */
+.sidebar a {
+    display: block;
+    color: white;
+    margin: 10px 0;
+    text-decoration: none;
+}
+
+/* Content */
+.content {
+    margin-left: 220px; /* pushes content right */
+    padding: 20px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+th {
+    background: #1a1a1a;
+    color: white;
+}
+
+tr:hover {
+    background: #f2f2f2;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .content {
+        margin-left: 0;
+    }
+}
