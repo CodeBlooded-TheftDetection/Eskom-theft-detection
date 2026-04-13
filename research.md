@@ -4,4 +4,5 @@ Local Outlier Factor (LOF) is another useful method that compares the density of
 
 Z-Score detection is the simplest approach and is useful as a starting point. It measures how far a value deviates from the mean. However, it assumes a normal distribution and may not perform well with complex datasets.
 
-Overall, it is my opinion that Isolation Forest may be the best choice for this project due to its efficiency, scalability, and ability to handle real-world noisy data.
+Overall, it is my opinion that Isolation Forest may be
+ the best choice for this project due to its efficiency, scalability, and ability to handle real-world noisy data.
