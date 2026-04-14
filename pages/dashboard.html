@@ -1,48 +1,183 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Eskom Dashboard</title>
-    <link rel="stylesheet" href="../css/dashboard.css">
+  <meta charset="UTF-8">
+  <title>Main Dashboard</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Navbar -->
-    <div class="navbar">
-        <h2>Eskom Dashboard</h2>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <h2>Eskom</h2>
+        <p>Theft Detection</p>
+      </div>
     </div>
 
-    <!-- Main Layout -->
-    <div class="container">
+    <nav class="menu">
+      <p class="menu-title">SYSTEM SCREENS (5 TOTAL)</p>
 
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <h3>Menu</h3>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="map.html">Map</a>
-            <a href="cases.html">Cases</a>
-        </div>
-    
+      <a href="dashboard.html" class="active">Main Dashboard</a>
+      <a href="cases.html">Case Detail</a>
+      <a href="map.html">Map View</a>
+      <a href="commander.html">Report Screen</a>
+      <a href="login.html">Login Screen</a>
+    </nav>
 
-        <!-- Content -->
-        <div class="content">
-            <h1>Welcome To The Dashboard</h1>
+    <div class="bottom">
+      <div class="role-box">
+        <small>Current Role</small>
+        <strong>Area Commander</strong>
+      </div>
 
-            <table>
-            <tr>
-                <th>Property</th>
-                <th>Risk Score</th>
-            </tr>
-            <tr><td>House 1</td><td>85</td></tr>
-            <tr><td>House 2</td><td>72</td></tr>
-            <tr><td>House 3</td><td>90</td></tr>
-            <tr><td>House 4</td><td>60</td></tr>
-            <tr><td>House 5</td><td>95</td></tr>
-            </table>
-
-
-        </div>
+      <a class="logout">Logout</a>
     </div>
 
-    <script src="../js/main.js"></script>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <header class="topbar">
+      <div>
+        <h1>Main Dashboard</h1>
+        <p>Overview of all cases and team performance</p>
+      </div>
+    </header>
+
+    <!-- STATS -->
+    <section class="cards">
+      <div class="card">
+        <h4>Total Cases</h4>
+        <h2 class="blue">5</h2>
+        <p>Active investigations</p>
+      </div>
+
+      <div class="card">
+        <h4>High Risk</h4>
+        <h2 class="red">2</h2>
+        <p>Requires immediate action</p>
+      </div>
+
+      <div class="card">
+        <h4>Open Cases</h4>
+        <h2 class="orange">2</h2>
+        <p>Awaiting assignment</p>
+      </div>
+
+      <div class="card">
+        <h4>Resolved</h4>
+        <h2 class="green">1</h2>
+        <p>Cases closed this month</p>
+      </div>
+    </section>
+
+    <!-- CONTENT -->
+    <section class="content">
+
+      <!-- CASES -->
+      <div class="cases">
+  <h3>Cases & Suspects</h3>
+
+  <!-- CASE 1 -->
+  <div class="case">
+    <div>
+      <h4>ETD-2026-001 <span class="badge high">HIGH</span> <span class="badge open">open</span></h4>
+      <p><strong>Suspect:</strong> John Makeba</p>
+      <p><strong>Location:</strong> Soweto</p>
+      <p><strong>Est. Loss:</strong> R12,500/month</p>
+      <p class="alert">Urgent attention required</p>
+    </div>
+    <button>📄 Report</button>
+  </div>
+
+  <!-- CASE 2 -->
+  <div class="case">
+    <div>
+      <h4>ETD-2026-002 <span class="badge medium">MEDIUM</span> <span class="badge assigned">assigned</span></h4>
+      <p><strong>Suspect:</strong> Sarah Cohen</p>
+      <p><strong>Location:</strong> Sandton</p>
+      <p><strong>Est. Loss:</strong> R8,000/month</p>
+    </div>
+    <button>📄 Report</button>
+  </div>
+
+  <!-- CASE 3 -->
+  <div class="case">
+    <div>
+      <h4>ETD-2026-003 <span class="badge high">HIGH</span> <span class="badge assigned">assigned</span></h4>
+      <p><strong>Suspect:</strong> David Sithole</p>
+      <p><strong>Location:</strong> Alexandra</p>
+      <p><strong>Est. Loss:</strong> R18,000/month</p>
+      <p class="alert">Urgent attention required</p>
+    </div>
+    <button>📄 Report</button>
+  </div>
+
+  <!-- CASE 4 -->
+  <div class="case">
+    <div>
+      <h4>ETD-2026-004 <span class="badge medium">MEDIUM</span> <span class="badge open">open</span></h4>
+      <p><strong>Suspect:</strong> Maria van der Merwe</p>
+      <p><strong>Location:</strong> Pretoria</p>
+      <p><strong>Est. Loss:</strong> R5,500/month</p>
+    </div>
+    <button>📄 Report</button>
+  </div>
+
+  <!-- CASE 5 -->
+  <div class="case">
+    <div>
+      <h4>ETD-2026-005 <span class="badge low">LOW</span> <span class="badge resolved">resolved</span></h4>
+      <p><strong>Suspect:</strong> Peter Nkosi</p>
+      <p><strong>Location:</strong> Randburg</p>
+      <p><strong>Est. Loss:</strong> R2,000/month</p>
+    </div>
+    <button>📄 Report</button>
+  </div>
+
+</div>
+
+      <!-- TEAM -->
+      <div class="team">
+        <h3>Team Performance</h3>
+
+        <div class="member">
+          <h4>Mike Johnson</h4>
+          <p>Assigned: <span class="red">8</span></p>
+          <p>Resolved: <span class="green">5</span></p>
+          <div class="bar"><div style="width:70%"></div></div>
+        </div>
+
+        <div class="member">
+          <h4>Jane Smith</h4>
+          <p>Assigned: <span class="red">6</span></p>
+          <p>Resolved: <span class="green">4</span></p>
+          <div class="bar"><div style="width:65%"></div></div>
+        </div>
+
+        <div class="member">
+          <h4>Tom Brown</h4>
+          <p>Assigned: <span class="red">4</span></p>
+          <p>Resolved: <span class="green">3</span></p>
+          <div class="bar"><div style="width:60%"></div></div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
 </body>
 </html>

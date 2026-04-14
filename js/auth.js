@@ -1,12 +1,16 @@
-function login() {
-    let username = document.getElementById("username").value;
-    let password = document.getElementById("password").value;
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+  e.preventDefault();
 
-    if (username === "" || password === "") {
-        alert("Please fill in all fields");
-        return;
-    }
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
+  const errorMsg = document.getElementById("errorMsg");
 
-    // temporary navigation
-    window.location.href = "dashboard.html";
-}
+  if (email === "" || password === "" || role === "Select your role") {
+    errorMsg.textContent = "Please fill in all fields";
+    return;
+  }
+
+  // TEMP LOGIN
+  window.location.href = "dashboard.html";
+});
