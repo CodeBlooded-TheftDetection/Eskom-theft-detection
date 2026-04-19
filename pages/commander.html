@@ -1,12 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Commander</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Report Screen</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="../js/commander.js"></script>
 </head>
+
 <body>
 
-<h1>Commander Dashboard</h1>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <h2>Eskom</h2>
+        <p>Theft Detection</p>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <p class="menu-title">SYSTEM SCREENS (5 TOTAL)</p>
+
+      <a href="dashboard.html">Main Dashboard</a>
+      <a href="cases.html">Case Detail</a>
+      <a href="map.html">Map View</a>
+      <a href="commander.html" class="active">Report Screen</a>
+      <a href="login.html">Login Screen</a>
+    </nav>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER -->
+    <div class="topbar">
+      <h1>Report Generation</h1>
+      <p>Case Investigation Report</p>
+    </div>
+
+    <div class="content">
+
+      <div style="grid-column: 1 / span 2;">
+
+        <!-- REPORT CARD -->
+        <div class="card">
+
+          <h3 id="reportTitle">Report</h3>
+
+          <div class="report-section">
+            <p><strong>Case Number:</strong> <span id="caseNumber"></span></p>
+            <p><strong>Suspect Name:</strong> <span id="suspectName"></span></p>
+            <p><strong>Location:</strong> <span id="location"></span></p>
+            <p><strong>Risk Level:</strong> <span id="riskLevel"></span></p>
+          </div>
+
+          <div class="report-section">
+            <p><strong>Investigation Summary:</strong></p>
+            <p>
+              Illegal electricity connection detected. Meter bypass suspected.
+              Further inspection required by field team.
+            </p>
+          </div>
+
+          <div class="report-section">
+            <p><strong>Estimated Loss:</strong></p>
+            <p class="red">R12,500/month</p>
+          </div>
+
+          <div class="report-actions">
+            <button class="btn-primary">Download Report</button>
+            <button class="btn-secondary" onclick="goBack()">Back to Cases</button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="../js/commander.js"></script>
 
 </body>
 </html>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">

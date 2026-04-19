@@ -1,16 +1,34 @@
-document.getElementById("loginForm").addEventListener("submit", function(e) {
+const form = document.getElementById("loginForm");
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
   const errorMsg = document.getElementById("errorMsg");
 
-  if (email === "" || password === "" || role === "Select your role") {
-    errorMsg.textContent = "Please fill in all fields";
-    return;
-  }
+  errorMsg.textContent = "";
 
-  // TEMP LOGIN
-  window.location.href = "dashboard.html";
+  try {
+    const res = await fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorMsg.textContent = data.message || "Login failed";
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    window.location.href = "dashboard.html";
+
+  } catch (err) {
+    errorMsg.textContent = "Server error";
+  }
 });

@@ -1,12 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Map</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Map View</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
-<h1>Map Page</h1>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <h2>Eskom</h2>
+        <p>Theft Detection</p>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <p class="menu-title">SYSTEM SCREENS (5 TOTAL)</p>
+
+      <a href="dashboard.html">
+        <i data-lucide="layout-dashboard"></i> Main Dashboard
+      </a>
+
+      <a href="cases.html">
+        <i data-lucide="file-text"></i> Case Detail
+      </a>
+
+      <a href="map.html" class="active">
+        <i data-lucide="map"></i> Map View
+      </a>
+
+      <a href="commander.html">
+        <i data-lucide="bar-chart"></i> Report Screen
+      </a>
+
+      <a href="login.html">
+        <i data-lucide="log-in"></i> Login Screen
+      </a>
+    </nav>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER -->
+    <div class="topbar">
+      <h1>Map View</h1>
+      <p>Theft Hotspots & Location Overview</p>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <div style="grid-column: 1 / span 2;">
+
+        <!-- MAP CARD -->
+        <div class="card">
+          <h3>Johannesburg & Pretoria Region</h3>
+
+          <div class="map-box">
+            <!-- Fake markers (visual match for now) -->
+            <div class="marker red" style="top:40%; left:45%;">Soweto</div>
+            <div class="marker orange" style="top:35%; left:55%;">Sandton</div>
+            <div class="marker red" style="top:32%; left:60%;">Alexandra</div>
+            <div class="marker orange" style="top:28%; left:52%;">Pretoria</div>
+          </div>
+
+          <div class="legend">
+            <p><span class="dot red"></span> High Risk</p>
+            <p><span class="dot orange"></span> Medium Risk</p>
+            <p><span class="dot green"></span> Low Risk</p>
+          </div>
+        </div>
+
+        <!-- SELECTED LOCATION -->
+        <div class="card">
+          <h3>Selected Location</h3>
+
+          <p><strong>Soweto</strong></p>
+          <p>123 Vilakazi Street, Soweto</p>
+
+          <span class="badge high">HIGH</span>
+          <span class="badge open">OPEN</span>
+
+          <p><strong>Case Number:</strong> ETD-2026-001</p>
+          <p><strong>Suspect:</strong> John Makeba</p>
+          <p class="red"><strong>R12,500/month</strong></p>
+
+          <p class="alert">High priority case requiring immediate attention</p>
+
+          <button style="margin-top:10px;">View Case Details</button>
+        </div>
+
+        <!-- AREA STATS -->
+        <div class="card">
+          <h3>Area Statistics</h3>
+
+          <p>Total Cases: <span class="blue">5</span></p>
+          <p>High Risk: <span class="red">2</span></p>
+          <p>Medium Risk: <span class="orange">2</span></p>
+          <p>Resolved: <span class="green">1</span></p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+</script>
 
 </body>
 </html>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
