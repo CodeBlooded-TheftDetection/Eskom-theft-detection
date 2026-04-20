@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case List</title>
+  <link rel="stylesheet" href="../css/caseList.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+ 
+</head>
+
+<body>
+<div class="layout">
+ 
+  <aside class="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="logo-bolt">⚡</div>
+      <div>
+        <h2>Eskom</h2>
+        <p>Theft Detection</p>
+      </div>
+    </div>
+
+    <nav>
+      <p class="sidebar-label">SYSTEM SCREENS (10 TOTAL)</p>
+
+      <a href="dashboard.html" class="nav-item">
+        <i data-lucide="layout-dashboard" class="nav-icon"></i> Main Dashboard
+      </a>
+
+      <a href="cases.html" class="nav-item">
+        <i data-lucide="file-text" class="nav-icon"></i> Case Detail
+      </a>
+
+      <a href="map.html" class="nav-item">
+        <i data-lucide="map" class="nav-icon"></i> Map View
+      </a>
+
+      <a href="report.html" class="nav-item">
+        <i data-lucide="bar-chart-3" class="nav-icon"></i> Report Screen
+      </a>
+
+      <a href="assign.html" class="nav-item">
+        <i data-lucide="user-check" class="nav-icon"></i> Assign Investigator
+      </a>
+
+      <a href="record.html" class="nav-item">
+        <i data-lucide="record-outcome" class="nav-icon"></i> Record Outcome
+      </a>
+
+      <a href="caseList.html" class="nav-item active">
+        <i data-lucide="list" class="nav-icon"></i> Case List
+      </a>
+
+      <a href="commander.html" class="nav-item">
+        <i data-lucide="bar-chart" class="nav-icon"></i> Commander Dashboard
+      </a>
+
+      <a href="resolved.html" class="nav-item">
+        <i data-lucide="check-circle" class="nav-icon"></i> Resolved Case
+      </a>
+
+      <a href="login.html" class="nav-item">
+        <i data-lucide="log-in" class="nav-icon"></i> Login Screen
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="role-pill">Role</div>
+      <div class="role-name">Investigator</div>
+      <a href="login.html" class="logout-btn">
+        <i data-lucide="log-out" class="nav-icon"></i> Logout
+      </a>
+    </div>
+
+  </aside> 
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-icon">✔</div>
+      <div>
+        <h1>Case Resolved</h1>
+        <p>ETD-2026-005</p>
+      </div>
+    </div>
+
+    <div class="content-scroll">
+
+      <!-- banner for successfully closing case -- need to fix as wjat is the alternative if its open? please fix@steez -->
+      <div class="success-banner">
+        <div class="banner-left">
+          <div class="banner-check">✔</div>
+          <div>
+            <div class="banner-title">Case Successfully Closed</div>
+            <div class="banner-sub">This case has been investigated and resolved. All documentation has been recorded.</div>
+          </div>
+        </div>
+        <button class="btn-report" onclick="window.location.href='commander.html'">
+          <i data-lucide="file-text"></i> View Report
+        </button>
+      </div>
+
+      <!-- two column grid-->
+      <div class="grid-2">
+
+        <!-- this is on the left it is describing the cases-->
+        <div>
+          <div class="card">
+            <div class="case-id-row">
+              <span class="case-id">ETD-2026-005</span>
+              <span class="badge-resolved-lg">RESOLVED</span>
+            </div>
+            <div class="case-sub">Resolved Case Information</div>
+
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Suspect Name</span>
+                <span class="info-value">Peter Nkosi</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Date Reported</span>
+                <span class="info-value">2026-04-03</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Location</span>
+                <span class="info-value">Randburg</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Estimated Loss</span>
+                <span class="info-value loss">R2,000/month</span>
+              </div>
+              <div class="info-item" style="grid-column: 1 / span 2;">
+                <span class="info-label">Full Address</span>
+                <span class="info-value">89 Republic Road, Randburg</span>
+              </div>
+              <div class="info-item" style="grid-column: 1 / span 2;">
+                <span class="info-label">Original Description</span>
+                <span class="info-value" style="font-weight:400;font-size:13.5px">
+                  Faulty meter causing incorrect readings. Issue resolved with meter replacement.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- details for resolution -->
+          <div class="resolution-box">
+            <div class="res-header">
+              <i data-lucide="check-circle"></i> Resolution Details
+            </div>
+
+            <div class="res-field">
+              <div class="res-label">Outcome:</div>
+              <div class="res-value outcome">No theft detected - faulty meter</div>
+            </div>
+
+            <div class="res-field">
+              <div class="res-label">Resolution Notes:</div>
+              <div class="res-value">Meter replaced and customer notified</div>
+            </div>
+
+            <div class="res-row-2">
+              <div class="res-field">
+                <div class="res-label">Resolved By:</div>
+                <div class="res-value">Mike Johnson</div>
+              </div>
+              <div class="res-field">
+                <div class="res-label">Date Closed:</div>
+                <div class="res-value">2026-04-19</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: STATUS + ACTIONS -->
+        <div>
+          <div class="card card-green">
+            <div class="status-icon-wrap">
+              <div class="big-check">✔</div>
+            </div>
+            <div class="status-title">Successfully Closed</div>
+            <div class="status-sub">Case investigation complete</div>
+
+            <div class="status-list">
+              <div class="status-row">
+                <span class="status-key">Status:</span>
+                <span class="status-val">Resolved</span>
+              </div>
+              <div class="status-row">
+                <span class="status-key">Risk Level:</span>
+                <span class="status-val">Low</span>
+              </div>
+              <div class="status-row">
+                <span class="status-key">Investigator:</span>
+                <span class="status-val">Mike Johnson</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card actions-card">
+            <div class="actions-title">Actions</div>
+            <button class="btn-generate" onclick="window.location.href='commander.html'">
+              <i data-lucide="file-text"></i> Generate Report
+            </button>
+            <button class="btn-download">
+              <i data-lucide="download"></i> Download Case File
+            </button>
+            <button class="btn-back" onclick="window.location.href='dashboard.html'">
+              <i data-lucide="arrow-left"></i> Back to Dashboard
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  lucide.createIcons(); // scanning the html to find icon placeholder and replace svg(uses map shapes) icons ---- why is it in html what did you do @Liya
+</script>
+</body>
+</html>

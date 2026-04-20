@@ -1,0 +1,27 @@
+label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+textarea, input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.btn-primary {
+    background: green;
+    color: white;
+    padding: 10px;
+    border: none;
+}
+
+.btn-secondary {
+    background: gray;
+    color: white;
+    padding: 10px;
+    border: none;
+}
