@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resolved Cases</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href ="../css/resolved.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+
+<body>
+
+<div class="layout">
+
+
+  <aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <h2>Eskom</h2>
+      <p>Theft Detection</p>
+    </div>
+  </div>
+
+  <nav class="menu">
+    <p class="menu-title">SYSTEM SCREENS (10 TOTAL)</p>
+    <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Main Dashboard</a>
+    <a href="cases.html"><i data-lucide="file-text"></i> Case Detail</a>
+    <a href="map.html"><i data-lucide="map"></i> Map View</a>
+    <a href="report.html"><i data-lucide="bar-chart-3"></i> Report Screen</a>
+    <a href="assign.html"><i data-lucide="user-check"></i> Assign Investigator</a>
+    <a href="record.html"><i data-lucide="clipboard-list"></i> Record Outcome</a>
+    <a href="caseList.html"><i data-lucide="list"></i> Case List</a>
+    <a href="commander.html"><i data-lucide="bar-chart"></i> Commander Dashboard</a>
+    <a href="resolved.html"><i data-lucide="check-circle"></i> Resolved Case</a>
+    <a href="login.html"><i data-lucide="log-in"></i> Login Screen</a>
+  </nav>
+</aside>
+
+
+
+<!-- Page content -->
+<main class="main">
+
+  <!-- Green header makes it obvious this is a closed case -->
+  <header class="topbar">
+    <div class="topbar-icon">✔</div>
+    <div>
+      <h1>Case Resolved</h1>
+      <p>ETD-2026-005</p>
+    </div>
+  </header>
+
+  <div class="content-scroll">
+
+    <!-- Confirmation banner at the top of the page -->
+    <div class="success-banner" role="status">
+      <div class="banner-left">
+        <div class="banner-check" aria-hidden="true">✔</div>
+        <div>
+          <div class="banner-title">Case Successfully Closed</div>
+          <div class="banner-sub">This case has been investigated and resolved. All documentation has been recorded.</div>
+        </div>
+      </div>
+      <button class="btn-report" onclick="window.location.href='commander.html'">📄 View Report</button>
+    </div>
+
+    <!-- Left: case info and resolution notes  |  Right: status + action buttons -->
+    <div class="grid-2">
+
+      <div>
+        <!-- Main case card -->
+        <article class="card">
+          <div class="case-id-row">
+            <span class="case-id">ETD-2026-005</span>
+            <span class="badge-resolved-lg">RESOLVED</span>
+          </div>
+          <p class="case-sub">Resolved Case Information</p>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Suspect Name</span>
+              <span class="info-value">Peter Nkosi</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date Reported</span>
+              <span class="info-value">2026-04-03</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Location</span>
+              <span class="info-value">Randburg</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Estimated Loss</span>
+              <span class="info-value loss">R2,000/month</span>
+            </div>
+            <div class="info-item" style="grid-column: 1 / span 2;">
+              <span class="info-label">Full Address</span>
+              <span class="info-value">89 Republic Road, Randburg</span>
+            </div>
+            <div class="info-item" style="grid-column: 1 / span 2;">
+              <span class="info-label">Original Description</span>
+              <span class="info-value" style="font-weight:400;font-size:13.5px">
+                Faulty meter causing incorrect readings. Issue resolved with meter replacement.
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <!-- How the case was closed -->
+        <div class="resolution-box">
+          <div class="res-header">✔ Resolution Details</div>
+
+          <div class="res-field">
+            <div class="res-label">Outcome:</div>
+            <div class="res-value outcome">No theft detected - faulty meter</div>
+          </div>
+
+          <div class="res-field">
+            <div class="res-label">Resolution Notes:</div>
+            <div class="res-value">Meter replaced and customer notified</div>
+          </div>
+
+          <div class="res-row-2">
+            <div class="res-field">
+              <div class="res-label">Resolved By:</div>
+              <div class="res-value">Mike Johnson</div>
+            </div>
+            <div class="res-field">
+              <div class="res-label">Date Closed:</div>
+              <div class="res-value">2026-04-19</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: status summary and action buttons -->
+      <div>
+        <div class="card card-green">
+          <div class="status-icon-wrap">
+            <div class="big-check" aria-label="Case closed">✔</div>
+          </div>
+          <div class="status-title">Successfully Closed</div>
+          <div class="status-sub">Case investigation complete</div>
+
+          <div class="status-list">
+            <div class="status-row">
+              <span class="status-key">Status:</span>
+              <span class="status-val">Resolved</span>
+            </div>
+            <div class="status-row">
+              <span class="status-key">Risk Level:</span>
+              <span class="status-val">Low</span>
+            </div>
+            <div class="status-row">
+              <span class="status-key">Investigator:</span>
+              <span class="status-val">Mike Johnson</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card actions-card">
+          <h3 class="actions-title">Actions</h3>
+          <button class="btn-generate" onclick="window.location.href='commander.html'">📄 Generate Report</button>
+          <button class="btn-download">⬇ Download Case File</button>
+          <button class="btn-back" onclick="window.location.href='dashboard.html'">← Back to Dashboard</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
+
+</body>
+</html>

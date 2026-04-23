@@ -1,0 +1,309 @@
+
+    /* Removes default spacing browsers add to elements */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Design tokens — change a colour here and it updates everywhere */
+    :root {
+      --sidebar-bg:     #1a2e6e;
+      --sidebar-active: #2563eb;
+      --sidebar-hover:  rgba(255,255,255,0.08);
+      --body-bg:        #f0f4ff;
+      --white:          #ffffff;
+      --text-dark:      #0f1a3e;
+      --text-muted:     #6b7280;
+      --border:         #e5e9f5;
+      --green:          #16a34a;
+      --green-light:    #f0fdf4;
+      --green-border:   #bbf7d0;
+      --loss-color:     #dc2626;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--body-bg);
+      color: var(--text-dark);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Fixed left navigation panel */
+    aside.sidebar {
+      width: 260px; min-width: 260px;
+      background: var(--sidebar-bg);
+      color: #fff;
+      display: flex; flex-direction: column;
+      height: 100vh; overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 12px;
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .logo-bolt {
+      width: 38px; height: 38px;
+      background: var(--sidebar-active);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+
+    .sidebar-logo h2 { font-size: 16px; font-weight: 700; line-height: 1.2; }
+    .sidebar-logo p  { font-size: 11px; opacity: 0.65; margin-top: 1px; }
+
+    .sidebar-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+      opacity: 0.55; padding: 18px 20px 8px; text-transform: uppercase;
+    }
+
+    /* Small tip box sitting just below the label */
+    .sidebar-hint {
+      margin: 0 12px 12px;
+      background: rgba(37,99,235,0.35);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11.5px; opacity: 0.85; line-height: 1.5;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px;
+      text-decoration: none;
+      color: rgba(255,255,255,0.75);
+      font-size: 13.5px; font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+    }
+
+    .nav-item:hover  { background: var(--sidebar-hover); color: #fff; }
+    .nav-item.active { background: var(--sidebar-active); color: #fff; }
+
+    .nav-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-item.active .nav-num { background: rgba(255,255,255,0.25); }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+
+    /* Role and logout tucked at the very bottom */
+    .sidebar-footer {
+      margin-top: auto;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 20px;
+    }
+
+    .role-pill { font-size: 10px; opacity: 0.6; margin-bottom: 3px; }
+    .role-name { font-size: 13px; font-weight: 600; }
+
+    .logout-btn {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 12px; color: rgba(255,255,255,0.6);
+      font-size: 13px; cursor: pointer;
+      text-decoration: none; transition: color 0.15s;
+    }
+    .logout-btn:hover { color: #fff; }
+
+    /* Everything to the right of the sidebar */
+    main.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Green topbar signals this case is closed */
+    header.topbar {
+      background: linear-gradient(90deg, #16a34a 0%, #15803d 100%);
+      color: #fff; padding: 0 32px; height: 68px;
+      display: flex; align-items: center; gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .topbar-icon {
+      width: 36px; height: 36px;
+      border: 2.5px solid rgba(255,255,255,0.5);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+
+    header.topbar h1 { font-size: 22px; font-weight: 700; }
+    header.topbar p  { font-size: 13px; opacity: 0.85; margin-top: 3px; }
+
+    /* Scrollable area beneath the topbar */
+    .content-scroll { flex: 1; overflow-y: auto; padding: 24px 32px; }
+
+    /* Green banner confirming the case was closed successfully */
+    .success-banner {
+      background: var(--green-light);
+      border: 1.5px solid var(--green-border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .banner-left  { display: flex; align-items: center; gap: 14px; }
+
+    .banner-check {
+      width: 40px; height: 40px;
+      background: var(--green); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 18px; flex-shrink: 0;
+    }
+
+    .banner-title { font-size: 15px; font-weight: 700; color: var(--green); }
+    .banner-sub   { font-size: 12.5px; color: #4ade80; margin-top: 2px; }
+
+    .btn-report {
+      display: flex; align-items: center; gap: 7px;
+      padding: 10px 18px;
+      background: var(--green); color: #fff;
+      border: none; border-radius: 9px;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-report:hover { background: #15803d; }
+
+    /* Two-column layout: case detail left, status panel right */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+    }
+
+    /* Generic white card */
+    .card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .case-id-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .case-id {
+      font-size: 18px; font-weight: 700;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* Green pill in the top-right of the case card */
+    .badge-resolved-lg {
+      background: var(--green-light);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+      padding: 5px 14px; border-radius: 8px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+    }
+
+    .case-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 20px; }
+
+    /* Two-column grid of case info fields */
+    .info-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+    }
+
+    .info-item  { display: flex; flex-direction: column; gap: 3px; }
+    .info-label { font-size: 12px; color: var(--text-muted); }
+    .info-value { font-size: 14px; font-weight: 600; }
+    .info-value.loss { color: var(--loss-color); }
+
+    /* Green box showing how the case was resolved */
+    .resolution-box {
+      background: var(--green-light);
+      border: 1.5px solid var(--green-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 18px;
+    }
+
+    .res-header {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; color: var(--green);
+      margin-bottom: 14px;
+    }
+
+    .res-field  { margin-bottom: 12px; }
+    .res-label  { font-size: 12px; color: var(--green); font-weight: 600; margin-bottom: 3px; }
+    .res-value  { font-size: 14px; color: var(--text-dark); }
+    .res-value.outcome { font-size: 15px; font-weight: 700; color: var(--green); }
+
+    .res-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+
+    /* Right-side status card uses the green palette */
+    .card-green {
+      background: var(--green-light);
+      border: 1.5px solid var(--green-border);
+    }
+
+    .status-icon-wrap { display: flex; justify-content: center; padding: 20px 0 14px; }
+
+    .big-check {
+      width: 64px; height: 64px;
+      border: 3px solid var(--green); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green); font-size: 28px;
+    }
+
+    .status-title { text-align: center; font-size: 16px; font-weight: 700; color: var(--green); }
+    .status-sub   { text-align: center; font-size: 12px; color: #4ade80; margin-top: 4px; margin-bottom: 16px; }
+
+    .status-list { border-top: 1px solid var(--green-border); padding-top: 14px; }
+
+    .status-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; padding: 7px 0;
+      border-bottom: 1px solid var(--green-border);
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-key { color: var(--text-muted); }
+    .status-val { font-weight: 600; }
+
+    /* Action buttons below the status card */
+    .actions-card { margin-top: 16px; }
+    .actions-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+
+    .btn-generate {
+      width: 100%; padding: 12px;
+      background: #2563eb; color: #fff;
+      border: none; border-radius: 10px;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.2s; margin-bottom: 10px;
+    }
+    .btn-generate:hover { background: #1d4ed8; }
+
+    .btn-download {
+      width: 100%; padding: 11px;
+      background: #fff; color: var(--text-dark);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-family: inherit; font-size: 14px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: border-color 0.2s; margin-bottom: 10px;
+    }
+    .btn-download:hover { border-color: #2563eb; }
+
+    .btn-back {
+      width: 100%; padding: 11px;
+      background: transparent; color: var(--text-muted);
+      border: none; font-family: inherit; font-size: 13.5px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: color 0.2s;
+    }
+    .btn-back:hover { color: var(--text-dark); }
+
+    /* Stack layout on narrow screens */
+    @media (max-width: 768px) {
+      aside.sidebar { display: none; }
+      .grid-2       { grid-template-columns: 1fr; }
+      .info-grid    { grid-template-columns: 1fr; }
+      .res-row-2    { grid-template-columns: 1fr; }
+      .content-scroll { padding: 16px; }
+    }

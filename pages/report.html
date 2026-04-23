@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Main Dashboard</title>
+  <title>Report Screen</title>
   <link rel="stylesheet" href="../css/dashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  </head>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="../js/report.js"></script>
+</head>
+
 <body>
 
 <div class="layout">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+ <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon">⚡</div>
     <div>
@@ -36,11 +37,10 @@
   </nav>
 </aside>
 
-
-  
+  <!-- MAIN -->
   <div class="main">
 
-    <!-- the header of the page -->
+    <!-- HEADER -->
     <div class="topbar">
       <h1>Report Generation</h1>
       <p>Case Investigation Report</p>
@@ -50,7 +50,7 @@
 
       <div style="grid-column: 1 / span 2;">
 
-        <!-- report -->
+        <!-- REPORT CARD -->
         <div class="card">
 
           <h3 id="reportTitle">Report</h3>
@@ -89,7 +89,7 @@
   </div>
 </div>
 
-<script src="../js/commander.js"></script>
+<script src="../js/report.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
   lucide.createIcons();

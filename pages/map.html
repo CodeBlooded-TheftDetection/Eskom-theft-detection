@@ -23,28 +23,48 @@
     </div>
 
     <nav class="menu">
-      <p class="menu-title">SYSTEM SCREENS (5 TOTAL)</p>
+      <p class="menu-title">SYSTEM SCREENS (10 TOTAL)</p>
 
-      <a href="dashboard.html">
-        <i data-lucide="layout-dashboard"></i> Main Dashboard
-      </a>
+  <a href="dashboard.html" class="active">  <!-- -->
+    <i data-lucide="layout-dashboard"></i> Main Dashboard  <!--i data lucide= goes to an icon library -->
+  </a>
 
-      <a href="cases.html">
-        <i data-lucide="file-text"></i> Case Detail
-      </a>
+  <a href="cases.html">
+    <i data-lucide="file-text"></i> Case Detail
+  </a>
 
-      <a href="map.html" class="active">
-        <i data-lucide="map"></i> Map View
-      </a>
+  <a href="map.html" >
+    <i data-lucide="map"></i> Map View
+  </a>
 
-      <a href="commander.html">
-        <i data-lucide="bar-chart"></i> Report Screen
-      </a>
+  <a href="report.html">
+    <i data-lucide="bar-chart-3"></i> Report Screen
+  </a>
 
-      <a href="login.html">
-        <i data-lucide="log-in"></i> Login Screen
-      </a>
-    </nav>
+  <a href="assign.html">
+    <i data-lucide="user-check"></i> Assign Investigator
+  </a>
+
+  <a href="record.html">
+    <i data-lucide="record-outcome"></i> Record Outcome
+  </a>
+
+  <a href="caseList.html">
+    <i data-lucide="list"></i> Case List
+  </a>
+
+  <a href="commander.html">
+    <i data-lucide="bar-chart"></i> Commander Dashboard
+  </a>
+
+  <a href="resolved.html">
+    <i data-lucide="check-circle"></i> Resolved Case
+  </a>
+
+  <a href="login.html">
+    <i data-lucide="log-in"></i> Login Screen
+  </a>
+</nav>
   </div>
 
   <!-- MAIN -->
@@ -59,62 +79,131 @@
     <!-- CONTENT -->
     <div class="content">
 
-      <div style="grid-column: 1 / span 2;">
+      <!-- MAP CARD -->
+      <div class="card">
+        <h3>Johannesburg & Pretoria Region</h3>
+        <div id="map" class="map-box"></div>
 
-        <!-- MAP CARD -->
-        <div class="card">
-          <h3>Johannesburg & Pretoria Region</h3>
-
-          <div class="map-box">
-            <!-- Fake markers (visual match for now) -->
-            <div class="marker red" style="top:40%; left:45%;">Soweto</div>
-            <div class="marker orange" style="top:35%; left:55%;">Sandton</div>
-            <div class="marker red" style="top:32%; left:60%;">Alexandra</div>
-            <div class="marker orange" style="top:28%; left:52%;">Pretoria</div>
-          </div>
-
-          <div class="legend">
-            <p><span class="dot red"></span> High Risk</p>
-            <p><span class="dot orange"></span> Medium Risk</p>
-            <p><span class="dot green"></span> Low Risk</p>
-          </div>
+        <div class="legend">
+          <p><span class="dot red"></span> High Risk</p>
+          <p><span class="dot orange"></span> Medium Risk</p>
+          <p><span class="dot green"></span> Low Risk</p>
         </div>
+      </div>
 
-        <!-- SELECTED LOCATION -->
-        <div class="card">
-          <h3>Selected Location</h3>
+      <!-- SELECTED LOCATION -->
+      <div class="card" id="locationCard">
+        <h3>Selected Location</h3>
 
-          <p><strong>Soweto</strong></p>
-          <p>123 Vilakazi Street, Soweto</p>
+        <p><strong>Soweto</strong></p>
+        <p>123 Vilakazi Street, Soweto</p>
 
-          <span class="badge high">HIGH</span>
-          <span class="badge open">OPEN</span>
+        <span class="badge high">HIGH</span>
+        <span class="badge open">OPEN</span>
 
-          <p><strong>Case Number:</strong> ETD-2026-001</p>
-          <p><strong>Suspect:</strong> John Makeba</p>
-          <p class="red"><strong>R12,500/month</strong></p>
+        <p><strong>Case Number:</strong> ETD-2026-001</p>
+        <p><strong>Suspect:</strong> John Makeba</p>
+        <p class="red"><strong>R12,500/month</strong></p>
 
-          <p class="alert">High priority case requiring immediate attention</p>
+        <p class="alert">High priority case requiring immediate attention</p>
 
-          <button style="margin-top:10px;">View Case Details</button>
-        </div>
+        <button onclick="goToCase()">View Case Details</button>
+      </div>
 
-        <!-- AREA STATS -->
-        <div class="card">
-          <h3>Area Statistics</h3>
+      <!-- AREA STATS -->
+      <div class="card">
+        <h3>Area Statistics</h3>
 
-          <p>Total Cases: <span class="blue">5</span></p>
-          <p>High Risk: <span class="red">2</span></p>
-          <p>Medium Risk: <span class="orange">2</span></p>
-          <p>Resolved: <span class="green">1</span></p>
-        </div>
-
+        <p>Total Cases: <span class="blue">5</span></p>
+        <p>High Risk: <span class="red">2</span></p>
+        <p>Medium Risk: <span class="orange">2</span></p>
+        <p>Resolved: <span class="green">1</span></p>
       </div>
 
     </div>
 
   </div>
 </div>
+
+<!-- MAP SCRIPT -->
+<script>
+function initMap() {
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 10,
+    center: { lat: -26.2041, lng: 28.0473 }
+  });
+
+  const locations = [
+    {
+      name: "Soweto",
+      lat: -26.2485, lng: 27.8540,
+      risk: "HIGH",
+      color: "red",
+      suspect: "John Makeba",
+      loss: "R12,500/month",
+      case: "ETD-2026-001"
+    },
+    {
+      name: "Sandton",
+      lat: -26.1076, lng: 28.0567,
+      risk: "MEDIUM",
+      color: "orange",
+      suspect: "Sarah Cohen",
+      loss: "R8,000/month",
+      case: "ETD-2026-002"
+    },
+    {
+      name: "Alexandra",
+      lat: -26.1030, lng: 28.0950,
+      risk: "HIGH",
+      color: "red",
+      suspect: "David Sithole",
+      loss: "R18,000/month",
+      case: "ETD-2026-003"
+    }
+  ];
+
+  locations.forEach(loc => {
+    const marker = new google.maps.Marker({
+      position: { lat: loc.lat, lng: loc.lng },
+      map,
+      icon: `http://maps.google.com/mapfiles/ms/icons/${loc.color}-dot.png`
+    });
+
+    marker.addListener("click", () => {
+      document.getElementById("locationCard").innerHTML = `
+        <h3>Selected Location</h3>
+
+        <p><strong>${loc.name}</strong></p>
+        <p>123 Example Street</p>
+
+        <span class="badge ${loc.risk.toLowerCase()}">${loc.risk}</span>
+        <span class="badge open">OPEN</span>
+
+        <p><strong>Case Number:</strong> ${loc.case}</p>
+        <p><strong>Suspect:</strong> ${loc.suspect}</p>
+        <p class="red"><strong>${loc.loss}</strong></p>
+
+        <p class="alert">High priority case requiring immediate attention</p>
+
+        <button onclick="goToCase('${loc.case}','${loc.suspect}')">
+          View Case Details
+        </button>
+      `;
+    });
+  });
+}
+
+function goToCase(caseId, suspect) {
+  localStorage.setItem("caseId", caseId);
+  localStorage.setItem("suspect", suspect);
+  window.location.href = "cases.html";
+}
+</script>
+
+<script async
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCBARseya4rsSW8HS6vjImVv3MoJKmOj1I&callback=initMap">
+</script>
 
 <script>
 lucide.createIcons();

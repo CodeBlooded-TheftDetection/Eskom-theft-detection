@@ -42,7 +42,7 @@ function renderCases() {
 
 function generateReport(id) {
   localStorage.setItem("selectedCase", id);
-  window.location.href = "commander.html";
+  window.location.href = "report.html";
 }
 
 renderCases();
