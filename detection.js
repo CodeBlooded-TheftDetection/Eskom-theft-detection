@@ -1,3 +1,9 @@
+const {createClient} = require('@supabase/supabase-js');
+const supabaseURL = "https://unounnpmeavkzgqdmjbd.supabase.co";
+const supabaseKey ="sb_publishable_G2znySJEYeTK7ND-RTgMuA_w_CZG5rq";
+const supabase = createClient(supabaseURL, supabaseKey);
+
+
 function calcRiskScore (consumption, average) {
     const deviation = (average - consumption) / average;
     
@@ -10,7 +16,17 @@ function calcRiskScore (consumption, average) {
 
 } 
 
-function neighbourhoodBenchmark(properties) {
+async function neighbourhoodBenchmark() {
+    const {data: properties, error} = await supabase
+        .from('properties')
+        .select('*');
+
+    if (error) {
+        console.error ("Erro fetching properties: ", error);
+        return;
+
+    }
+    
     const grouped ={};
 
     properties.forEach((property) =>{
@@ -20,57 +36,92 @@ function neighbourhoodBenchmark(properties) {
         grouped[property.suburb].push(property) ;
     });
 
-    const flagged = [];
+    //const flagged = [];
 
     for(let suburb in grouped) {
         const group = grouped[suburb];
 
-        const avg = group.reduce((sum, p) => sum + p.consumption, 0) / group.length;
-        group.forEach((property) => {
-            if(property.consumption <avg * 0.6) {
-                flagged.push({
-                    ...property,
-                    average: avg,
-                    riskScore: calcRiskScore(property.consumption, avg),
-                });
+        const avg = group.reduce((sum, p) => sum + Number(p.consumption_current), 0) / group.length;
+        
+        console.log(`Suburd: ${suburb}, Avg: ${avg} `);
+
+        for(let property of group) {
+            
+            console.log(`Checking property ${property.id}, consumption: ${property.consumption_current} `);
+
+            if(Number(property.consumption_current) < avg * 0.6) { 
+
+                const riskScore = calcRiskScore (Number(property.consumption_current), avg);
+
+                await supabase
+                    .from('properties')
+                    .update({
+                        flagged: true,
+                        risk_score: riskScore
+                    })
+                    .eq('id',property.id);
+                
+                console.log(`Flagged property ${property.id}`)
             }
-        });
+        }
+    }
+}
+
+
+async function temporalAnomalyDetection() {
+    const { data: properties, error } = await supabase
+    .from('properties')
+    .select('*');
+
+     if (error) {
+        console.error ("Erro fetching properties: ", error);
+        return;
+
     }
 
-    return flagged;
+    for (let property of properties) {
+        const current = Number(property.consumption_current);
+        const previous = Number(property.consumption_previous);
+
+        if (!previous || previous === 0) continue;
+
+        const drop = ((previous - current) / previous) * 100;
+
+        console.log("Property:", property.id, "Drop: ", drop)
+
+        if(drop >= 80) {
+            const riskScore = 90;
+
+            await supabase
+                .from ('properties')
+                .update({
+                    flagged: true,
+                    risk_score: riskScore
+                })
+                .eq('id', property.id);
+
+            console.log(`Temporal anomaly at property ${property.id}`);
+        }
+    }
 }
 
-//test sample for neighbourhoodBenchmark funtion
-const testProperties = [
-    {id: 1, suburb: "Tembisa", consumption: 400},
-    {id: 2, suburb: "Tembisa", consumption: 380},
-    {id: 3, suburb: "Tembisa", consumption: 120}, //expecting flag (< 40%)
-    {id: 4, suburb: "Midrand", consumption: 500},
-    {id: 5, suburb: "Midrand", consumption: 90}, // expecting flag (< 40%)
-];
 
-console.log(neighbourhoodBenchmark(testProperties));
-
-
-
-function temporalAnomalyDetecion(previousMonth, currentMonth) {
-    if (previousMonth === 0) return false;
-
-    const drop = ((previousMonth - currentMonth) / previousMonth) * 100;
-
-    return drop >= 80;
-}
-
-//testing sample for temporalAnomalyDetection function
-console.log(temporalAnomalyDetecion(100, 19));//true
-console.log(temporalAnomalyDetecion(100, 60));//false
 
 
 //exporting funtions
 module.exports = {
     neighbourhoodBenchmark,
-    temporalAnomalyDetecion,
+    temporalAnomalyDetection,
     calcRiskScore,
 };
 
+async function runDetection() {
+    console.log("Running Neighbourhood Benchmark...");
+    await neighbourhoodBenchmark();
+    await temporalAnomalyDetection()
+
+    console.log("Detection complete.");
+}
+
+runDetection();
 
