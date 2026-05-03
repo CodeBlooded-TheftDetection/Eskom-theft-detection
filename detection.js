@@ -4,15 +4,15 @@ const supabaseKey ="sb_publishable_G2znySJEYeTK7ND-RTgMuA_w_CZG5rq";
 const supabase = createClient(supabaseURL, supabaseKey);
 
 
-function calcRiskScore (consumption, average) {
-    const deviation = (average - consumption) / average;
+function calcRiskScore (benchmarkFlag, temporalFlag, zeroTokenFlag) {
     
-    let score = deviation * 100;
+    let score = 0;
 
-    if (score < 1) score = 1;
-    if (score > 100) score = 100;
+    if (benchmarkFlag) score += 40;
+    if (temporalFlag) score += 35;
+    if (zeroTokenFlag) score += 25;
 
-    return Math.round(score);
+    return Math.round(score, 100);
 
 } 
 
@@ -47,22 +47,38 @@ async function neighbourhoodBenchmark() {
 
         for(let property of group) {
             
-            console.log(`Checking property ${property.id}, consumption: ${property.consumption_current} `);
+           const benchmarkFlag = Number(property.consumption_current) < avg * 0.6;
 
-            if(Number(property.consumption_current) < avg * 0.6) { 
+           const current = Number(property.consumption_current);
+           const previous = Number(property.consumption_previous);
 
-                const riskScore = calcRiskScore (Number(property.consumption_current), avg);
+           let temporalFlag = false;
 
-                await supabase
-                    .from('properties')
-                    .update({
-                        flagged: true,
-                        risk_score: riskScore
-                    })
-                    .eq('id',property.id);
-                
-                console.log(`Flagged property ${property.id}`)
-            }
+           if(previous && previous !== 0) {
+            const drop = ((previous - current) / previous) * 100;
+            temporalFlag = drop >= 80;
+           }
+
+           const zeroTokenFlag = zeroTokenDetecion(property);
+
+           const riskScore = calcRiskScore(
+            benchmarkFlag,
+            temporalFlag,
+            zeroTokenFlag
+           );
+
+           await supabase
+            .from ('properies')
+            .update({
+                flagged: benchmarkFlag || temporalFlag || zeroTokenFlag,
+                risk_score: riskScore,
+                benchmark_flag: benchmarkFlag,
+                temporal_flag: temporalFlag,
+                zero_token_flag: zeroTokenFlag
+            })
+            .eq('id', property.id);
+
+            console.log(`Updated property ${property.id} with score ${riskScore}`);
         }
     }
 }
@@ -106,6 +122,86 @@ async function temporalAnomalyDetection() {
 }
 
 
+//Week 5
+
+async function updateModel(propertyId, outcome) {
+    const { data: weightsData } = await supabase
+        .from('model_weights')
+        .select('*')
+        .single();
+
+    let{ benchmark_weight, temporal_weight, zero_token_weight } = weightsData;
+
+    const { data = property } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', propertyId)
+        .single();
+
+    if (outcome === 'confirmed_theft') {
+        if (property.benchmark_flag) benchmark_weight += 2;
+        if (property.temporal_flag) temporal_weight += 2;
+        if (property.zero_token_flag) zero_token_weight += 2;
+    } else{
+        if (property.benchmark_flag) benchmark_weight -= 1;
+        if (property.temporal_flag) temporal_weight -= 1;
+        if (property.zero_token_flag) zero_token_weight -= 1;
+    }
+
+    await supabase 
+        .from('model_weights')
+        .update({
+            benchmark_weight,
+            temporal_weight,
+            zero_token_weight
+        })
+        .eq('id', weightsData.id);
+
+    console.log("Model updated");
+}
+
+function syndicateDetection(properties){
+    const grouped = {};
+
+    properties.forEach(p => {
+        if (p.flagged) {
+            if(!grouped[p.suburb]) {
+                grouped[p.suburb] = [];
+            }
+            grouped[p.suburb].push(p);
+        }
+    });
+
+    const syndicates = [];
+
+    for (let suburb in grouped) {
+        if(grouped[suburb].length >= 3) {
+            syndicates.push({
+                suburb,
+                properties: grouped[suburb]
+            });
+
+            console.log(`Syndicate detected in ${suburb}`);
+        }
+    }
+
+    return syndicates;
+}
+
+function zeroTokenDetecion(property){
+    
+    const lastPurchase = new Date(property.last_token_purchase);
+    const today = new Date();
+
+    const diffDays = (today - lastPurchase) / (1000 * 60 * 60 * 24);
+
+    if (diffDays >= 30 && property.consumption_current > 0) {
+        return true;
+    }
+
+    return false;
+}
+
 
 
 //exporting funtions
@@ -115,7 +211,7 @@ module.exports = {
     calcRiskScore,
 };
 
-async function runDetection() {
+/*async function runDetection() {
     console.log("Running Neighbourhood Benchmark...");
     await neighbourhoodBenchmark();
     await temporalAnomalyDetection()
@@ -124,5 +220,15 @@ async function runDetection() {
 }
 
 
-runDetection();
+runDetection();*/
+
+async function runWeek5Test(){
+    const { data: properties } = await supabase
+        .from('properties')
+        .select('*');
+
+    console.log(syndicateDetection(properties));
+}
+
+runWeek5Test();
 
