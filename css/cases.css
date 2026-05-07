@@ -1,0 +1,46 @@
+/* Case Detail Page Styles */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.card {
+  padding: 20px;
+  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.tip-card {
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.tip-card p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.tip-card button {
+  margin-top: 10px;
+}
+
+#tipMessage.success {
+  color: green;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+#tipMessage.error {
+  color: red;
+  font-weight: 600;
+  margin-top: 10px;
+}
