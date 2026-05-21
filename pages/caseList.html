@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case List — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* ── Full-screen layout ──────────────────────────────────── */
+    html, body, .layout, .main { height: 100%; }
+    .main { display: flex; flex-direction: column; overflow: hidden; }
+    .list-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0 20px 20px; }
+
+    /* ── Toolbar ─────────────────────────────────────────────── */
+    .list-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 14px 0;
+      flex-wrap: wrap;
+    }
+    .list-toolbar input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border-radius: 9px;
+      border: 1.5px solid #e5e9f5;
+      font-family: inherit;
+      font-size: 14px;
+      background: #f8fafc;
+      color: #0f1a3e;
+    }
+    .list-toolbar input:focus { outline: none; border-color: #2563eb; }
+    .list-toolbar select {
+      padding: 10px 14px;
+      border-radius: 9px;
+      border: 1.5px solid #e5e9f5;
+      font-family: inherit;
+      font-size: 13px;
+      background: #f8fafc;
+      color: #0f1a3e;
+    }
+    .toolbar-count {
+      font-size: 13px;
+      color: #6b7280;
+      white-space: nowrap;
+      padding: 0 6px;
+    }
+
+    /* ── Table ───────────────────────────────────────────────── */
+    .table-wrap {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 14px;
+      border: 1.5px solid #e5e9f5;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+    thead { position: sticky; top: 0; z-index: 10; }
+    thead th {
+      background: #0f1a3e;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 14px 16px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 12px 0 0 0; }
+    thead th:last-child  { border-radius: 0 12px 0 0; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody td {
+      padding: 13px 16px;
+      font-size: 13.5px;
+      color: #374151;
+      vertical-align: middle;
+    }
+    .case-num-cell {
+      font-family: 'DM Mono', monospace, sans-serif;
+      font-weight: 700;
+      color: #0f1a3e;
+      white-space: nowrap;
+    }
+    .action-cell { white-space: nowrap; }
+    .tbl-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 5px;
+      transition: opacity 0.2s;
+    }
+    .tbl-btn:hover { opacity: 0.8; }
+    .tbl-btn-blue   { background: #2563eb; color: #fff; }
+    .tbl-btn-green  { background: #16a34a; color: #fff; }
+    .tbl-btn-outline { background: #fff; color: #374151; border: 1.5px solid #e5e9f5; }
+
+    /* ── Empty / loading states ──────────────────────────────── */
+    .state-row td { text-align: center; padding: 60px 20px; color: #6b7280; }
+
+    /* ── Pagination ──────────────────────────────────────────── */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 0;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .page-info { font-size: 13px; color: #6b7280; }
+    .page-btns { display: flex; gap: 6px; }
+    .page-btn {
+      padding: 7px 14px;
+      border-radius: 7px;
+      border: 1.5px solid #e5e9f5;
+      background: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #374151;
+    }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-btn.active   { background: #2563eb; color: #fff; border-color: #2563eb; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu">
+      <p class="menu-title">NAVIGATION</p>
+      <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Main Dashboard</a>
+      <a href="cases.html"><i data-lucide="file-text"></i> Case Detail</a>
+      <a href="map.html"><i data-lucide="map"></i> Map View</a>
+      <a href="report.html"><i data-lucide="bar-chart-3"></i> Report Screen</a>
+      <a href="assign.html"><i data-lucide="user-check"></i> Assign Investigator</a>
+      <a href="record.html"><i data-lucide="clipboard-list"></i> Record Outcome</a>
+      <a href="caseList.html" class="active"><i data-lucide="list"></i> Case List</a>
+      <a href="commander.html"><i data-lucide="bar-chart"></i> Commander Dashboard</a>
+      <a href="resolved.html"><i data-lucide="check-circle"></i> Resolved Cases</a>
+      <a href="login.html" id="logoutLink"><i data-lucide="log-out"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar" style="flex-shrink:0;">
+      <div>
+        <h1>Case List</h1>
+        <p>All active and pending cases — search, filter, and take action</p>
+      </div>
+    </header>
+
+    <div class="list-body">
+
+      <!-- Toolbar: search + filters -->
+      <div class="list-toolbar">
+        <input type="text" id="searchInput" placeholder="Search by case number, suspect name, or description…"/>
+        <select id="filterRisk">
+          <option value="">All Risk Levels</option>
+          <option value="HIGH">HIGH</option>
+          <option value="MID">MID</option>
+          <option value="LOW">LOW</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">All Statuses</option>
+          <option value="OPEN">OPEN</option>
+          <option value="PENDING">PENDING</option>
+        </select>
+        <span class="toolbar-count" id="countLabel">Loading…</span>
+      </div>
+
+      <!-- Case table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Case #</th>
+              <th>Suspect</th>
+              <th>Risk</th>
+              <th>Status</th>
+              <th>Investigator</th>
+              <th>Reported</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="caseTableBody">
+            <tr class="state-row"><td colspan="7">Loading cases from database…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <span class="page-info" id="pageInfo">—</span>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ── AUTH ──────────────────────────────────────────────────────
+const token    = localStorage.getItem("token");
+const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
+if (!token) window.location.href = "login.html";
+
+const BASE_URL    = "http://localhost:3000";
+const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+
+document.getElementById("logoutLink").addEventListener("click", e => {
+  e.preventDefault(); localStorage.clear(); window.location.href = "login.html";
+});
+
+// ── PAGINATION STATE ──────────────────────────────────────────
+const PAGE_SIZE  = 15;
+let   currentPage = 1;
+let   allCases    = [];
+let   filtered    = [];
+
+// ── LOAD CASES ────────────────────────────────────────────────
+// NOTE: caseList.html shows ACTIVE cases (OPEN + PENDING) only.
+// Resolved cases are on resolved.html.
+async function loadCases() {
+  const tbody = document.getElementById("caseTableBody");
+  tbody.innerHTML = `<tr class="state-row"><td colspan="7">Loading…</td></tr>`;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+    if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = "login.html"; return; }
+    const raw = await res.json();
+    // Show only OPEN and PENDING — resolved.html has RESOLVED cases
+    allCases = (Array.isArray(raw) ? raw : [])
+      .filter(c => (c.outcome || "OPEN").toUpperCase() !== "RESOLVED");
+    applyFilters();
+  } catch (err) {
+    tbody.innerHTML = `<tr class="state-row"><td colspan="7">⚠ Could not load: ${err.message}</td></tr>`;
+  }
+}
+
+// ── FILTER + SEARCH ───────────────────────────────────────────
+function applyFilters() {
+  const search     = document.getElementById("searchInput").value.toLowerCase();
+  const riskFilter = document.getElementById("filterRisk").value;
+  const statFilter = document.getElementById("filterStatus").value;
+
+  filtered = allCases.filter(c => {
+    const matchSearch = !search ||
+      (c.case_number || "").toLowerCase().includes(search) ||
+      (c.suspect_name || "").toLowerCase().includes(search) ||
+      (c.description  || "").toLowerCase().includes(search);
+    const matchRisk   = !riskFilter || (c.risk_level || "").toUpperCase() === riskFilter;
+    const matchStatus = !statFilter || (c.outcome    || "").toUpperCase() === statFilter;
+    return matchSearch && matchRisk && matchStatus;
+  });
+
+  currentPage = 1;
+  renderTable();
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────
+function renderTable() {
+  const tbody     = document.getElementById("caseTableBody");
+  const total     = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  currentPage     = Math.min(currentPage, totalPages);
+
+  const start   = (currentPage - 1) * PAGE_SIZE;
+  const pageCases = filtered.slice(start, start + PAGE_SIZE);
+
+  document.getElementById("countLabel").textContent =
+    `${total} case${total !== 1 ? "s" : ""} found`;
+
+  if (!pageCases.length) {
+    tbody.innerHTML = `<tr class="state-row"><td colspan="7">No active cases match your filters.</td></tr>`;
+    renderPagination(0, 0);
+    return;
+  }
+
+  const isManager = userRole === "admin" || userRole === "commander";
+
+  tbody.innerHTML = pageCases.map(c => {
+    const displayId  = c.case_number || c.id;
+    const riskClass  = (c.risk_level || "low").toLowerCase();
+    const riskLabel  = (c.risk_level || "LOW").toUpperCase();
+    const statClass  = (c.outcome    || "open").toLowerCase();
+    const statLabel  = (c.outcome    || "OPEN").toUpperCase();
+    const invName    = c.investigators
+      ? (c.investigators.full_name || c.investigators.email)
+      : "Unassigned";
+    const reported   = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A";
+
+    const actionButtons = isManager
+      ? `
+        <button class="tbl-btn tbl-btn-blue"    onclick="viewDetail('${c.id}')">Detail</button>
+        <button class="tbl-btn tbl-btn-outline" onclick="goRecord('${c.id}')">Update</button>
+        <button class="tbl-btn tbl-btn-green"   onclick="goReport('${c.id}')">Report</button>
+      `
+      : `<button class="tbl-btn tbl-btn-blue" onclick="viewDetail('${c.id}')">View</button>`;
+
+    return `
+      <tr>
+        <td class="case-num-cell">${displayId}</td>
+        <td>${c.suspect_name || "Unknown"}</td>
+        <td><span class="badge ${riskClass}">${riskLabel}</span></td>
+        <td><span class="badge ${statClass}">${statLabel}</span></td>
+        <td>${invName}</td>
+        <td>${reported}</td>
+        <td class="action-cell">${actionButtons}</td>
+      </tr>`;
+  }).join("");
+
+  renderPagination(currentPage, totalPages);
+  lucide.createIcons();
+}
+
+// ── PAGINATION ────────────────────────────────────────────────
+function renderPagination(page, totalPages) {
+  document.getElementById("pageInfo").textContent =
+    `Page ${page} of ${totalPages}`;
+
+  const btns = document.getElementById("pageBtns");
+  btns.innerHTML = "";
+
+  const prev = document.createElement("button");
+  prev.className = "page-btn";
+  prev.textContent = "← Prev";
+  prev.disabled    = page <= 1;
+  prev.onclick = () => { currentPage--; renderTable(); };
+  btns.appendChild(prev);
+
+  // Show at most 5 page number buttons
+  const start = Math.max(1, page - 2);
+  const end   = Math.min(totalPages, start + 4);
+  for (let i = start; i <= end; i++) {
+    const b = document.createElement("button");
+    b.className  = `page-btn${i === page ? " active" : ""}`;
+    b.textContent = i;
+    b.onclick    = ((pg) => () => { currentPage = pg; renderTable(); })(i);
+    btns.appendChild(b);
+  }
+
+  const next = document.createElement("button");
+  next.className = "page-btn";
+  next.textContent = "Next →";
+  next.disabled    = page >= totalPages;
+  next.onclick = () => { currentPage++; renderTable(); };
+  btns.appendChild(next);
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────
+function viewDetail(caseId) {
+  localStorage.setItem("preselectedCaseId", caseId);
+  window.location.href = "cases.html";
+}
+function goRecord(caseId) {
+  localStorage.setItem("preselectedCaseId", caseId);
+  window.location.href = "record.html";
+}
+function goReport(caseId) {
+  localStorage.setItem("selectedCaseId", caseId);
+  window.location.href = "report.html";
+}
+
+// ── FILTER LISTENERS ──────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input",  applyFilters);
+document.getElementById("filterRisk").addEventListener("change",  applyFilters);
+document.getElementById("filterStatus").addEventListener("change", applyFilters);
+
+// ── INIT ──────────────────────────────────────────────────────
+loadCases();
+</script>
+</body>
+</html>

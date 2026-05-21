@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map View — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    html, body, .layout, .main { height: 100%; }
+
+    #mapWrapper {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 64px);   /* full height minus topbar */
+      overflow: hidden;
+    }
+
+    /* ── Address search bar ─────────────────────────────────── */
+    .map-toolbar {
+      display: flex;
+      gap: 10px;
+      padding: 14px 20px;
+      background: #fff;
+      border-bottom: 1px solid #e5e9f5;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .map-toolbar input {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px 14px;
+      border-radius: 9px;
+      border: 1.5px solid #e5e9f5;
+      font-family: inherit;
+      font-size: 14px;
+      color: #0f1a3e;
+      background: #f8fafc;
+    }
+    .map-toolbar input:focus { outline: none; border-color: #2563eb; }
+    .map-toolbar select {
+      padding: 10px 14px;
+      border-radius: 9px;
+      border: 1.5px solid #e5e9f5;
+      font-family: inherit;
+      font-size: 13px;
+      background: #f8fafc;
+      color: #0f1a3e;
+    }
+    .btn-map {
+      padding: 10px 18px;
+      border-radius: 9px;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .btn-map:hover { opacity: 0.85; }
+    .btn-blue    { background: #2563eb; color: #fff; }
+    .btn-red     { background: #dc2626; color: #fff; }
+    .btn-outline { background: #fff; color: #374151; border: 1.5px solid #e5e9f5; }
+
+    /* ── Map container ──────────────────────────────────────── */
+    #map {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+    }
+
+    /* ── Area stats sidebar ─────────────────────────────────── */
+    .map-stats-bar {
+      display: flex;
+      gap: 0;
+      background: #0f1a3e;
+      color: #fff;
+    }
+    .stat-pill {
+      flex: 1;
+      text-align: center;
+      padding: 10px 6px;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      font-size: 12px;
+    }
+    .stat-pill:last-child { border-right: none; }
+    .stat-pill strong { display: block; font-size: 18px; margin-bottom: 2px; }
+
+    /* ── Leaflet popup overrides ────────────────────────────── */
+    .leaflet-popup-content-wrapper {
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 0;
+      overflow: hidden;
+      min-width: 240px;
+    }
+    .leaflet-popup-content { margin: 0; }
+    .popup-inner { padding: 16px 18px; }
+    .popup-title { font-size: 15px; font-weight: 700; color: #0f1a3e; margin-bottom: 6px; }
+    .popup-addr  { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
+    .popup-row   { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+    .popup-row strong { color: #374151; }
+    .popup-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .popup-btn {
+      flex: 1; padding: 8px 10px; border-radius: 8px; border: none;
+      font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .popup-btn-blue  { background: #2563eb; color: #fff; }
+    .popup-btn-del   { background: #fee2e2; color: #dc2626; }
+
+    /* Search result suggestions */
+    #suggestions {
+      position: absolute;
+      z-index: 1000;
+      background: #fff;
+      border: 1.5px solid #e5e9f5;
+      border-radius: 9px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      max-height: 220px;
+      overflow-y: auto;
+      width: 320px;
+      display: none;
+    }
+    .suggestion-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .suggestion-item:hover { background: #f0f7ff; }
+    .suggestion-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <div id="map" style="height:500px; border-radius:12px;"></div>
+
+  <input id="addressSearch" type="text" placeholder="Search address…">
+<div id="searchResults"></div>
+<button id="btnPlaceMarker">Place Marker</button>
+<button id="btnLoadCases">Load Cases from Database</button>
+<div id="mapStatus"></div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu">
+      <p class="menu-title">NAVIGATION</p>
+      <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Main Dashboard</a>
+      <a href="cases.html"><i data-lucide="file-text"></i> Case Detail</a>
+      <a href="map.html" class="active"><i data-lucide="map"></i> Map View</a>
+      <a href="report.html"><i data-lucide="bar-chart-3"></i> Report Screen</a>
+      <a href="assign.html"><i data-lucide="user-check"></i> Assign Investigator</a>
+      <a href="record.html"><i data-lucide="clipboard-list"></i> Record Outcome</a>
+      <a href="caseList.html"><i data-lucide="list"></i> Case List</a>
+      <a href="commander.html"><i data-lucide="bar-chart"></i> Commander Dashboard</a>
+      <a href="resolved.html"><i data-lucide="check-circle"></i> Resolved Cases</a>
+      <a href="login.html" id="logoutLink"><i data-lucide="log-out"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" style="display:flex; flex-direction:column; overflow:hidden;">
+    <header class="topbar" style="flex-shrink:0;">
+      <div>
+        <h1>Map View</h1>
+        <p>Search an address to pin a case location — click any marker to view case details</p>
+      </div>
+    </header>
+
+    <div id="mapWrapper">
+
+      <!-- Area stats bar — counts update from actual DB cases -->
+      <div class="map-stats-bar" id="statsBar">
+        <div class="stat-pill"><strong id="statTotal">—</strong>Total Cases</div>
+        <div class="stat-pill"><strong id="statHigh">—</strong>High Risk</div>
+        <div class="stat-pill"><strong id="statMid">—</strong>Med Risk</div>
+        <div class="stat-pill"><strong id="statResolved">—</strong>Resolved</div>
+      </div>
+
+      <!-- ── Toolbar ─────────────────────────────────────────── -->
+      <!-- FIXED: you now search for an address and choose a case
+           to attach to that location. No hardcoded markers.    -->
+      <div class="map-toolbar" style="position:relative;">
+
+        <!-- 1. Address search (geocodes using Nominatim) -->
+        <input
+          type="text"
+          id="addressInput"
+          placeholder="Search address (e.g. 123 Vilakazi Street, Soweto)…"
+          autocomplete="off"
+        />
+        <!-- Autocomplete suggestions dropdown -->
+        <div id="suggestions"></div>
+
+        <!-- 2. Link to an existing case -->
+        <select id="caseSelect" style="max-width:260px;">
+          <option value="">— Link to case (optional) —</option>
+        </select>
+
+        <!-- 3. Place marker at searched address -->
+        <button class="btn-map btn-blue" id="btnPlace">
+          <i data-lucide="map-pin"></i> Place Marker
+        </button>
+
+        <!-- 4. Remove ALL markers the user placed manually
+             (DB-linked case markers are re-loaded from the API) -->
+        <button class="btn-map btn-red" id="btnClear">
+          <i data-lucide="trash-2"></i> Clear Manual Markers
+        </button>
+
+        <!-- 5. Load all case markers from the DB -->
+        <button class="btn-map btn-outline" id="btnLoadCases">
+          <i data-lucide="refresh-cw"></i> Load Cases from DB
+        </button>
+
+      </div>
+
+      <!-- ── Map ───────────────────────────────────────────────── -->
+      <div id="map"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../js/map.js"></script>
+</body>
+</html>
