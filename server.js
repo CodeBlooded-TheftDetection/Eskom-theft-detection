@@ -5,6 +5,7 @@ const multer    = require('multer');
 const csv       = require('csv-parser');
 const PDFKit    = require('pdfkit');
 const stream    = require('stream');
+const path      = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const jwt       = require('jsonwebtoken');
 const bcrypt    = require('bcrypt');
@@ -31,6 +32,12 @@ function detectAnomalies(data, threshold = 2) {
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ── STATIC FILES & LANDING PAGE ───────────────────────────────
+app.use(express.static(__dirname));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // ── SUPABASE CLIENT ───────────────────────────────────────────
 // Using service_role key — bypasses RLS so our own RBAC controls access
@@ -104,11 +111,6 @@ async function enrichCasesWithInvestigators(cases) {
         investigators: c.assigned_investigator_id ? (invMap[c.assigned_investigator_id] || null) : null
     }));
 }
-
-// ─────────────────────────────────────────────────────────────
-// HEALTH CHECK
-// ─────────────────────────────────────────────────────────────
-app.get('/', (req, res) => res.send('Eskom Theft Detection API ✔'));
 
 // ─────────────────────────────────────────────────────────────
 // AUTH — LOGIN

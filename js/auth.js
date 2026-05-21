@@ -59,13 +59,13 @@ form.addEventListener("submit", async (e) => {
     // ── ROLE-BASED REDIRECT ────────────────────────────────
     // Redirect based on user role to appropriate dashboard
     const roleRedirects = {
-      admin: "dashboard.html",
-      commander: "dashboard.html",
-      investigator: "dashboard.html",
-      user: "user-dashboard.html"
+      admin: "../pages/dashboard.html",
+      commander: "../pages/dashboard.html",
+      investigator: "../pages/dashboard.html",
+      user: "../pages/user-dashboard.html"
     };
 
-    const redirectUrl = roleRedirects[data.role] || "dashboard.html";
+    const redirectUrl = roleRedirects[data.role] || "../pages/dashboard.html";
     window.location.href = redirectUrl;
 
   } catch (err) {
