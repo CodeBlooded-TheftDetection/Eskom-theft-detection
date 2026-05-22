@@ -64,7 +64,7 @@ const res = await fetch('/api/cases', {...});
 - **vercel.json** (NEW):
   ```json
   {
-    "version": 3,
+    "version": 2,
     "builds": [
       { "src": "server.js", "use": "@vercel/node" }
     ],
