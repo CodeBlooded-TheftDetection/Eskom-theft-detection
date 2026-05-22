@@ -226,7 +226,7 @@ const token    = localStorage.getItem("token");
 const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
 if (!token) window.location.href = "login.html";
 
-const BASE_URL    = "http://localhost:3000";
+const BASE_URL    = '';
 const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
 
 document.getElementById("logoutLink").addEventListener("click", e => {

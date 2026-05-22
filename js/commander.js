@@ -21,7 +21,7 @@
 //    to select which case they want to generate the report for."
 // ============================================================
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = '';
 
 // ── GUARD: Must be logged in ──────────────────────────────────
 const token = localStorage.getItem("token");

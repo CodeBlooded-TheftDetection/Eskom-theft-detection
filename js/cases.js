@@ -6,7 +6,7 @@
 //   3. Investigator shown in detail panel from manual lookup
 // ============================================================
 
-const BASE_URL    = 'http://localhost:3000';
+const BASE_URL    = '';
 const token       = localStorage.getItem('token');
 const userRole    = (localStorage.getItem('userRole') || '').toLowerCase();
 if (!token) window.location.href = 'login.html';

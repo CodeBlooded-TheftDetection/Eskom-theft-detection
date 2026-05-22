@@ -13,7 +13,7 @@
 // and <script src="../js/map_fix.js"></script> at the bottom of body.
 // ============================================================
 
-const BASE_URL    = 'http://localhost:3000';
+const BASE_URL    = '';
 const token       = localStorage.getItem('token');
 if (!token) window.location.href = 'login.html';
 const authHeaders = {

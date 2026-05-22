@@ -1,4 +1,4 @@
-const BASE_URL  = 'http://localhost:3000';
+const BASE_URL  = '';
 const token     = localStorage.getItem('token');
 const userRole  = (localStorage.getItem('userRole') || '').toLowerCase();
 const userId    = localStorage.getItem('userId');

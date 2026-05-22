@@ -5,6 +5,8 @@ const multer    = require('multer');
 const csv       = require('csv-parser');
 const PDFKit    = require('pdfkit');
 const stream    = require('stream');
+const fs        = require('fs');
+const path      = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const jwt       = require('jsonwebtoken');
 const bcrypt    = require('bcrypt');
@@ -31,6 +33,16 @@ function detectAnomalies(data, threshold = 2) {
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const publicRoot = path.join(__dirname);
+app.use((req, res, next) => {
+    const blockedPaths = ['/server.js', '/package.json', '/package-lock.json', '/.env', '/env'];
+    if (blockedPaths.includes(req.path)) return res.status(404).end();
+    next();
+});
+app.use(express.static(publicRoot, { dotfiles: 'ignore', index: false }));
+
+app.get('/', (req, res) => res.sendFile(path.join(publicRoot, 'index.html')));
 
 // ── SUPABASE CLIENT ───────────────────────────────────────────
 // Using service_role key — bypasses RLS so our own RBAC controls access
@@ -566,5 +578,9 @@ app.post('/api/average', (req, res) => res.json({ average: calculateAverage(req.
 app.post('/api/detect',  (req, res) => res.json({ anomalies: detectAnomalies(req.body.data) }));
 app.post('/api/test',    (req, res) => res.send('POST WORKING'));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✔ Server on http://localhost:${PORT}`));
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`✔ Server on http://localhost:${PORT}`));
+}
+
+module.exports = app;

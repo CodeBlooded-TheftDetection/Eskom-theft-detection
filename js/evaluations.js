@@ -26,7 +26,7 @@
 //     → POST /api/evaluations   → save/update an evaluation
 // ============================================================
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = '';
 
 // ── GUARD: Redirect if not logged in ─────────────────────────
 const token    = localStorage.getItem("token");

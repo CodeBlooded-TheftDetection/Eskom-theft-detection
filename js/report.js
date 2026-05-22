@@ -19,7 +19,7 @@
 //   requirement to show whether a case is Open or Resolved.
 // ============================================================
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = '';
 
 // ── GUARD: Must be logged in ──────────────────────────────────
 const token = localStorage.getItem("token");
