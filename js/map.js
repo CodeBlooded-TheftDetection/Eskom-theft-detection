@@ -73,7 +73,7 @@ async function searchAddress() {
           `<div onclick="selectSearchResult(${r.lat}, ${r.lon}, '${r.display_name.replace(/'/g,"\\'")}', ${i})"
             style="padding:10px 12px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:13px;color:#374151;"
             onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background=''">
-            📍 ${r.display_name}
+            <i class=\"fa-solid fa-location-dot\" style=\"color:#2563eb;margin-right:8px;\"></i> ${r.display_name}
           </div>`
         ).join('');
       }
@@ -88,6 +88,11 @@ function selectSearchResult(lat, lon, label, idx) {
 
   // Fly to location
   map.flyTo(pendingLatLng, 15);
+
+  // Nudge the map so the selected location appears centered (not pinned to top)
+  setTimeout(() => {
+    try { map.panBy([0, -Math.round(map.getSize().y * 0.12)]); } catch(e) {}
+  }, 350);
 
   // Preview marker
   if (window._previewMarker) map.removeLayer(window._previewMarker);

@@ -10,7 +10,7 @@
 - No visual hierarchy
 - No color scheme
 - Minimal branding
-- Desktop-only experience
+- Desktop-only experience  
 
 #### **AFTER:** ✨
 - Beautiful purple gradient background

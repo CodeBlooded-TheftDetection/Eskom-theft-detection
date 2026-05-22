@@ -151,7 +151,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
     <nav class="menu">
@@ -292,7 +292,7 @@ async function loadResolvedCases() {
     computeStats();
     applyFilters();
   } catch (err) {
-    tbody.innerHTML = `<tr class="state-row"><td colspan="8">⚠ Could not load: ${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr class="state-row"><td colspan="8">Could not load: ${err.message}</td></tr>`;
   }
 }
 

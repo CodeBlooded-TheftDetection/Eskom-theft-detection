@@ -629,25 +629,22 @@
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
-      <div>
-        <h2>Eskom</h2>
-        <p>Report Theft</p>
-      </div>
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Report Theft</p></div>
     </div>
 
     <nav class="menu" id="sidebarMenu">
       <p class="menu-title">Navigation</p>
-      <a href="user-dashboard.html" class="active">📊 Dashboard</a>
-      <a href="caseList.html">📋 My Cases</a>
-      <a href="map.html">🗺️ Map View</a>
+      <a href="user-dashboard.html" class="active"><i class="fa-solid fa-chart-simple" style="margin-right:8px;"></i> Dashboard</a>
+      <a href="caseList.html"><i class="fa-solid fa-clipboard-list" style="margin-right:8px;"></i> My Cases</a>
+      <a href="map.html"><i class="fa-solid fa-map-location" style="margin-right:8px;"></i> Map View</a>
     </nav>
 
     <div class="role-box">
       <p>Logged in as</p>
       <div class="role-badge" id="roleName">Community Reporter</div>
       <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html';">
-        🚪 Logout
+        <i class="fa-solid fa-door-open" style="margin-right:8px;"></i> Logout
       </button>
     </div>
   </aside>
@@ -657,7 +654,7 @@
 
     <header class="topbar">
       <div>
-        <h1>Welcome Back! 👋</h1>
+        <h1>Welcome Back!</h1>
         <p>Track your reports and help protect South Africa's power grid</p>
       </div>
       <div class="topbar-badge" id="roleBadge">Community Reporter</div>
@@ -671,10 +668,10 @@
         <p>Help us detect and stop illegal electricity connections and meter tampering. Your reports are confidential and help protect our national infrastructure.</p>
         <div class="welcome-actions">
           <a href="cases.html" class="btn btn-primary">
-            ➕ Submit New Report
+            <i class="fa-solid fa-plus" style="margin-right:8px;"></i> Submit New Report
           </a>
           <a href="map.html" class="btn btn-secondary">
-            🗺️ View on Map
+            <i class="fa-solid fa-map-location" style="margin-right:8px;"></i> View on Map
           </a>
         </div>
       </section>
@@ -682,7 +679,7 @@
       <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon">📊</div>
+          <div class="stat-icon"><i class="fa-solid fa-chart-simple" style="font-size:22px;color:#2563eb"></i></div>
           <div class="stat-content">
             <h4>Total Reports</h4>
             <h2 id="statTotal">0</h2>
@@ -691,7 +688,7 @@
         </div>
 
         <div class="stat-card">
-          <div class="stat-icon pending">⏳</div>
+          <div class="stat-icon pending"><i class="fa-solid fa-hourglass-half" style="font-size:20px;color:#f59e0b"></i></div>
           <div class="stat-content">
             <h4>Pending Review</h4>
             <h2 id="statPending">0</h2>
@@ -700,7 +697,7 @@
         </div>
 
         <div class="stat-card">
-          <div class="stat-icon progress">🔄</div>
+          <div class="stat-icon progress"><i class="fa-solid fa-arrows-rotate" style="font-size:20px;color:#64748b"></i></div>
           <div class="stat-content">
             <h4>In Investigation</h4>
             <h2 id="statProgress">0</h2>
@@ -721,13 +718,13 @@
       <!-- My Recent Reports -->
       <section class="section">
         <div class="section-header">
-          <h2>🔍 My Recent Reports</h2>
+          <h2><i class="fa-solid fa-magnifying-glass" style="margin-right:8px;color:#64748b"></i> My Recent Reports</h2>
           <a href="caseList.html">View All →</a>
         </div>
 
         <div id="casesContainer">
           <div class="empty-state">
-            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="font-size:26px;color:#9ca3af"></i></div>
             <h3>No Reports Yet</h3>
             <p>You haven't submitted any reports yet.</p>
             <a href="cases.html" class="btn btn-primary">Submit Your First Report</a>
@@ -843,7 +840,7 @@
   if (mockCases.length === 0) {
     casesContainer.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="font-size:26px;color:#9ca3af"></i></div>
         <h3>No Reports Yet</h3>
         <p>You haven't submitted any reports yet.</p>
         <a href="cases.html" class="btn btn-primary">Submit Your First Report</a>

@@ -121,7 +121,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
     <nav class="menu">
@@ -299,7 +299,7 @@ async function loadCasePicker() {
       renderPreview(preId);
     }
   } catch (err) {
-    sel.innerHTML = `<option value="">⚠ Could not load cases: ${err.message}</option>`;
+    sel.innerHTML = `<option value="">Could not load cases: ${err.message}</option>`;
   }
 }
 
@@ -388,7 +388,7 @@ document.getElementById("btnDownload").addEventListener("click", async () => {
     status.style.color = "#16a34a";
 
   } catch (err) {
-    status.textContent = `⚠ Could not generate PDF: ${err.message}`;
+    status.textContent = `Could not generate PDF: ${err.message}`;
     status.style.color = "#dc2626";
   } finally {
     btn.disabled = false;

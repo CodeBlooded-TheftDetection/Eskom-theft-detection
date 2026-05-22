@@ -171,7 +171,7 @@ function showError(message) {
   if (body) {
     body.innerHTML = `
       <div style="padding:30px; color:#dc2626;">
-        <strong>⚠ Error:</strong> ${message}
+        <strong><i class="fa-solid fa-triangle-exclamation" style="margin-right:8px;color:#dc2626;"></i>Error:</strong> ${message}
         <br><br>
         <button onclick="window.history.back()">← Go Back</button>
       </div>`;

@@ -86,6 +86,8 @@ async function loadStats() {
     setEl('statLow',      data.byRisk?.LOW         ?? 0);
     setEl('statOpen',     data.byOutcome?.OPEN     ?? 0);
     setEl('statResolved', data.byOutcome?.RESOLVED ?? 0);
+    // Render admin chart if chart.js is available
+    try { renderAdminChart(data); } catch(e) {}
   } catch (e) {
     console.warn('Loading mock stats:', e.message);
     // Load mock data if API fails
@@ -95,7 +97,24 @@ async function loadStats() {
     setEl('statLow',      17);
     setEl('statOpen',     24);
     setEl('statResolved', 23);
+    try { renderAdminChart({ byRisk: { HIGH:12, MID:18, LOW:17 } }); } catch(e) {}
   }
+}
+
+function renderAdminChart(data) {
+  const ctx = document.getElementById('adminChart');
+  if (!ctx || typeof Chart === 'undefined') return;
+  const high = data.byRisk?.HIGH || 0;
+  const mid  = data.byRisk?.MID  || 0;
+  const low  = data.byRisk?.LOW  || 0;
+  const chart = new Chart(ctx.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['High','Medium','Low'],
+      datasets: [{ data: [high, mid, low], backgroundColor: ['#ef4444','#f59e0b','#10b981'] }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
+  });
 }
 
 // ── MOCK CASES DATA ────────────────────────────────────────────
@@ -203,7 +222,7 @@ function renderCases(cases, container) {
         </div>
         <p style="font-size:13.5px;font-weight:600;color:#1e293b;margin:0 0 4px;">${c.suspect_name || 'Unknown Suspect'}</p>
         <p style="font-size:12.5px;color:#64748b;margin:0 0 6px;">${c.description || 'No description.'}</p>
-        <p style="font-size:12px;color:#9ca3af;margin:0;">🔍 ${invName} &nbsp;|&nbsp; 📅 ${date}</p>
+        <p style="font-size:12px;color:#9ca3af;margin:0;"><i class="fa-solid fa-magnifying-glass" style="margin-right:6px;font-size:12px;color:inherit;"></i>${invName} &nbsp;|&nbsp; <i class="fa-regular fa-calendar-days" style="margin-left:6px;font-size:12px;color:inherit;"></i> ${date}</p>
       </div>
       <a href="cases.html?id=${c.id}" style="
           padding:7px 14px;background:#3b82f6;color:#fff;border-radius:8px;
@@ -295,7 +314,7 @@ function loadAlertBanner() {
         gap: 12px;
         align-items: flex-start;
       ">
-        <span style="font-size: 20px; flex-shrink: 0;">⚠️</span>
+        <span style="font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-triangle-exclamation" style="color:#b91c1c;font-size:20px;"></i></span>
         <div>
           <h3 style="font-size: 14px; font-weight: 700; color: #7f1d1d; margin-bottom: 2px;">
             3 High-Risk Cases Pending Review
@@ -317,7 +336,7 @@ function loadAlertBanner() {
         gap: 12px;
         align-items: flex-start;
       ">
-        <span style="font-size: 20px; flex-shrink: 0;">ℹ️</span>
+        <span style="font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-circle-info" style="color:#92400e;font-size:20px;"></i></span>
         <div>
           <h3 style="font-size: 14px; font-weight: 700; color: #92400e; margin-bottom: 2px;">
             8 Cases Ready for Assignment
@@ -339,7 +358,7 @@ function loadAlertBanner() {
         gap: 12px;
         align-items: flex-start;
       ">
-        <span style="font-size: 20px; flex-shrink: 0;">✓</span>
+        <span style="font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-circle-check" style="color:#0c4a6e;font-size:20px;"></i></span>
         <div>
           <h3 style="font-size: 14px; font-weight: 700; color: #0c4a6e; margin-bottom: 2px;">
             5 Cases Assigned to You

@@ -6,6 +6,7 @@
   <title>Admin Dashboard — Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* ── ADMIN COLOR SCHEME ── */
     body.role-admin .topbar {
@@ -225,11 +226,8 @@
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
-      <div>
-        <h2>Eskom</h2>
-        <p>Theft Detection</p>
-      </div>
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
 
     <nav class="menu" id="sidebarMenu">
@@ -268,7 +266,7 @@
     <!-- Key Metrics -->
     <section class="cards" id="statsGrid">
       <div class="stat-card">
-        <div class="stat-icon blue">📊</div>
+        <div class="stat-icon blue"><i class="fa-solid fa-chart-simple" style="font-size:20px;color:#2563eb"></i></div>
         <div class="stat-content">
           <h4>Total Cases</h4>
           <h2 id="statTotal">0</h2>
@@ -277,7 +275,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon red">🚨</div>
+        <div class="stat-icon red"><i class="fa-solid fa-bell" style="font-size:20px;color:#dc2626"></i></div>
         <div class="stat-content">
           <h4>High Risk</h4>
           <h2 id="statHigh">0</h2>
@@ -286,7 +284,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon orange">⚠️</div>
+        <div class="stat-icon orange"><i class="fa-solid fa-triangle-exclamation" style="font-size:18px;color:#f59e0b"></i></div>
         <div class="stat-content">
           <h4>In Progress</h4>
           <h2 id="statOpen">0</h2>
@@ -295,11 +293,20 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon green">✓</div>
+        <div class="stat-icon green"><i class="fa-solid fa-circle-check" style="font-size:18px;color:#16a34a"></i></div>
         <div class="stat-content">
           <h4>Resolved</h4>
           <h2 id="statResolved">0</h2>
           <p>Closed this month</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fa-solid fa-chart-line" style="font-size:20px;color:#2563eb"></i></div>
+        <div class="stat-content">
+          <h4>Trends</h4>
+          <div style="max-width:420px;"><canvas id="adminChart" style="width:100%;height:120px;"></canvas></div>
+          <p style="margin-top:8px;color:#64748b;font-size:13px;">Recent case distribution by risk level</p>
         </div>
       </div>
     </section>
@@ -335,44 +342,14 @@
 
     <section class="content" data-roles="admin" style="padding: 0 20px 20px;">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-        <a href="admin.html" style="
-          padding: 16px;
-          background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-          color: white;
-          border-radius: 12px;
-          text-align: center;
-          font-size: 13px;
-          font-weight: 700;
-          text-decoration: none;
-          transition: all 0.3s;
-        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(30,58,138,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
-          👥<br>User Management
+        <a href="admin.html" style="padding: 16px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(30,58,138,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          <i class="fa-solid fa-users" style="font-size:20px;margin-bottom:6px;display:block;"></i>User Management
         </a>
-        <a href="assign.html" style="
-          padding: 16px;
-          background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
-          color: white;
-          border-radius: 12px;
-          text-align: center;
-          font-size: 13px;
-          font-weight: 700;
-          text-decoration: none;
-          transition: all 0.3s;
-        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(99,102,241,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
-          🔗<br>Assign Cases
+        <a href="assign.html" style="padding: 16px; background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(99,102,241,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          <i class="fa-solid fa-link" style="font-size:20px;margin-bottom:6px;display:block;"></i>Assign Cases
         </a>
-        <a href="evaluations.html" style="
-          padding: 16px;
-          background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
-          color: white;
-          border-radius: 12px;
-          text-align: center;
-          font-size: 13px;
-          font-weight: 700;
-          text-decoration: none;
-          transition: all 0.3s;
-        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(168,85,247,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
-          📊<br>Evaluations
+        <a href="evaluations.html" style="padding: 16px; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(168,85,247,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          <i class="fa-solid fa-chart-column" style="font-size:20px;margin-bottom:6px;display:block;"></i>Evaluations
         </a>
       </div>
     </section>
@@ -382,6 +359,7 @@
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>lucide.createIcons();</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="../js/dashboard.js"></script>
 <script>
   document.body.classList.add(`role-${localStorage.getItem("userRole") || "investigator"}`);

@@ -125,7 +125,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
     <nav class="menu">
@@ -284,7 +284,7 @@ async function loadCases() {
       showCaseInfo(preId);
     }
   } catch (err) {
-    sel.innerHTML = `<option value="">⚠ Failed to load: ${err.message}</option>`;
+    sel.innerHTML = `<option value="">Failed to load: ${err.message}</option>`;
   }
 }
 
@@ -349,7 +349,7 @@ document.getElementById("btnSave").addEventListener("click", async () => {
     document.getElementById("notesInput").value = "";
 
   } catch (err) {
-    showBanner(`⚠ Failed to save: ${err.message}`, "error");
+    showBanner(`Failed to save: ${err.message}`, "error");
   } finally {
     btn.disabled = false;
     btn.innerHTML = `<i data-lucide="save"></i> Save Outcome`;

@@ -65,14 +65,16 @@ function renderStars(containerId, fieldName, defaultValue = 0) {
   for (let i = 1; i <= 5; i++) {
     const star = document.createElement("span");
     star.className  = `star ${i <= defaultValue ? "filled" : ""}`;
-    star.textContent = "★";
+    star.innerHTML = '<i class="fa-regular fa-star"></i>';
     star.dataset.value = i;
 
     // On click: update hidden input and re-render filled stars
     star.addEventListener("click", () => {
       document.getElementById(fieldName).value = i;
       container.querySelectorAll(".star").forEach((s, idx) => {
-        s.classList.toggle("filled", idx < i);
+        const filled = idx < i;
+        s.classList.toggle("filled", filled);
+        s.innerHTML = filled ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
       });
     });
     container.appendChild(star);
@@ -254,7 +256,8 @@ async function loadEvaluationsList() {
       // Look up investigator name from our loaded list
       const inv  = investigators.find(i => String(i.id) === String(e.investigator_id));
       const name = inv ? (inv.full_name || inv.email) : e.investigator_id;
-      const stars = "★".repeat(e.rating_overall || 0) + "☆".repeat(5 - (e.rating_overall || 0));
+      const stars = ('<i class="fa-solid fa-star"></i>').repeat(e.rating_overall || 0)
+            + ('<i class="fa-regular fa-star"></i>').repeat(5 - (e.rating_overall || 0));
       return `
         <div class="eval-card">
           <div class="eval-header">

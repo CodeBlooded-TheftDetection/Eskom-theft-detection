@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     html, body, .layout, .main { height: 100%; }
 
@@ -140,20 +141,14 @@
 </head>
 <body>
 
-  <div id="map" style="height:500px; border-radius:12px;"></div>
-
-  <input id="addressSearch" type="text" placeholder="Search address…">
-<div id="searchResults"></div>
-<button id="btnPlaceMarker">Place Marker</button>
-<button id="btnLoadCases">Load Cases from Database</button>
-<div id="mapStatus"></div>
+  <!-- map UI will render inside the layout below; removed duplicate top map and controls -->
 
 <div class="layout">
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
     <nav class="menu">
@@ -198,12 +193,12 @@
         <!-- 1. Address search (geocodes using Nominatim) -->
         <input
           type="text"
-          id="addressInput"
+          id="addressSearch"
           placeholder="Search address (e.g. 123 Vilakazi Street, Soweto)…"
           autocomplete="off"
         />
         <!-- Autocomplete suggestions dropdown -->
-        <div id="suggestions"></div>
+        <div id="searchResults"></div>
 
         <!-- 2. Link to an existing case -->
         <select id="caseSelect" style="max-width:260px;">
@@ -211,8 +206,8 @@
         </select>
 
         <!-- 3. Place marker at searched address -->
-        <button class="btn-map btn-blue" id="btnPlace">
-          <i data-lucide="map-pin"></i> Place Marker
+        <button class="btn-map btn-blue" id="btnPlaceMarker">
+          <i class="fa-solid fa-map-pin"></i> Place Marker
         </button>
 
         <!-- 4. Remove ALL markers the user placed manually
@@ -223,7 +218,7 @@
 
         <!-- 5. Load all case markers from the DB -->
         <button class="btn-map btn-outline" id="btnLoadCases">
-          <i data-lucide="refresh-cw"></i> Load Cases from DB
+          <i class="fa-solid fa-arrows-rotate"></i> Load Cases from DB
         </button>
 
       </div>

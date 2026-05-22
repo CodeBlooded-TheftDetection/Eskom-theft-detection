@@ -65,8 +65,8 @@ async function loadInvestigators() {
             <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#0f1a3e;">${name}</p>
             <p style="margin:0 0 4px;font-size:12px;color:#6b7280;">${inv.email} | Code: ${badge}</p>
             <div style="display:flex;gap:8px;font-size:11.5px;color:#374151;">
-              <span>📋 Assigned: <strong>${inv.assigned || 0}</strong></span>
-              <span>✅ Resolved: <strong>${inv.resolved || 0}</strong></span>
+              <span><i class="fa-solid fa-clipboard-list" style="margin-right:6px;color:inherit;"></i>Assigned: <strong>${inv.assigned || 0}</strong></span>
+              <span><i class="fa-solid fa-circle-check" style="margin-right:6px;color:inherit;"></i>Resolved: <strong>${inv.resolved || 0}</strong></span>
             </div>
           </div>
           <span style="font-size:11px;padding:3px 8px;border-radius:6px;font-weight:700;
