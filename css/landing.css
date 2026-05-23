@@ -89,12 +89,19 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.5);
     z-index: 1000;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 30px rgba(30, 58, 138, 0.05);
     transition: all var(--transition-base);
+}
+
+.navbar.scrolled {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 40px rgba(30, 58, 138, 0.12);
+    border-bottom: 1px solid var(--border-light);
+    padding: 0.75rem 0;
 }
 
 .nav-container {
@@ -161,6 +168,16 @@ body {
 
 .nav-links a:hover::after {
     width: 100%;
+}
+
+.nav-links a.active {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.nav-links a.active::after {
+    width: 100%;
+    background: linear-gradient(90deg, var(--primary-blue), var(--primary-green-light));
 }
 
 .nav-cta {
@@ -987,8 +1004,170 @@ body {
     }
 }
 
+/* ── VIDEO SHOWCASE SECTION ───────────────────────────────────────── */
+.video-showcase {
+    padding: 6rem 2rem;
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.08), rgba(6, 95, 70, 0.08));
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.video-showcase::before {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    top: -150px;
+    left: -200px;
+    pointer-events: none;
+}
+
+.video-showcase::after {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    bottom: -100px;
+    right: -150px;
+    pointer-events: none;
+}
+
+.video-showcase-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.video-wrapper {
+    margin-top: 3rem;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.video-frame {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: var(--bg-dark);
+    box-shadow: 0 20px 60px rgba(30, 58, 138, 0.25);
+    border: 1px solid rgba(226, 232, 240, 0.3);
+    backdrop-filter: blur(10px);
+    transition: all var(--transition-slow);
+}
+
+.video-frame:hover {
+    box-shadow: 0 30px 80px rgba(30, 58, 138, 0.35);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateY(-8px);
+}
+
+.video-frame iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: var(--radius-2xl);
+}
+
+/* Smooth scale animation on load */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.video-frame {
+    animation: scaleIn 0.8s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideRight {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 /* ── RESPONSIVE DESIGN ────────────────────────────────────────────── */
-@media (max-width: 1024px) {
     .hero-content {
         grid-template-columns: 1fr;
         gap: 3rem;
@@ -1068,6 +1247,18 @@ body {
 
     .roles-grid {
         grid-template-columns: 1fr;
+    }
+
+    .video-showcase {
+        padding: 3rem 1rem;
+    }
+
+    .video-frame {
+        border-radius: var(--radius-lg);
+    }
+
+    .video-frame iframe {
+        border-radius: var(--radius-lg);
     }
 
     .section-header h2 {
