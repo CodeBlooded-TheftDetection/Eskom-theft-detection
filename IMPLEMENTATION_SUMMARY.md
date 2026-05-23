@@ -86,10 +86,10 @@ Your Eskom Electricity Theft Detection Dashboard project now features **TWO beau
 
 ## 🎨 Dashboard Details
 
-### **DASHBOARD 1: Admin/Commander/Investigator Dashboard**
+### **DASHBOARD 1: Admin/Investigator Dashboard**
 **File:** `pages/dashboard.html`
 **Color:** Deep Blue (#1e3a8a, #3b82f6)
-**Users:** Admin, Commander, Investigator
+**Users:** Admin, Investigator
 
 #### Features:
 - ✅ Role-based content visibility
@@ -366,7 +366,7 @@ pages/
 ├── record.html
 ├── assign.html
 ├── evaluations.html
-├── commander.html
+<!-- commander.html removed — functionality consolidated into dashboard.html -->
 ├── admin.html
 └── resolved.html
 

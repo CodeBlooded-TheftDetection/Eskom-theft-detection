@@ -163,7 +163,7 @@ Admin Dashboard:
 ├── Quick Admin Actions
 └── Alert: High-Risk Cases
 
-Commander Dashboard:
+Commander view (consolidated into `dashboard.html`):
 ├── Operational Navigation
 ├── Assigned Cases Stats
 ├── All Cases (Read Access)

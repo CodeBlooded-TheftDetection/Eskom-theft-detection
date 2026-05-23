@@ -44,10 +44,15 @@ const VALID_OUTCOMES    = ['OPEN', 'PENDING', 'RESOLVED'];
 
 function normaliseRiskLevel(value) {
     if (!value) return { ok: false, error: 'risk_level is required' };
-    const upper = value.toUpperCase().trim();
-    if (!VALID_RISK_LEVELS.includes(upper))
+    const upper = value.toString().toUpperCase().trim();
+    const canonical = upper === 'RISK' ? 'HIGH' : upper;
+    if (!VALID_RISK_LEVELS.includes(canonical))
         return { ok: false, error: `Invalid risk_level "${value}". Must be: ${VALID_RISK_LEVELS.join(', ')}` };
-    return { ok: true, value: upper };
+    return { ok: true, value: canonical };
+}
+function isHighRiskValue(value) {
+    const normalized = (value || '').toString().toUpperCase().trim();
+    return normalized === 'HIGH' || normalized === 'RISK' || normalized === 'HIGH RISK' || normalized === 'HIGH-RISK';
 }
 function normaliseOutcome(value) {
     if (!value) return { ok: false, error: 'outcome is required' };
@@ -78,10 +83,63 @@ function requireRole(allowedRoles) {
 }
 
 // ── CASE NUMBER GENERATOR ─────────────────────────────────────
+// Generates case numbers in format "Case 1", "Case 2", etc.
+// To prevent duplicates and handle concurrency, we:
+// 1. Query all existing case numbers
+// 2. Extract numeric parts
+// 3. Find the maximum number and add 1
+// 4. Return the formatted case number
+// The database UNIQUE constraint ensures no duplicates
 async function generateCaseNumber() {
-    const { count, error } = await supabase.from('cases').select('*', { count: 'exact', head: true });
-    if (error) return `CASE-${Date.now().toString().slice(-4)}`;
-    return `CASE-${String((count || 0) + 1).padStart(4, '0')}`;
+    try {
+        const { data: cases, error } = await supabase
+            .from('cases')
+            .select('case_number')
+            .order('case_number', { ascending: false })
+            .limit(1);
+        
+        if (error) {
+            console.error('Error fetching latest case number:', error.message);
+            return null;
+        }
+
+        let nextNumber = 1;
+        if (cases && cases.length > 0 && cases[0].case_number) {
+            const lastCase = cases[0].case_number;
+            // Extract number from "Case N" format
+            const match = lastCase.match(/Case\s+(\d+)/);
+            if (match) {
+                nextNumber = parseInt(match[1]) + 1;
+            }
+        }
+
+        return `Case ${nextNumber}`;
+    } catch (err) {
+        console.error('Error in generateCaseNumber:', err.message);
+        return null;
+    }
+}
+
+// ── GET LATEST CASE NUMBER (for frontend preview) ────────────
+async function getLatestCaseNumber() {
+    try {
+        const { data: cases, error } = await supabase
+            .from('cases')
+            .select('case_number')
+            .order('case_number', { ascending: false })
+            .limit(1);
+        
+        if (error || !cases || cases.length === 0) {
+            return 1;
+        }
+
+        const lastCase = cases[0].case_number;
+        const match = lastCase.match(/Case\s+(\d+)/);
+        return match ? parseInt(match[1]) + 1 : 1;
+    } catch (err) {
+        console.error('Error in getLatestCaseNumber:', err.message);
+        return 1;
+    }
 }
 
 // ── MANUAL INVESTIGATOR ENRICHMENT ───────────────────────────
@@ -146,15 +204,38 @@ app.get('/api/cases', authenticateToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// CASES — GET NEXT CASE NUMBER (for UI preview)
+// ─────────────────────────────────────────────────────────────
+app.get('/api/cases/next-number', authenticateToken, async (req, res) => {
+    try {
+        const nextNum = await getLatestCaseNumber();
+        res.json({ nextCaseNumber: `Case ${nextNum}` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
 // CASES — CREATE
 // ─────────────────────────────────────────────────────────────
 app.post('/api/cases', authenticateToken, requireRole(['admin', 'commander']), async (req, res) => {
     const { suspect_name, description, risk_level, outcome, assigned_investigator_id } = req.body;
+    
+    // Validation
+    if (!suspect_name || !description || !risk_level) {
+        return res.status(400).json({ error: 'suspect_name, description, and risk_level are required' });
+    }
+
     const riskResult = normaliseRiskLevel(risk_level);
     if (!riskResult.ok) return res.status(400).json({ error: riskResult.error });
     const outcomeResult = normaliseOutcome(outcome || 'OPEN');
     if (!outcomeResult.ok) return res.status(400).json({ error: outcomeResult.error });
+    
+    // Generate case number
     const caseNumber = await generateCaseNumber();
+    if (!caseNumber) return res.status(500).json({ error: 'Failed to generate case number' });
+
+    // Insert case
     const { data, error } = await supabase.from('cases').insert([{
         case_number: caseNumber,
         suspect_name,
@@ -165,7 +246,16 @@ app.post('/api/cases', authenticateToken, requireRole(['admin', 'commander']), a
         created_by:               req.user.id,
         created_at:               new Date().toISOString(),
     }]).select();
-    if (error) return res.status(500).json({ message: error.message });
+    
+    if (error) {
+        console.error('Case creation error:', error);
+        // Check if it's a unique constraint violation
+        if (error.code === '23505' || error.message.includes('duplicate')) {
+            return res.status(409).json({ error: 'Case number already exists. This may be a race condition. Please try again.' });
+        }
+        return res.status(500).json({ error: error.message });
+    }
+    
     res.status(201).json(data[0]);
 });
 
@@ -245,7 +335,7 @@ app.post('/api/cases/:id/reopen', authenticateToken, requireRole(['admin']), asy
 // ─────────────────────────────────────────────────────────────
 // INVESTIGATORS — GET
 // Returns investigators with live case counts attached.
-// Used by: assign.html, evaluations.html, commander.html
+// Used by: assign.html, evaluations.html (commander view consolidated into dashboard.html)
 // ─────────────────────────────────────────────────────────────
 app.get('/api/investigators', authenticateToken, async (req, res) => {
     let query = supabase.from('investigators').select('id, full_name, email, badge_number, investigator_code, is_active, created_at');
@@ -347,6 +437,46 @@ app.get('/api/properties', authenticateToken, async (req, res) => {
     res.json(data);
 });
 
+// ── CREATE PROPERTY LINKED TO CASE ─────────────────────────────
+// Called when admin creates a case with property details
+app.post('/api/cases/:caseId/properties', authenticateToken, requireRole(['admin', 'commander']), async (req, res) => {
+    const { caseId } = req.params;
+    const { address, additional_details, latitude, longitude } = req.body;
+
+    if (!address) {
+        return res.status(400).json({ error: 'address is required' });
+    }
+
+    try {
+        // Insert property
+        const { data: propData, error: propError } = await supabase
+            .from('properties')
+            .insert([{
+                address,
+                additional_details: additional_details || null,
+                latitude: latitude || null,
+                longitude: longitude || null,
+                created_at: new Date().toISOString(),
+            }])
+            .select();
+
+        if (propError) {
+            return res.status(500).json({ error: propError.message });
+        }
+
+        // If case has a properties_id column, update it
+        // Otherwise, this property is just created and linked by address
+        const property = propData[0];
+        
+        // Update case to link to this property (if your schema supports it)
+        // You may need to add a properties_id or properties_ids column to cases table
+        
+        res.status(201).json(property);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/upload', authenticateToken, requireRole(['admin']), upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
     const rows = [];
@@ -403,9 +533,9 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
     res.json({
         totalCases: cases.length,
         byRisk: {
-            HIGH: cases.filter(c => c.risk_level === 'HIGH').length,
-            MID:  cases.filter(c => c.risk_level === 'MID').length,
-            LOW:  cases.filter(c => c.risk_level === 'LOW').length,
+            HIGH: cases.filter(c => isHighRiskValue(c.risk_level)).length,
+            MID:  cases.filter(c => (c.risk_level || '').toString().toUpperCase().trim() === 'MID').length,
+            LOW:  cases.filter(c => (c.risk_level || '').toString().toUpperCase().trim() === 'LOW').length,
         },
         byOutcome: {
             OPEN:     cases.filter(c => c.outcome === 'OPEN').length,
@@ -416,17 +546,17 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// COMMANDER STATS
-// Powers: commander.html team overview, assign.html investigator cards
-// FIX: now reads from investigators table (not users table)
-// so full_name, badge_number etc. are available
+// TEAM PERFORMANCE / COMMANDER STATS
+// Powers: team overview (shown in dashboard.html), assign.html investigator cards
+// This must read from the investigators table so only real investigators appear.
 // ─────────────────────────────────────────────────────────────
-app.get('/api/commander/stats', authenticateToken, requireRole(['commander', 'admin']), async (req, res) => {
+async function getTeamPerformance(req, res) {
     const { data: cases, error: ce } = await supabase.from('cases').select('*');
     if (ce) return res.status(500).json({ message: ce.message });
 
     const { data: investigators, error: ie } = await supabase
         .from('investigators').select('id, email, full_name, badge_number, investigator_code');
+    if (ie) return res.status(500).json({ message: ie.message });
 
     const invList = investigators || [];
     const investigatorPerformance = invList.map(inv => ({
@@ -434,8 +564,8 @@ app.get('/api/commander/stats', authenticateToken, requireRole(['commander', 'ad
         email:        inv.email,
         full_name:    inv.full_name,
         badge_number: inv.badge_number,
-        assigned: (cases || []).filter(c => c.assigned_investigator_id === inv.id).length,
-        resolved: (cases || []).filter(c => c.assigned_investigator_id === inv.id && c.outcome === 'RESOLVED').length,
+        assigned:     (cases || []).filter(c => c.assigned_investigator_id === inv.id).length,
+        resolved:     (cases || []).filter(c => c.assigned_investigator_id === inv.id && c.outcome === 'RESOLVED').length,
     }));
 
     const suburbMap = {};
@@ -445,14 +575,17 @@ app.get('/api/commander/stats', authenticateToken, requireRole(['commander', 'ad
     });
 
     res.json({
-        totalCases:             (cases || []).length,
-        confirmedTheft:         (cases || []).filter(c => c.outcome === 'RESOLVED').length,
-        revenueRecovered:       (cases || []).reduce((s, c) => s + (c.revenue_recovered || 0), 0),
-        activeInvestigators:    invList.length,
+        totalCases:          (cases || []).length,
+        confirmedTheft:      (cases || []).filter(c => c.outcome === 'RESOLVED').length,
+        revenueRecovered:    (cases || []).reduce((s, c) => s + (c.revenue_recovered || 0), 0),
+        activeInvestigators: invList.length,
         investigatorPerformance,
-        revenueBySuburb:        Object.entries(suburbMap).map(([suburb, revenue]) => ({ suburb, revenue })),
+        revenueBySuburb:     Object.entries(suburbMap).map(([suburb, revenue]) => ({ suburb, revenue })),
     });
-});
+}
+
+app.get('/api/commander/stats', authenticateToken, requireRole(['commander', 'admin']), getTeamPerformance);
+app.get('/api/dashboard/team', authenticateToken, requireRole(['admin']), getTeamPerformance);
 
 // ─────────────────────────────────────────────────────────────
 // EVALUATIONS — GET

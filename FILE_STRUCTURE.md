@@ -80,8 +80,7 @@ pages/
 ├── evaluations.html
 │   └── Investigator performance evaluations
 │
-├── commander.html
-│   └── Commander statistics
+<!-- commander.html removed — consolidated into dashboard.html -->
 │
 ├── admin.html
 │   └── User management

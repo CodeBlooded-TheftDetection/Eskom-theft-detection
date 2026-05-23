@@ -213,7 +213,7 @@
 - ✅ Full navigation access
 - ✅ User management link
 
-### **Commander Dashboard Features**
+### **Commander View (consolidated into dashboard.html)**
 - ✅ Operational statistics
 - ✅ All cases visibility
 - ✅ Team performance dashboard

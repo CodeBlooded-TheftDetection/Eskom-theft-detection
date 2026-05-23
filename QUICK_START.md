@@ -101,7 +101,7 @@ Role:     🔍 Field Investigator
 
 ---
 
-### **TEST 4: COMMANDER DASHBOARD** (Blue Theme)
+### **TEST 4: COMMANDER VIEW (consolidated into dashboard.html)** (Blue Theme)
 
 **Login Credentials:**
 ```
