@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     html,body,.layout,.main{height:100%;}
     .main{display:flex;flex-direction:column;overflow:hidden;}
@@ -21,10 +20,9 @@
     .form-row select:focus,.form-row textarea:focus,.form-row input:focus{outline:none;border-color:#2563eb;background:#fff;}
     .form-row textarea{resize:vertical;min-height:80px;}
     /* Stars */
-    .stars-row{display:flex;gap:6px;margin-top:6px;}
-    .star{cursor:pointer;transition:color .15s;display:inline-flex;align-items:center;}
-    .star i{font-size:20px;color:#d1d5db;transition:color .12s;}
-    .star.filled i, .star:hover i{color:#f59e0b;}
+    .stars-row{display:flex;gap:4px;margin-top:4px;}
+    .star{font-size:24px;cursor:pointer;color:#d1d5db;transition:color .15s;}
+    .star.filled,.star:hover{color:#f59e0b;}
     /* Submit button */
     .btn-submit{width:100%;padding:13px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;}
     .btn-submit:hover{background:#1d4ed8;}
@@ -62,7 +60,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div class="logo-icon">⚡</div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
     <nav class="menu" id="sidebarMenu">
@@ -88,7 +86,7 @@
         <!-- LEFT: FORM -->
         <div>
           <div class="card">
-            <h3><i class="fa-solid fa-clipboard-list" style="margin-right:8px;color:#2563eb;"></i>New Evaluation</h3>
+            <h3>📋 New Evaluation</h3>
 
             <div class="form-row">
               <label>Investigator *</label>
@@ -169,7 +167,7 @@
         <!-- RIGHT: LIST -->
         <div>
           <div class="card">
-            <h3><i class="fa-solid fa-folder-open" style="margin-right:8px;color:#2563eb;"></i>Previous Evaluations</h3>
+            <h3>📁 Previous Evaluations</h3>
             <div class="search-bar">
               <input type="text" id="searchInput" placeholder="Search by investigator name…" oninput="filterEvals()">
             </div>
@@ -205,13 +203,10 @@ const authHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bear
     { href:'dashboard.html', icon:'layout-dashboard', label:'Main Dashboard' },
     { href:'cases.html',     icon:'file-text',        label:'Case Detail' },
     { href:'map.html',       icon:'map',              label:'Map View' },
-    { href:'report.html',    icon:'bar-chart-3',      label:'Report Screen' },
-    { href:'caseList.html',  icon:'list',             label:'Case List' },
-    { href:'resolved.html',  icon:'check-circle',     label:'Resolved Cases' },
     { href:'assign.html',    icon:'user-check',       label:'Assign Investigator' },
-    { href:'commander.html', icon:'bar-chart',        label:'Commander Dashboard' },
-    { href:'evaluations.html', icon:'star',           label:'Evaluations', active:true },
-    { href:'admin.html',     icon:'settings',         label:'User Management' },
+    { href:'resolved.html',  icon:'check-circle',     label:'Resolved Cases' },
+    { href:'caseList.html',  icon:'list',             label:'Case List' },
+    { href:'report.html',    icon:'bar-chart-3',      label:'Report Screen' },
   ];
   menu.innerHTML = `<p class="menu-title">NAVIGATION</p>` +
     items.map(i => `<a href="${i.href}" class="${i.active?'active':''}" style="display:flex;align-items:center;gap:10px;">
@@ -233,16 +228,10 @@ function renderStars(containerId, fieldId, value = 0) {
   for (let i = 1; i <= 5; i++) {
     const s = document.createElement('span');
     s.className   = 'star' + (i <= value ? ' filled' : '');
-    s.innerHTML = '<i class="fa-regular fa-star"></i>';
+    s.textContent = '★';
     s.addEventListener('click', () => {
       document.getElementById(fieldId).value = i;
-      // update each star's visual state
-      const stars = container.querySelectorAll('.star');
-      stars.forEach((st, idx) => {
-        const filled = idx < i;
-        st.classList.toggle('filled', filled);
-        st.innerHTML = filled ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
-      });
+      renderStars(containerId, fieldId, i);
     });
     container.appendChild(s);
   }
@@ -321,8 +310,7 @@ function renderEvals(evals) {
   list.innerHTML = evals.map(e => {
     const inv   = allInvestigators.find(i => String(i.id) === String(e.investigator_id));
     const name  = inv ? (inv.full_name || inv.email) : 'Unknown';
-    const stars = ( '<i class="fa-solid fa-star"></i>' ).repeat(e.rating_overall||0)
-          + ( '<i class="fa-regular fa-star"></i>' ).repeat(5-(e.rating_overall||0));
+    const stars = '★'.repeat(e.rating_overall||0) + '☆'.repeat(5-(e.rating_overall||0));
     const date  = e.evaluation_date ? new Date(e.evaluation_date).toLocaleDateString('en-ZA') : 'N/A';
     return `<div class="eval-card">
       <div class="eval-card-header">

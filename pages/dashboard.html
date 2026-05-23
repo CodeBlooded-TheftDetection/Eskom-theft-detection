@@ -6,15 +6,16 @@
   <title>Admin Dashboard — Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<<<<<<< Updated upstream
+=======
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Places API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4OWWhPrqkjlRMg3HYaAVvuHp5SK9ykqM&libraries=places"></script>
+>>>>>>> Stashed changes
   <style>
     /* ── ADMIN COLOR SCHEME ── */
     body.role-admin .topbar {
       background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-    }
-
-    body.role-commander .topbar {
-      background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
     }
 
     body.role-investigator .topbar {
@@ -161,6 +162,298 @@
       transition: all 0.3s;
     }
 
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 24px;
+      align-items: start;
+      width: 100%;
+    }
+
+    .dashboard-main-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .dashboard-sidebar {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      min-height: calc(100vh - 120px);
+      max-height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .dashboard-sidebar .sidebar-box {
+      background: #fff;
+      border: 2px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      height: 100%;
+    }
+
+    .quick-actions-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .quick-actions-stack a {
+      width: 100%;
+    }
+
+    .main {
+      overflow-y: auto;
+    }
+
+    #casesContainer,
+    #teamContainer {
+      display: grid;
+      gap: 14px;
+      max-height: 760px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .case-card {
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .case-card-info {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .case-card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+      margin-bottom: 0;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .case-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .case-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      letter-spacing: 0.02em;
+    }
+
+    .case-tag.high { background: #fee2e2; color: #991b1b; }
+    .case-tag.mid  { background: #fef3c7; color: #92400e; }
+    .case-tag.low  { background: #dcfce7; color: #166534; }
+    .case-tag.open     { background: #dbeafe; color: #0c4a6e; }
+    .case-tag.pending  { background: #e0f2fe; color: #0369a1; }
+    .case-tag.resolved { background: #dcfce7; color: #166534; }
+
+    .case-card-subtitle {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0;
+      color: #111827;
+    }
+
+    .case-card-description {
+      margin: 0;
+      color: #475569;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .case-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: #64748b;
+      font-size: 13px;
+      align-items: center;
+    }
+
+    .case-card-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .case-card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .section-note {
+      padding: 10px 16px;
+      border-radius: 14px;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 13px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 12px;
+    }
+
+    .case-view-btn {
+      padding: 10px 18px;
+      background: #2563eb;
+      color: #ffffff;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    .case-view-btn:hover {
+      transform: translateY(-2px);
+      background: #1d4ed8;
+    }
+
+    .team-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    .team-row-info {
+      display: flex;
+      gap: 14px;
+      min-width: 0;
+      align-items: center;
+    }
+
+    .team-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #1d4ed8;
+      background: #eff6ff;
+      flex-shrink: 0;
+    }
+
+    .team-text {
+      min-width: 0;
+    }
+
+    .team-name {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .team-email {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: #64748b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .team-stats {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      text-align: right;
+    }
+
+    .team-stats span {
+      display: inline-flex;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .team-progress {
+      background: #e5e7eb;
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .team-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      transition: width 0.4s ease;
+    }
+
+    .team-rate {
+      font-size: 14px;
+      font-weight: 800;
+      color: #2563eb;
+      min-width: 52px;
+      text-align: right;
+    }
+
+    @media (max-width: 1024px) {
+      .case-card,
+      .team-row {
+        grid-template-columns: 1fr;
+      }
+
+      .case-card-actions,
+      .team-row {
+        justify-items: stretch;
+      }
+
+      .team-stats {
+        text-align: left;
+      }
+
+      .team-rate {
+        text-align: left;
+      }
+    }
+
     .card:hover {
       border-color: #cbd5e1;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -175,7 +468,45 @@
       padding: 20px;
     }
 
+    /* Modal Styles */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:flex;align-items:center;justify-content:center;overflow-y:auto;}
+    .modal{background:#fff;border-radius:14px;padding:28px 32px;width:500px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.18);margin:auto;}
+    .modal h3{font-size:17px;font-weight:700;margin-bottom:12px;}
+    .modal h4{font-size:13px;font-weight:600;color:#6b7280;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.05em;}
+    .modal-row{margin-bottom:14px;}
+    .modal-row label{display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:5px;text-transform:uppercase;}
+    .modal-row input,.modal-row select,.modal-row textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #e5e9f5;font-family:inherit;font-size:13.5px;box-sizing:border-box;}
+    .modal-row textarea{resize:vertical;min-height:80px;}
+    .modal-row input:focus,.modal-row select:focus,.modal-row textarea:focus{outline:none;border-color:#2563eb;}
+    .autocomplete-suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e5e9f5;border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:101;display:none;}
+    .autocomplete-suggestions.active{display:block;}
+    .autocomplete-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;}
+    .autocomplete-item:hover{background:#f8fafc;}
+    .autocomplete-item-address{font-weight:600;color:#0f1a3e;}
+    .autocomplete-item-city{font-size:12px;color:#6b7280;}
+    .case-number-preview{background:#f0f4ff;padding:12px;border-radius:8px;margin-bottom:16px;border-left:4px solid #2563eb;display:none;}
+    .case-number-preview.active{display:block;}
+    .case-number-preview p{font-size:12px;color:#6b7280;margin:0 0 4px;}
+    .case-number-preview .number{font-size:18px;font-weight:700;color:#2563eb;font-family:'DM Mono',monospace;margin:0;}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;}
+    .modal-status{font-size:13px;margin-top:10px;padding:10px;border-radius:8px;display:none;}
+    .modal-status.success{background:#dcfce7;color:#15803d;} .modal-status.error{background:#fee2e2;color:#b91c1c;}
+    .relative{position:relative;}
+    .btn-create-case{padding:12px 20px;background: linear-gradient(135deg, #16a34a 0%, #10b981 100%);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .3s;}
+    .btn-create-case:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(22,163,74,0.3);}
+    .btn-create-case:disabled{opacity:.5;cursor:not-allowed;}
+
     @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-sidebar {
+        position: static;
+        min-height: auto;
+        max-height: none;
+      }
+
       .stat-card {
         flex-direction: column;
         align-items: center;
@@ -226,8 +557,11 @@
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
-      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+      <div class="logo-icon">⚡</div>
+      <div>
+        <h2>Eskom</h2>
+        <p>Theft Detection</p>
+      </div>
     </div>
 
     <nav class="menu" id="sidebarMenu">
@@ -260,22 +594,100 @@
       ">…</div>
     </header>
 
-    <!-- High Risk Alert -->
-    <div id="alertBanner" style="padding: 0 20px; padding-top: 20px;"></div>
+    <div class="dashboard-grid">
+      <div class="dashboard-main-column">
+        <!-- High Risk Alert -->
+        <div id="alertBanner" style="padding: 0 20px; padding-top: 20px;"></div>
 
+<<<<<<< Updated upstream
     <!-- Key Metrics -->
     <section class="cards" id="statsGrid">
       <div class="stat-card">
-        <div class="stat-icon blue"><i class="fa-solid fa-chart-simple" style="font-size:20px;color:#2563eb"></i></div>
+        <div class="stat-icon blue">📊</div>
         <div class="stat-content">
           <h4>Total Cases</h4>
           <h2 id="statTotal">0</h2>
           <p>In the system</p>
+=======
+        <!-- Key Metrics -->
+        <section class="cards" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-chart-simple" style="font-size:20px;color:#2563eb"></i></div>
+            <div class="stat-content">
+              <h4>Total Cases</h4>
+              <h2 id="statTotal">0</h2>
+              <p>In the system</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="fa-solid fa-bell" style="font-size:20px;color:#dc2626"></i></div>
+            <div class="stat-content">
+              <h4>High Risk</h4>
+              <h2 id="statHigh">0</h2>
+              <p>Urgent attention</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon orange"><i class="fa-solid fa-triangle-exclamation" style="font-size:18px;color:#f59e0b"></i></div>
+            <div class="stat-content">
+              <h4>In Progress</h4>
+              <h2 id="statOpen">0</h2>
+              <p>Active investigations</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fa-solid fa-circle-check" style="font-size:18px;color:#16a34a"></i></div>
+            <div class="stat-content">
+              <h4>Resolved</h4>
+              <h2 id="statResolved">0</h2>
+              <p>Closed this month</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-chart-line" style="font-size:20px;color:#2563eb"></i></div>
+            <div class="stat-content">
+              <h4>Trends</h4>
+              <div style="max-width:100%;min-height:240px;">
+                <canvas id="adminChart" style="width:100%;height:240px;min-height:240px;"></canvas>
+              </div>
+              <p style="margin-top:10px;color:#475569;font-size:13px;">Recent case distribution by risk level</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Cases Section -->
+        <div class="section-header">
+          <h2>Recent Cases</h2>
+          <a href="caseList.html">View All →</a>
+>>>>>>> Stashed changes
         </div>
+
+        <section class="content" id="casesSection">
+          <div id="casesContainer">
+            <p style="color:#6b7280; padding: 20px; text-align: center;">Loading cases…</p>
+          </div>
+        </section>
+
+        <!-- Team Performance (Admin only) -->
+        <div class="section-header" data-roles="admin">
+          <h2>Team Performance</h2>
+          <a href="evaluations.html">View Evaluations →</a>
+        </div>
+
+        <section class="content" data-roles="admin" id="teamSection">
+          <div id="teamContainer">
+            <p style="color:#6b7280; padding: 20px; text-align: center;">Loading team data…</p>
+          </div>
+        </section>
       </div>
 
+<<<<<<< Updated upstream
       <div class="stat-card">
-        <div class="stat-icon red"><i class="fa-solid fa-bell" style="font-size:20px;color:#dc2626"></i></div>
+        <div class="stat-icon red">🚨</div>
         <div class="stat-content">
           <h4>High Risk</h4>
           <h2 id="statHigh">0</h2>
@@ -284,7 +696,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon orange"><i class="fa-solid fa-triangle-exclamation" style="font-size:18px;color:#f59e0b"></i></div>
+        <div class="stat-icon orange">⚠️</div>
         <div class="stat-content">
           <h4>In Progress</h4>
           <h2 id="statOpen">0</h2>
@@ -293,20 +705,11 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon green"><i class="fa-solid fa-circle-check" style="font-size:18px;color:#16a34a"></i></div>
+        <div class="stat-icon green">✓</div>
         <div class="stat-content">
           <h4>Resolved</h4>
           <h2 id="statResolved">0</h2>
           <p>Closed this month</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon blue"><i class="fa-solid fa-chart-line" style="font-size:20px;color:#2563eb"></i></div>
-        <div class="stat-content">
-          <h4>Trends</h4>
-          <div style="max-width:420px;"><canvas id="adminChart" style="width:100%;height:120px;"></canvas></div>
-          <p style="margin-top:8px;color:#64748b;font-size:13px;">Recent case distribution by risk level</p>
         </div>
       </div>
     </section>
@@ -342,27 +745,334 @@
 
     <section class="content" data-roles="admin" style="padding: 0 20px 20px;">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-        <a href="admin.html" style="padding: 16px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(30,58,138,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
-          <i class="fa-solid fa-users" style="font-size:20px;margin-bottom:6px;display:block;"></i>User Management
+        <a href="admin.html" style="
+          padding: 16px;
+          background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+          color: white;
+          border-radius: 12px;
+          text-align: center;
+          font-size: 13px;
+          font-weight: 700;
+          text-decoration: none;
+          transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(30,58,138,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          👥<br>User Management
         </a>
-        <a href="assign.html" style="padding: 16px; background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(99,102,241,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
-          <i class="fa-solid fa-link" style="font-size:20px;margin-bottom:6px;display:block;"></i>Assign Cases
+        <a href="assign.html" style="
+          padding: 16px;
+          background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+          color: white;
+          border-radius: 12px;
+          text-align: center;
+          font-size: 13px;
+          font-weight: 700;
+          text-decoration: none;
+          transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(99,102,241,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          🔗<br>Assign Cases
         </a>
-        <a href="evaluations.html" style="padding: 16px; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(168,85,247,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
-          <i class="fa-solid fa-chart-column" style="font-size:20px;margin-bottom:6px;display:block;"></i>Evaluations
+        <a href="evaluations.html" style="
+          padding: 16px;
+          background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+          color: white;
+          border-radius: 12px;
+          text-align: center;
+          font-size: 13px;
+          font-weight: 700;
+          text-decoration: none;
+          transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(168,85,247,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          📊<br>Evaluations
         </a>
       </div>
     </section>
 
+=======
+      <aside class="dashboard-sidebar" data-roles="admin">
+        <div class="sidebar-box">
+          <div class="section-header" style="padding: 0;">
+            <h2>Quick Actions</h2>
+          </div>
+          <div class="quick-actions-stack">
+            <a href="admin.html" style="padding: 16px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(30,58,138,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+              <i class="fa-solid fa-users" style="font-size:20px;margin-bottom:6px;display:block;"></i>User Management
+            </a>
+            <a href="assign.html" style="padding: 16px; background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(99,102,241,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+              <i class="fa-solid fa-link" style="font-size:20px;margin-bottom:6px;display:block;"></i>Assign Cases
+            </a>
+            <a href="evaluations.html" style="padding: 16px; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(168,85,247,0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+              <i class="fa-solid fa-chart-column" style="font-size:20px;margin-bottom:6px;display:block;"></i>Evaluations
+            </a>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+>>>>>>> Stashed changes
   </main>
+</div>
+
+<!-- CREATE CASE MODAL -->
+<div class="modal-overlay" id="caseModalOverlay" style="display:none;" onclick="closeCaseModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>📋 Create New Case</h3>
+    <p style="font-size:12px;color:#6b7280;margin-bottom:16px;">Add a new case to the system with property details and address autocomplete</p>
+    
+    <!-- Case Number Preview -->
+    <div class="case-number-preview" id="caseNumberPreview">
+      <p>Auto-generated Case Number:</p>
+      <p class="number" id="previewCaseNumber">Case —</p>
+    </div>
+
+    <!-- Case Details Section -->
+    <h4>Case Details</h4>
+    
+    <div class="modal-row">
+      <label>Suspect Name *</label>
+      <input type="text" id="caseModalSuspectName" placeholder="Enter suspect full name">
+    </div>
+
+    <div class="modal-row">
+      <label>Description *</label>
+      <textarea id="caseModalDescription" placeholder="Provide details about the theft case..."></textarea>
+    </div>
+
+    <div class="modal-row">
+      <label>Risk Level *</label>
+      <select id="caseModalRiskLevel">
+        <option value="">— Select risk level —</option>
+        <option value="LOW">Low</option>
+        <option value="MID">Medium</option>
+        <option value="HIGH">High</option>
+      </select>
+    </div>
+
+    <!-- Property Details Section -->
+    <h4>Property Information</h4>
+    
+    <div class="modal-row relative">
+      <label>Property Address</label>
+      <input type="text" id="caseModalAddress" placeholder="Start typing address..." autocomplete="off">
+      <div class="autocomplete-suggestions" id="autocompleteList"></div>
+    </div>
+
+    <div class="modal-row">
+      <label>Additional Property Details</label>
+      <textarea id="caseModalPropertyDetails" placeholder="Notes about the property (e.g., location notes, access details)"></textarea>
+    </div>
+
+    <!-- Location Data (hidden) -->
+    <input type="hidden" id="caseModalLat">
+    <input type="hidden" id="caseModalLng">
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn-create-case" id="caseSaveBtn" onclick="saveCase()" style="flex:1;justify-content:center;">✔ Create Case</button>
+      <button style="flex:1;padding:10px;background:#f3f4f6;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;" onclick="closeCaseModal()">Cancel</button>
+    </div>
+    <div class="modal-status" id="caseModalStatus"></div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>lucide.createIcons();</script>
+<<<<<<< Updated upstream
+=======
+<script src="../js/sidebar.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+>>>>>>> Stashed changes
 <script src="../js/dashboard.js"></script>
 <script>
   document.body.classList.add(`role-${localStorage.getItem("userRole") || "investigator"}`);
+
+  // ── GOOGLE PLACES AUTOCOMPLETE ─────────────────────────────────
+  let autocompleteService = null;
+  let sessionToken = new google.maps.places.AutocompleteSessionToken();
+  let selectedPlace = null;
+  const token = localStorage.getItem('token');
+  const BASE_URL = 'http://localhost:3000';
+  const authHeaders = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
+
+  function initAutocomplete() {
+    if (typeof google !== 'undefined' && google.maps) {
+      autocompleteService = new google.maps.places.AutocompleteService();
+      const addressInput = document.getElementById('caseModalAddress');
+      
+      addressInput.addEventListener('input', async (e) => {
+        const value = e.target.value;
+        if (value.length < 2) {
+          document.getElementById('autocompleteList').classList.remove('active');
+          return;
+        }
+        
+        try {
+          const response = await autocompleteService.getPlacePredictions({
+            input: value,
+            sessionToken: sessionToken,
+            types: ['address'],
+            componentRestrictions: { country: 'za' }
+          });
+          displaySuggestions(response.predictions);
+        } catch (err) {
+          console.error('Autocomplete error:', err);
+        }
+      });
+
+      addressInput.addEventListener('blur', () => {
+        setTimeout(() => {
+          document.getElementById('autocompleteList').classList.remove('active');
+        }, 150);
+      });
+    }
+  }
+
+  function displaySuggestions(predictions) {
+    const list = document.getElementById('autocompleteList');
+    list.innerHTML = '';
+    
+    if (!predictions || predictions.length === 0) {
+      list.classList.remove('active');
+      return;
+    }
+
+    predictions.forEach((pred) => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.innerHTML = `
+        <div class="autocomplete-item-address">${pred.main_text}</div>
+        <div class="autocomplete-item-city">${pred.secondary_text || ''}</div>
+      `;
+      item.onclick = () => selectSuggestion(pred);
+      list.appendChild(item);
+    });
+
+    list.classList.add('active');
+  }
+
+  function selectSuggestion(prediction) {
+    document.getElementById('caseModalAddress').value = prediction.description;
+    document.getElementById('autocompleteList').classList.remove('active');
+    selectedPlace = prediction;
+    
+    if (typeof google !== 'undefined' && google.maps) {
+      const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+      placesService.getDetails({ placeId: prediction.place_id }, (place, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+          document.getElementById('caseModalLat').value = place.geometry.location.lat();
+          document.getElementById('caseModalLng').value = place.geometry.location.lng();
+        }
+      });
+    }
+  }
+
+  async function openCreateCaseModal() {
+    const userRole = (localStorage.getItem('userRole')||'').toLowerCase();
+    if (userRole !== 'admin' && userRole !== 'commander') {
+      alert('Only admins and commanders can create cases');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/cases/next-number`, { headers: authHeaders });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('previewCaseNumber').textContent = data.nextCaseNumber;
+        document.getElementById('caseNumberPreview').classList.add('active');
+      }
+    } catch (err) {
+      console.error('Error fetching next case number:', err);
+    }
+
+    document.getElementById('caseModalSuspectName').value = '';
+    document.getElementById('caseModalDescription').value = '';
+    document.getElementById('caseModalRiskLevel').value = '';
+    document.getElementById('caseModalAddress').value = '';
+    document.getElementById('caseModalPropertyDetails').value = '';
+    document.getElementById('caseModalLat').value = '';
+    document.getElementById('caseModalLng').value = '';
+    document.getElementById('caseModalStatus').style.display = 'none';
+    selectedPlace = null;
+
+    document.getElementById('caseModalOverlay').style.display = 'flex';
+    
+    if (!autocompleteService) {
+      setTimeout(initAutocomplete, 100);
+    }
+  }
+
+  function closeCaseModal(e) {
+    if (e && e.target !== document.getElementById('caseModalOverlay')) return;
+    document.getElementById('caseModalOverlay').style.display = 'none';
+  }
+
+  async function saveCase() {
+    const suspectName = document.getElementById('caseModalSuspectName').value.trim();
+    const description = document.getElementById('caseModalDescription').value.trim();
+    const riskLevel = document.getElementById('caseModalRiskLevel').value;
+    const address = document.getElementById('caseModalAddress').value.trim();
+    const propertyDetails = document.getElementById('caseModalPropertyDetails').value.trim();
+    const btn = document.getElementById('caseSaveBtn');
+
+    if (!suspectName) { showCaseStatus('Suspect name is required.', 'error'); return; }
+    if (!description) { showCaseStatus('Description is required.', 'error'); return; }
+    if (!riskLevel) { showCaseStatus('Risk level is required.', 'error'); return; }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Creating...';
+
+    try {
+      const caseRes = await fetch(`${BASE_URL}/api/cases`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({
+          suspect_name: suspectName,
+          description: description,
+          risk_level: riskLevel,
+          outcome: 'OPEN'
+        })
+      });
+
+      if (!caseRes.ok) {
+        const errData = await caseRes.json();
+        throw new Error(errData.error || 'Failed to create case');
+      }
+
+      const caseData = await caseRes.json();
+      const caseId = caseData.id;
+
+      if (address) {
+        await fetch(`${BASE_URL}/api/cases/${caseId}/properties`, {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({
+            address: address,
+            additional_details: propertyDetails || null,
+            latitude: document.getElementById('caseModalLat').value || null,
+            longitude: document.getElementById('caseModalLng').value || null
+          })
+        }).catch(err => console.error('Property creation warning:', err));
+      }
+
+      showCaseStatus(`✔ Case ${caseData.case_number} created successfully!`, 'success');
+      setTimeout(() => {
+        document.getElementById('caseModalOverlay').style.display = 'none';
+      }, 1500);
+    } catch (err) {
+      showCaseStatus(`❌ ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✔ Create Case';
+    }
+  }
+
+  function showCaseStatus(msg, type) {
+    const el = document.getElementById('caseModalStatus');
+    el.textContent = msg;
+    el.className = `modal-status ${type}`;
+    el.style.display = 'block';
+  }
+
+  initAutocomplete();
 </script>
 </body>
 </html>

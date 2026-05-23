@@ -3,182 +3,284 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Case Detail — Eskom Theft Detection</title>
+  <title>Cases — Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    .case-detail-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 28px 32px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      margin-bottom: 20px;
+    html, body, .layout, .main { min-height: 100%; }
+    .main { display: flex; flex-direction: column; overflow: hidden; }
+    .list-page { display: flex; flex-direction: column; gap: 20px; padding: 20px; flex: 1; overflow: hidden; }
+
+    .topbar {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      padding: 24px 32px;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .case-header-row {
+    .topbar h1 { margin-bottom: 6px; font-size: 26px; font-weight: 800; }
+    .topbar p { margin: 0; font-size: 14px; opacity: 0.95; }
+
+    .search-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 18px;
+      gap: 16px;
       flex-wrap: wrap;
-      gap: 12px;
     }
-    .case-number-label {
-      font-size: 22px;
-      font-weight: 700;
-      font-family: 'DM Mono', monospace, sans-serif;
-      color: #0f1a3e;
+    .search-input-wrap {
+      flex: 1;
+      min-width: 320px;
+      position: relative;
     }
-    .badges { display: flex; gap: 8px; flex-wrap: wrap; }
-    .info-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px 32px;
-      margin-top: 20px;
-      border-top: 1px solid #e5e9f5;
-      padding-top: 20px;
-    }
-    .info-field { display: flex; flex-direction: column; gap: 4px; }
-    .info-label { font-size: 12px; color: #6b7280; font-weight: 500; }
-    .info-value { font-size: 14px; font-weight: 600; color: #0f1a3e; }
-    .desc-block {
-      grid-column: 1 / span 2;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #6b7280;
-    }
-    .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
-    .case-list-selector {
-      background: #fff;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      margin-bottom: 20px;
-    }
-    .case-select-label { font-size: 13px; color: #6b7280; margin-bottom: 10px; display: block; }
-    #casePickerSelect {
+    .search-input {
       width: 100%;
-      padding: 11px 14px;
-      border-radius: 9px;
-      border: 1.5px solid #e5e9f5;
-      font-family: inherit;
+      padding: 14px 16px 14px 44px;
+      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      background: #ffffff;
+      color: #0f172a;
       font-size: 14px;
-      color: #0f1a3e;
-      background: #f8fafc;
-      cursor: pointer;
-    }
-    .action-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-    .btn-action {
-      padding: 10px 18px;
-      border-radius: 9px;
-      border: none;
       font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      transition: opacity 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .btn-action:hover { opacity: 0.85; }
-    .btn-blue   { background: #2563eb; color: #fff; }
-    .btn-green  { background: #16a34a; color: #fff; }
-    .btn-outline { background: #fff; color: #374151; border: 1.5px solid #e5e9f5; }
+    .search-input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 16px;
+      pointer-events: none;
+    }
+
+    .results-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #475569;
+      font-size: 13px;
+      min-width: 180px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .table-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      border-radius: 18px;
+      border: 1.5px solid #e2e8f0;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    thead th {
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: left;
+      padding: 16px 18px;
+      border-bottom: 1px solid #1f2937;
+      white-space: nowrap;
+    }
+    tbody tr {
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    tbody tr:hover {
+      background: #e2e8f0;
+      transform: translateY(-0.5px);
+    }
+    tbody td {
+      padding: 16px 18px;
+      font-size: 13px;
+      color: #334155;
+      vertical-align: middle;
+    }
+    .case-number-cell {
+      font-family: 'DM Mono', monospace, sans-serif;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+    .case-name-cell { max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .date-cell { white-space: nowrap; }
+    .action-cell { display: flex; gap: 8px; flex-wrap: wrap; }
+    .small-btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .small-btn-blue { background: #2563eb; color: #ffffff; }
+    .small-btn-outline { background: #ffffff; color: #0f172a; border: 1px solid #e2e8f0; }
+    .small-btn:hover { transform: translateY(-1px); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge.high { background: #fee2e2; color: #991b1b; }
+    .badge.mid  { background: #fef3c7; color: #92400e; }
+    .badge.low  { background: #dcfce7; color: #166534; }
+    .badge.open { background: #dbeafe; color: #0c4a6e; }
+    .badge.resolved { background: #dcfce7; color: #166534; }
+    .badge.pending { background: #f8d7f2; color: #9d174d; }
+
+    .state-row td { padding: 80px 20px; text-align: center; color: #64748b; }
+    .state-card {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: inherit;
+    }
+    .state-card i { font-size: 36px; opacity: 0.45; }
+    .state-card h3 { font-size: 18px; font-weight: 700; margin: 0; }
+    .state-card p { margin: 0; font-size: 13px; }
+
+    @media (max-width: 1024px) {
+      .topbar { padding: 18px 22px; }
+      .search-toolbar { flex-direction: column; align-items: stretch; }
+      .results-info { width: 100%; justify-content: center; }
+      table { min-width: 100%; }
+      .action-cell { justify-content: flex-start; }
+    }
+
+    @media (max-width: 768px) {
+      .list-page { padding: 16px; }
+      .topbar h1 { font-size: 22px; }
+      .search-input { padding: 14px 16px 14px 42px; }
+      thead th, tbody td { padding: 14px 12px; }
+      .search-input-wrap { min-width: 0; }
+    }
   </style>
 </head>
 <body>
 <div class="layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div class="logo-icon">⚡</div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
-    <nav class="menu">
-      <p class="menu-title">NAVIGATION</p>
-      <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Main Dashboard</a>
-      <!-- FIXED: "Case Detail" is now active, not "Main Dashboard" -->
-      <a href="cases.html" class="active"><i data-lucide="file-text"></i> Case Detail</a>
-      <a href="map.html"><i data-lucide="map"></i> Map View</a>
-      <a href="report.html"><i data-lucide="bar-chart-3"></i> Report Screen</a>
-      <a href="assign.html"><i data-lucide="user-check"></i> Assign Investigator</a>
-      <a href="record.html"><i data-lucide="clipboard-list"></i> Record Outcome</a>
-      <a href="caseList.html"><i data-lucide="list"></i> Case List</a>
-      <a href="commander.html"><i data-lucide="bar-chart"></i> Commander Dashboard</a>
-      <a href="resolved.html"><i data-lucide="check-circle"></i> Resolved Cases</a>
-      <a href="login.html" id="logoutLink"><i data-lucide="log-out"></i> Logout</a>
-    </nav>
+    <nav class="menu" id="sidebarMenu"></nav>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <header class="topbar">
       <div>
-        <h1>Case Detail &amp; Management</h1>
-        <p>Select a case below to view its full details</p>
+        <h1>Cases</h1>
+        <p>Search by case name or case number for fast access across large datasets.</p>
       </div>
     </header>
 
-    <div class="content" style="display:block; padding:20px; overflow-y:auto; flex:1;">
-
-      <!-- Case Selector — populated from the database -->
-      <div class="case-list-selector">
-        <span class="case-select-label">
-          Choose a case to view — all information is loaded live from the database
-        </span>
-        <select id="casePickerSelect">
-          <option value="">Loading cases from database…</option>
-        </select>
-      </div>
-
-      <!-- Case detail panel — empty until a case is selected -->
-      <div id="caseDetailPanel">
-        <div class="empty-state">
-          <h3>No case selected</h3>
-          <p>Use the dropdown above to select a case and view its details.</p>
+    <div class="list-page">
+      <div class="search-toolbar">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input id="searchInput" class="search-input" type="search" placeholder="Search by case name or case number…" autocomplete="off" aria-label="Search cases" />
         </div>
+        <div class="results-info" id="resultsInfo">Loading cases…</div>
       </div>
 
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Case Number</th>
+              <th>Case Name</th>
+              <th>Status</th>
+              <th>Risk Level</th>
+              <th>Date Created</th>
+            </tr>
+          </thead>
+          <tbody id="casesTableBody">
+            <tr class="state-row">
+              <td colspan="5">
+                <div class="state-card">
+                  <i class="fa-solid fa-hourglass-start"></i>
+                  <h3>Loading cases…</h3>
+                  <p>Please wait while case data is fetched.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
 
-<script>lucide.createIcons();</script>
+<script src="../js/sidebar.js"></script>
 <script>
-// ── AUTH GUARD ────────────────────────────────────────────────
-const token    = localStorage.getItem("token");
-const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
-if (!token) window.location.href = "login.html";
+  const token = localStorage.getItem("token");
+  const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
+  if (!token) window.location.href = "login.html";
 
-const BASE_URL     = "http://localhost:3000";
-const authHeaders  = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+  const BASE_URL = "http://localhost:3000";
+  const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
 
-let allCases = [];
+  let allCases = [];
+  let filteredCases = [];
+  let searchTimer = null;
 
-// ── LOGOUT ────────────────────────────────────────────────────
-document.getElementById("logoutLink").addEventListener("click", e => {
-  e.preventDefault(); localStorage.clear(); window.location.href = "login.html";
-});
+  function buildSidebar() {
+    const menu = document.getElementById("sidebarMenu");
+    if (!menu) return;
+    const items = [
+      { href: 'dashboard.html', icon: 'layout-dashboard', label: 'Main Dashboard', roles: ['admin','investigator'] },
+      { href: 'cases.html', icon: 'list', label: 'Cases', roles: ['admin','investigator'] },
+      { href: 'caseList.html', icon: 'file-text', label: 'Case List', roles: ['admin','investigator'] },
+      { href: 'map.html', icon: 'map', label: 'Map View', roles: ['admin','investigator'] },
+      { href: 'resolved.html', icon: 'check-circle', label: 'Resolved Cases', roles: ['admin'] },
+      { href: 'assign.html', icon: 'user-check', label: 'Assign Investigator', roles: ['admin'] }
+    ];
 
-// ── LOAD CASES INTO DROPDOWN ─────────────────────────────────
-// FIXED: no hardcoded cases — all data comes from the API.
-// The 500 error from the previous version was caused by the Supabase
-// join on investigators table which may not exist yet. This version
-// uses a simple SELECT * fallback.
-async function loadCasePicker() {
-  const picker = document.getElementById("casePickerSelect");
-  try {
-    const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
-    if (res.status === 401 || res.status === 403) {
-      localStorage.clear(); window.location.href = "login.html"; return;
-    }
-    const raw = await res.json();
-    allCases  = Array.isArray(raw) ? raw : [];
+    const current = window.location.pathname.split('/').pop();
+    menu.innerHTML = `<p class="menu-title">NAVIGATION</p>` + items.filter(item => item.roles.includes(userRole)).map(item =>
+      `<a href="${item.href}" class="${item.href === current ? 'active' : ''}"><i data-lucide="${item.icon}"></i>${item.label}</a>`
+    ).join('') + `
+      <a href="login.html" onclick="localStorage.clear()"><i data-lucide="log-out"></i>Logout</a>`;
 
+<<<<<<< Updated upstream
     picker.innerHTML = `<option value="">— Select a case —</option>`;
     allCases.forEach(c => {
       const displayId = c.case_number || c.id;
@@ -197,138 +299,100 @@ async function loadCasePicker() {
       renderCaseDetail(preselected);
     }
   } catch (err) {
-    picker.innerHTML = `<option value="">Could not load cases: ${err.message}</option>`;
+    picker.innerHTML = `<option value="">⚠ Could not load cases: ${err.message}</option>`;
+=======
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+>>>>>>> Stashed changes
   }
-}
 
-// ── RENDER SELECTED CASE DETAIL ───────────────────────────────
-function renderCaseDetail(caseId) {
-  const panel = document.getElementById("caseDetailPanel");
-  const c     = allCases.find(x => String(x.id) === String(caseId));
-  if (!c) { panel.innerHTML = "<p style='padding:20px; color:#6b7280;'>Case not found.</p>"; return; }
+  async function loadCases() {
+    const body = document.getElementById('casesTableBody');
+    const info = document.getElementById('resultsInfo');
 
-  const displayId  = c.case_number || c.id;
-  const riskClass  = (c.risk_level || "low").toLowerCase();
-  const riskLabel  = (c.risk_level || "LOW").toUpperCase();
-  const statClass  = (c.outcome || "open").toLowerCase();
-  const statLabel  = (c.outcome || "OPEN").toUpperCase();
-  const invName    = c.investigators
-    ? (c.investigators.full_name || c.investigators.email)
-    : (c.assigned_to ? "Assigned" : "Unassigned");
+    body.innerHTML = `<tr class="state-row"><td colspan="6"><div class="state-card"><i class="fa-solid fa-hourglass-start"></i><h3>Loading cases…</h3><p>Please wait while case data is fetched.</p></div></td></tr>`;
+    info.textContent = 'Loading cases…';
 
-  // Only show management buttons for admin/commander
-  const isManager  = userRole === "admin" || userRole === "commander";
-  const mgmtHTML   = isManager ? `
-    <button class="btn-action btn-blue" onclick="goAssign('${c.id}')">
-      <i data-lucide="user-check"></i> Assign Investigator
-    </button>
-    <button class="btn-action btn-green" onclick="markResolved('${c.id}')">
-      <i data-lucide="check-circle"></i> Mark Resolved
-    </button>
-  ` : "";
+    try {
+      const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+        return;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
 
-  panel.innerHTML = `
-    <div class="case-detail-card">
-      <div class="case-header-row">
-        <span class="case-number-label">${displayId}</span>
-        <div class="badges">
-          <span class="badge ${riskClass}">${riskLabel} RISK</span>
-          <span class="badge ${statClass}">${statLabel}</span>
-        </div>
-      </div>
-
-      <div class="info-grid-2">
-        <div class="info-field">
-          <span class="info-label">Suspect Name</span>
-          <span class="info-value">${c.suspect_name || "Not recorded"}</span>
-        </div>
-        <div class="info-field">
-          <span class="info-label">Date Reported</span>
-          <span class="info-value">${c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A"}</span>
-        </div>
-        <div class="info-field">
-          <span class="info-label">Risk Level</span>
-          <span class="info-value">${riskLabel}</span>
-        </div>
-        <div class="info-field">
-          <span class="info-label">Status / Outcome</span>
-          <span class="info-value">${statLabel}</span>
-        </div>
-        <div class="info-field">
-          <span class="info-label">Assigned Investigator</span>
-          <span class="info-value">${invName}</span>
-        </div>
-        <div class="info-field">
-          <span class="info-label">Date Resolved</span>
-          <span class="info-value">${c.resolved_at ? new Date(c.resolved_at).toLocaleDateString("en-ZA") : "Not yet resolved"}</span>
-        </div>
-        <div class="info-field desc-block">
-          <span class="info-label">Description</span>
-          <span class="info-value" style="font-weight:400; line-height:1.6;">${c.description || "No description recorded"}</span>
-        </div>
-        ${c.notes ? `
-        <div class="info-field desc-block">
-          <span class="info-label">Investigation Notes</span>
-          <span class="info-value" style="font-weight:400; line-height:1.6;">${c.notes}</span>
-        </div>` : ""}
-      </div>
-
-      <div class="action-row">
-        ${mgmtHTML}
-        <button class="btn-action btn-blue" onclick="goReport('${c.id}')">
-          <i data-lucide="file-text"></i> Generate Report
-        </button>
-        <button class="btn-action btn-outline" onclick="document.getElementById('casePickerSelect').value='';">
-          <i data-lucide="arrow-left"></i> Back
-        </button>
-      </div>
-    </div>
-  `;
-  lucide.createIcons();
-}
-
-// ── DROPDOWN CHANGE HANDLER ───────────────────────────────────
-document.getElementById("casePickerSelect").addEventListener("change", function () {
-  if (this.value) renderCaseDetail(this.value);
-  else document.getElementById("caseDetailPanel").innerHTML = `
-    <div class="empty-state">
-      <h3>No case selected</h3>
-      <p>Use the dropdown above to select a case and view its details.</p>
-    </div>`;
-});
-
-// ── ACTIONS ───────────────────────────────────────────────────
-function goAssign(caseId) {
-  localStorage.setItem("preselectedCaseId", caseId);
-  window.location.href = "assign.html";
-}
-
-async function markResolved(caseId) {
-  if (!confirm("Mark this case as RESOLVED?")) return;
-  try {
-    const res = await fetch(`${BASE_URL}/api/cases/${caseId}`, {
-      method: "PUT",
-      headers: authHeaders,
-      body: JSON.stringify({ outcome: "RESOLVED", resolved_at: new Date().toISOString() })
-    });
-    if (res.ok) {
-      alert("Case marked as RESOLVED.");
-      await loadCasePicker();
-      renderCaseDetail(caseId);
-    } else {
-      const err = await res.json();
-      alert(`Failed: ${err.message || "Unknown error"}`);
+      const data = await res.json();
+      allCases = Array.isArray(data) ? data : [];
+      filteredCases = [...allCases];
+      renderResults();
+    } catch (err) {
+      body.innerHTML = `<tr class="state-row"><td colspan="5"><div class="state-card"><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i><h3>Failed to load cases</h3><p>${err.message || 'Unable to fetch case data.'}</p></div></td></tr>`;
+      info.textContent = 'Error loading cases';
+      console.error('Case search load error:', err);
     }
-  } catch (err) { alert(`Error: ${err.message}`); }
-}
+  }
 
-function goReport(caseId) {
-  localStorage.setItem("selectedCaseId", caseId);
-  window.location.href = "report.html";
-}
+  function normalizeSearchQuery(value) {
+    return (value || '').trim().toLowerCase();
+  }
 
-// ── INIT ──────────────────────────────────────────────────────
-loadCasePicker();
+  function filterCases(query) {
+    if (!query) return [...allCases];
+    return allCases.filter(c => {
+      const caseNumber = (c.case_number || '').toLowerCase();
+      const caseName = (c.suspect_name || '').toLowerCase();
+      return caseNumber.includes(query) || caseName.includes(query);
+    });
+  }
+
+  function renderResults() {
+    const body = document.getElementById('casesTableBody');
+    const info = document.getElementById('resultsInfo');
+    const total = filteredCases.length;
+
+    if (!total) {
+      body.innerHTML = `<tr class="state-row"><td colspan="5"><div class="state-card"><i class="fa-solid fa-magnifying-glass"></i><h3>No results found</h3><p>Try another case name or case number.</p></div></td></tr>`;
+      info.textContent = '0 cases found';
+      return;
+    }
+
+    info.textContent = `${total} case${total !== 1 ? 's' : ''} found`;
+
+    body.innerHTML = filteredCases.map(c => {
+      const displayId = c.case_number || c.id || 'N/A';
+      const caseName = c.suspect_name || 'Unknown case';
+      const status = (c.outcome || 'OPEN').toUpperCase();
+      const risk = (c.risk_level || 'LOW').toUpperCase();
+      const created = c.created_at ? new Date(c.created_at).toLocaleDateString('en-ZA') : 'N/A';
+      const viewTarget = `record.html?id=${encodeURIComponent(c.id)}`;
+      const statClass = status === 'RESOLVED' ? 'resolved' : status === 'PENDING' ? 'pending' : 'open';
+      const riskClass = risk === 'HIGH' ? 'high' : risk === 'MID' ? 'mid' : 'low';
+
+      return `
+        <tr>
+          <td class="case-number-cell">${displayId}</td>
+          <td class="case-name-cell">${caseName}</td>
+          <td><span class="badge ${statClass}">${status}</span></td>
+          <td><span class="badge ${riskClass}">${risk}</span></td>
+          <td class="date-cell">${created}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function handleSearchInput() {
+    const query = normalizeSearchQuery(document.getElementById('searchInput').value);
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      filteredCases = filterCases(query);
+      renderResults();
+    }, 300);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    buildSidebar();
+    document.getElementById('searchInput').addEventListener('input', handleSearchInput);
+    loadCases();
+  });
 </script>
 </body>
 </html>

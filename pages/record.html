@@ -125,22 +125,10 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div class="logo-icon">⚡</div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
-    <nav class="menu">
-      <p class="menu-title">NAVIGATION</p>
-      <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Main Dashboard</a>
-      <a href="cases.html"><i data-lucide="file-text"></i> Case Detail</a>
-      <a href="map.html"><i data-lucide="map"></i> Map View</a>
-      <a href="report.html"><i data-lucide="bar-chart-3"></i> Report Screen</a>
-      <a href="assign.html"><i data-lucide="user-check"></i> Assign Investigator</a>
-      <a href="record.html" class="active"><i data-lucide="clipboard-list"></i> Record Outcome</a>
-      <a href="caseList.html"><i data-lucide="list"></i> Case List</a>
-      <a href="commander.html"><i data-lucide="bar-chart"></i> Commander Dashboard</a>
-      <a href="resolved.html"><i data-lucide="check-circle"></i> Resolved Cases</a>
-      <a href="login.html" id="logoutLink"><i data-lucide="log-out"></i> Logout</a>
-    </nav>
+    <nav class="menu" id="sidebarMenu"></nav>
   </aside>
 
   <!-- MAIN -->
@@ -284,7 +272,7 @@ async function loadCases() {
       showCaseInfo(preId);
     }
   } catch (err) {
-    sel.innerHTML = `<option value="">Failed to load: ${err.message}</option>`;
+    sel.innerHTML = `<option value="">⚠ Failed to load: ${err.message}</option>`;
   }
 }
 
@@ -349,7 +337,7 @@ document.getElementById("btnSave").addEventListener("click", async () => {
     document.getElementById("notesInput").value = "";
 
   } catch (err) {
-    showBanner(`Failed to save: ${err.message}`, "error");
+    showBanner(`⚠ Failed to save: ${err.message}`, "error");
   } finally {
     btn.disabled = false;
     btn.innerHTML = `<i data-lucide="save"></i> Save Outcome`;
@@ -373,5 +361,6 @@ function showBanner(msg, type) {
 // ── INIT ──────────────────────────────────────────────────────
 loadCases();
 </script>
+<script src="../js/sidebar.js"></script>
 </body>
 </html>

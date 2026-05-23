@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     html, body, .layout, .main { height: 100%; }
 
@@ -141,29 +140,23 @@
 </head>
 <body>
 
-  <!-- map UI will render inside the layout below; removed duplicate top map and controls -->
+  <div id="map" style="height:500px; border-radius:12px;"></div>
+
+  <input id="addressSearch" type="text" placeholder="Search address…">
+<div id="searchResults"></div>
+<button id="btnPlaceMarker">Place Marker</button>
+<button id="btnLoadCases">Load Cases from Database</button>
+<div id="mapStatus"></div>
 
 <div class="layout">
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div class="logo-icon">⚡</div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
-    <nav class="menu">
-      <p class="menu-title">NAVIGATION</p>
-      <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Main Dashboard</a>
-      <a href="cases.html"><i data-lucide="file-text"></i> Case Detail</a>
-      <a href="map.html" class="active"><i data-lucide="map"></i> Map View</a>
-      <a href="report.html"><i data-lucide="bar-chart-3"></i> Report Screen</a>
-      <a href="assign.html"><i data-lucide="user-check"></i> Assign Investigator</a>
-      <a href="record.html"><i data-lucide="clipboard-list"></i> Record Outcome</a>
-      <a href="caseList.html"><i data-lucide="list"></i> Case List</a>
-      <a href="commander.html"><i data-lucide="bar-chart"></i> Commander Dashboard</a>
-      <a href="resolved.html"><i data-lucide="check-circle"></i> Resolved Cases</a>
-      <a href="login.html" id="logoutLink"><i data-lucide="log-out"></i> Logout</a>
-    </nav>
+    <nav class="menu" id="sidebarMenu"></nav>
   </aside>
 
   <!-- MAIN -->
@@ -193,12 +186,12 @@
         <!-- 1. Address search (geocodes using Nominatim) -->
         <input
           type="text"
-          id="addressSearch"
+          id="addressInput"
           placeholder="Search address (e.g. 123 Vilakazi Street, Soweto)…"
           autocomplete="off"
         />
         <!-- Autocomplete suggestions dropdown -->
-        <div id="searchResults"></div>
+        <div id="suggestions"></div>
 
         <!-- 2. Link to an existing case -->
         <select id="caseSelect" style="max-width:260px;">
@@ -206,8 +199,8 @@
         </select>
 
         <!-- 3. Place marker at searched address -->
-        <button class="btn-map btn-blue" id="btnPlaceMarker">
-          <i class="fa-solid fa-map-pin"></i> Place Marker
+        <button class="btn-map btn-blue" id="btnPlace">
+          <i data-lucide="map-pin"></i> Place Marker
         </button>
 
         <!-- 4. Remove ALL markers the user placed manually
@@ -218,7 +211,7 @@
 
         <!-- 5. Load all case markers from the DB -->
         <button class="btn-map btn-outline" id="btnLoadCases">
-          <i class="fa-solid fa-arrows-rotate"></i> Load Cases from DB
+          <i data-lucide="refresh-cw"></i> Load Cases from DB
         </button>
 
       </div>
@@ -230,6 +223,7 @@
   </main>
 </div>
 
+<script src="../js/sidebar.js"></script>
 <script src="../js/map.js"></script>
 </body>
 </html>
