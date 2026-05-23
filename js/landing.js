@@ -102,13 +102,15 @@ let lastScrollY = 0;
 window.addEventListener('scroll', () => {
     const scrollY = window.scrollY;
 
-    if (scrollY > 50) {
-        navbar.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
-        navbar.style.borderBottomColor = 'rgba(226, 232, 240, 0.5)';
+    // Add scrolled class for enhanced styling
+    if (scrollY > 100) {
+        navbar.classList.add('scrolled');
     } else {
-        navbar.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
-        navbar.style.borderBottomColor = 'rgb(226, 232, 240)';
+        navbar.classList.remove('scrolled');
     }
+
+    // Update active navigation link based on scroll position
+    updateActiveNavLink();
 
     // Hide navbar on scroll down, show on scroll up
     if (scrollY > lastScrollY && scrollY > 500) {
@@ -121,7 +123,29 @@ window.addEventListener('scroll', () => {
 });
 
 // Smooth transition for navbar
-navbar.style.transition = 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-bottom-color 0.3s ease-in-out';
+navbar.style.transition = 'transform 0.3s ease-in-out, background 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-bottom-color 0.3s ease-in-out';
+
+// ── ACTIVE NAVIGATION LINK HIGHLIGHTING ────────────────────────────
+function updateActiveNavLink() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+    let currentSection = '';
+
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 150;
+        const sectionHeight = section.clientHeight;
+        if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+            currentSection = section.getAttribute('id');
+        }
+    });
+
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSection}`) {
+            link.classList.add('active');
+        }
+    });
+}
 
 // ── FLOATING ELEMENTS PARALLAX ──────────────────────────────────────
 const floatingCards = document.querySelectorAll('.floating-card');
