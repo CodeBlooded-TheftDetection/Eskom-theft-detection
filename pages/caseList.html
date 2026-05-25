@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case List — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ── Full-screen layout ──────────────────────────────────── */
+    html, body, .layout, .main { height: 100%; }
+    .main { display: flex; flex-direction: column; overflow: hidden; }
+    .list-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0 20px 20px; }
+
+    /* ── Topbar ──────────────────────────────────────────────── */
+    .topbar {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .topbar p {
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
+    /* ── Toolbar ─────────────────────────────────────────────── */
+    .list-toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 18px 0;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 11px 16px 11px 40px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      font-family: inherit;
+      font-size: 14px;
+      background: #ffffff;
+      color: #0f172a;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .filter-select {
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      font-family: inherit;
+      font-size: 13px;
+      background: #ffffff;
+      color: #0f172a;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .toolbar-count {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 8px 14px;
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+
+    /* ── Loading Spinner ─────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Table ───────────────────────────────────────────────── */
+    .table-wrap {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    thead th {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 16px 18px;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 2px solid #1e40af;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: all 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+      box-shadow: inset 0 0 0 1px #e2e8f0;
+    }
+
+    tbody td {
+      padding: 15px 18px;
+      font-size: 13.5px;
+      color: #374151;
+      vertical-align: middle;
+    }
+
+    .case-num-cell {
+      font-family: 'DM Mono', monospace, sans-serif;
+      font-weight: 700;
+      color: #0f1a3e;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 11px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .badge.high {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge.mid {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge.low {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.open {
+      background: #dbeafe;
+      color: #0c4a6e;
+    }
+
+    .badge.pending {
+      background: #fce7f3;
+      color: #9d174d;
+    }
+
+    .badge.resolved {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .action-cell {
+      white-space: nowrap;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tbl-btn {
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tbl-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .tbl-btn-blue {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .tbl-btn-blue:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .tbl-btn-green {
+      background: #16a34a;
+      color: #ffffff;
+    }
+
+    .tbl-btn-green:hover {
+      background: #15803d;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+
+    /* ── Empty / Loading / Error States ──────────────────────── */
+    .state-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #6b7280;
+      gap: 12px;
+    }
+
+    .state-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+
+    .state-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .state-subtitle {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .state-row td {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    /* ── Pagination ──────────────────────────────────────────── */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0 0;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .page-info {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .page-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1.5px solid #e2e8f0;
+      background: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #374151;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .page-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+      font-weight: 700;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .topbar {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .topbar h1 {
+        font-size: 20px;
+      }
+
+      .list-toolbar {
+        gap: 10px;
+      }
+
+      .toolbar-group {
+        width: 100%;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      table {
+        min-width: 100%;
+      }
+
+      .action-cell {
+        flex-direction: column;
+      }
+
+      .tbl-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .list-body {
+        padding: 0 12px 12px;
+      }
+
+      .list-toolbar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 0;
+      }
+
+      .toolbar-group {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .filter-select {
+        width: 100%;
+      }
+
+      .toolbar-count {
+        width: 100%;
+        text-align: center;
+      }
+
+      table {
+        font-size: 12px;
+        min-width: 100%;
+      }
+
+      tbody td {
+        padding: 12px;
+      }
+
+      .action-cell {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .tbl-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu" id="sidebarMenu">
+      <p style="opacity:0.5; font-size:12px; padding:12px;">Loading…</p>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Case List</h1>
+        <p>All active and pending cases — search, filter, and manage investigations</p>
+      </div>
+    </header>
+
+    <div class="list-body">
+
+      <!-- Toolbar: search + filters -->
+      <div class="list-toolbar">
+        <div class="toolbar-group">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search by case #, suspect, or description…"/>
+          </div>
+          <select id="filterRisk" class="filter-select">
+            <option value="">All Risk Levels</option>
+            <option value="HIGH">High Risk</option>
+            <option value="MID">Medium Risk</option>
+            <option value="LOW">Low Risk</option>
+          </select>
+          <select id="filterStatus" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="OPEN">Open</option>
+            <option value="PENDING">Pending</option>
+          </select>
+        </div>
+        <span class="toolbar-count"><span class="spinner"></span>Loading…</span>
+      </div>
+
+      <!-- Case table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Case #</th>
+              <th>Suspect</th>
+              <th>Risk Level</th>
+              <th>Status</th>
+              <th>Investigator</th>
+              <th>Reported</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="caseTableBody">
+            <tr class="state-row">
+              <td colspan="7">
+                <div class="state-container">
+                  <i class="fa-solid fa-hourglass-start state-icon"></i>
+                  <div class="state-title">Loading cases…</div>
+                  <div class="state-subtitle">Fetching data from the database</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <span class="page-info" id="pageInfo">—</span>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+  lucide.createIcons();
+
+  // ── AUTH ──────────────────────────────────────────────────────
+  const token    = localStorage.getItem("token");
+  const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
+  const userId   = localStorage.getItem("userId");
+
+  if (!token) window.location.href = "login.html";
+
+  const BASE_URL    = "http://localhost:3000";
+  const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+
+  // ── SIDEBAR ───────────────────────────────────────────────────
+  function buildSidebar() {
+    const menu = document.getElementById("sidebarMenu");
+    if (!menu) return;
+
+    const allItems = [
+      { href: "dashboard.html",   icon: "layout-dashboard", label: "Main Dashboard",      roles: ["admin","investigator"] },
+  
+      { href: "map.html",         icon: "map",              label: "Map View",             roles: ["admin","investigator"] },
+      { href: "report.html",      icon: "bar-chart-3",      label: "Report Screen",        roles: ["admin"] },
+      { href: "record.html",      icon: "edit-3",           label: "Record Outcome",       roles: ["investigator"] },
+      { href: "caseList.html",    icon: "list",             label: "Case List",            roles: ["admin","investigator"] },
+      { href: "resolved.html",    icon: "check-circle",     label: "Resolved Cases",       roles: ["admin"] },
+      { href: "assign.html",      icon: "user-check",       label: "Assign Investigator",  roles: ["admin"] },
+    ];
+
+    const currentPage = window.location.pathname.split('/').pop();
+    const visible     = allItems.filter(i => i.roles.includes(userRole));
+
+    menu.innerHTML = `<p class="menu-title">NAVIGATION</p>` +
+      visible.map(i =>
+        `<a href="${i.href}" class="${i.href === currentPage ? 'active' : ''}"
+            style="display:flex;align-items:center;gap:10px;">
+          <i data-lucide="${i.icon}"></i>${i.label}
+        </a>`
+      ).join('') +
+      `<a href="login.html" style="display:flex;align-items:center;gap:10px;"
+          onclick="localStorage.clear()">
+        <i data-lucide="log-out"></i>Logout
+      </a>`;
+
+    if (typeof lucide !== "undefined") lucide.createIcons();
+  }
+
+  buildSidebar();
+
+  // ── PAGINATION STATE ──────────────────────────────────────────
+  const PAGE_SIZE  = 15;
+  let   currentPage = 1;
+  let   allCases    = [];
+  let   filtered    = [];
+
+  // ── LOAD CASES ────────────────────────────────────────────────
+  // NOTE: caseList.html shows ACTIVE cases (OPEN + PENDING) only.
+  // Resolved cases are on resolved.html.
+  async function loadCases() {
+    const tbody = document.getElementById("caseTableBody");
+    const countLabel = document.querySelector(".toolbar-count");
+
+    try {
+      countLabel.innerHTML = '<span class="spinner"></span>Loading…';
+      
+      const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+      
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        window.location.href = "login.html";
+        return;
+      }
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+      const raw = await res.json();
+      
+      // Show only OPEN and PENDING — resolved.html has RESOLVED cases
+      allCases = (Array.isArray(raw) ? raw : [])
+        .filter(c => (c.outcome || "OPEN").toUpperCase() !== "RESOLVED");
+
+      if (allCases.length === 0) {
+        countLabel.textContent = "No cases found";
+        tbody.innerHTML = `<tr class="state-row"><td colspan="7">
+          <div class="state-container">
+            <i class="fa-solid fa-inbox state-icon"></i>
+            <div class="state-title">No active cases</div>
+            <div class="state-subtitle">All cases are resolved or no cases exist yet</div>
+          </div>
+        </td></tr>`;
+        renderPagination(0, 0);
+        return;
+      }
+
+      applyFilters();
+    } catch (err) {
+      console.error("Failed to load cases:", err);
+      countLabel.textContent = "Error loading";
+      tbody.innerHTML = `<tr class="state-row"><td colspan="7">
+        <div class="state-container">
+          <i class="fa-solid fa-exclamation-circle state-icon" style="color:#dc2626;"></i>
+          <div class="state-title">Failed to load cases</div>
+          <div class="state-subtitle">${err.message || "An unexpected error occurred"}</div>
+        </div>
+      </td></tr>`;
+      renderPagination(0, 0);
+    }
+  }
+
+  // ── FILTER + SEARCH ───────────────────────────────────────────
+  function applyFilters() {
+    const search     = document.getElementById("searchInput").value.toLowerCase();
+    const riskFilter = document.getElementById("filterRisk").value;
+    const statFilter = document.getElementById("filterStatus").value;
+
+    filtered = allCases.filter(c => {
+      const matchSearch = !search ||
+        (c.case_number || "").toLowerCase().includes(search) ||
+        (c.suspect_name || "").toLowerCase().includes(search) ||
+        (c.description  || "").toLowerCase().includes(search);
+      const matchRisk   = !riskFilter || (c.risk_level || "").toUpperCase() === riskFilter;
+      const matchStatus = !statFilter || (c.outcome    || "").toUpperCase() === statFilter;
+      return matchSearch && matchRisk && matchStatus;
+    });
+
+    currentPage = 1;
+    renderTable();
+  }
+
+  // ── RENDER TABLE ──────────────────────────────────────────────
+  function renderTable() {
+    const tbody     = document.getElementById("caseTableBody");
+    const countLabel = document.querySelector(".toolbar-count");
+    const total     = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    currentPage     = Math.min(currentPage, totalPages);
+
+    const start   = (currentPage - 1) * PAGE_SIZE;
+    const pageCases = filtered.slice(start, start + PAGE_SIZE);
+
+    countLabel.textContent = `${total} case${total !== 1 ? "s" : ""} found`;
+
+    if (!pageCases.length) {
+      tbody.innerHTML = `<tr class="state-row"><td colspan="7">
+        <div class="state-container">
+          <i class="fa-solid fa-magnifying-glass state-icon"></i>
+          <div class="state-title">No results</div>
+          <div class="state-subtitle">Try adjusting your search or filters</div>
+        </div>
+      </td></tr>`;
+      renderPagination(0, 0);
+      return;
+    }
+
+    const isManager = userRole === "admin" || userRole === "commander";
+
+    tbody.innerHTML = pageCases.map(c => {
+      const displayId  = c.case_number || c.id || "N/A";
+      const risk = (c.risk_level || "low").toUpperCase();
+      const riskClass  = risk === "HIGH" ? "high" : risk === "MID" ? "mid" : "low";
+      const stat = (c.outcome || "open").toUpperCase();
+      const statClass  = stat === "RESOLVED" ? "resolved" : stat === "PENDING" ? "pending" : "open";
+      const invName    = c.investigators
+        ? (c.investigators.full_name || c.investigators.email || "Unassigned")
+        : "Unassigned";
+      const reported   = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A";
+
+      const actionButtons = isManager
+        ? `
+          <button class="tbl-btn tbl-btn-blue" onclick="viewDetail('${c.id}')" title="View full details">
+            <i class="fa-solid fa-eye"></i> Detail
+          </button>
+          <button class="tbl-btn tbl-btn-blue" onclick="goRecord('${c.id}')" title="Record outcome">
+            <i class="fa-solid fa-pen"></i> Update
+          </button>
+          <button class="tbl-btn tbl-btn-green" onclick="goReport('${c.id}')" title="Generate report">
+            <i class="fa-solid fa-file-pdf"></i> Report
+          </button>
+        `
+        : `<button class="tbl-btn tbl-btn-blue" onclick="viewDetail('${c.id}')" title="View case details">
+            <i class="fa-solid fa-eye"></i> View
+          </button>`;
+
+      return `
+        <tr>
+          <td class="case-num-cell">${displayId}</td>
+          <td>${c.suspect_name || "Unknown Suspect"}</td>
+          <td><span class="badge ${riskClass}">${riskClass === "high" ? "High" : riskClass === "mid" ? "Medium" : "Low"}</span></td>
+          <td><span class="badge ${statClass}">${stat}</span></td>
+          <td>${invName}</td>
+          <td>${reported}</td>
+          <td class="action-cell">${actionButtons}</td>
+        </tr>`;
+    }).join("");
+
+    renderPagination(currentPage, totalPages);
+    lucide.createIcons();
+  }
+
+  // ── PAGINATION ────────────────────────────────────────────────
+  function renderPagination(page, totalPages) {
+    document.getElementById("pageInfo").textContent =
+      totalPages > 0 ? `Page ${page} of ${totalPages}` : "—";
+
+    const btns = document.getElementById("pageBtns");
+    btns.innerHTML = "";
+
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement("button");
+    prev.className = "page-btn";
+    prev.innerHTML = '<i class="fa-solid fa-chevron-left"></i> Prev';
+    prev.disabled    = page <= 1;
+    prev.onclick = () => { currentPage--; renderTable(); };
+    btns.appendChild(prev);
+
+    const start = Math.max(1, page - 2);
+    const end   = Math.min(totalPages, start + 4);
+    for (let i = start; i <= end; i++) {
+      const b = document.createElement("button");
+      b.className  = `page-btn${i === page ? " active" : ""}`;
+      b.textContent = i;
+      b.onclick    = ((pg) => () => { currentPage = pg; renderTable(); })(i);
+      btns.appendChild(b);
+    }
+
+    const next = document.createElement("button");
+    next.className = "page-btn";
+    next.innerHTML = 'Next <i class="fa-solid fa-chevron-right"></i>';
+    next.disabled    = page >= totalPages;
+    next.onclick = () => { currentPage++; renderTable(); };
+    btns.appendChild(next);
+  }
+
+  // ── ACTIONS ───────────────────────────────────────────────────
+  function viewDetail(caseId) {
+    localStorage.setItem("preselectedCaseId", caseId);
+    window.location.href = "caseList.html";
+  }
+
+  function goRecord(caseId) {
+    localStorage.setItem("preselectedCaseId", caseId);
+    window.location.href = "record.html";
+  }
+
+  function goReport(caseId) {
+    localStorage.setItem("selectedCaseId", caseId);
+    window.location.href = "report.html";
+  }
+
+  // ── FILTER LISTENERS ──────────────────────────────────────────
+  document.getElementById("searchInput").addEventListener("input",  applyFilters);
+  document.getElementById("filterRisk").addEventListener("change",  applyFilters);
+  document.getElementById("filterStatus").addEventListener("change", applyFilters);
+
+  // ── INIT ──────────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", loadCases);
+</script>
+</body>
+</html>

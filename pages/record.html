@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Record Outcome — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .form-wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+    .form-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .form-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f1a3e;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e5e9f5;
+    }
+    .form-row { margin-bottom: 20px; }
+    .form-row label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    .form-row label span.required { color: #dc2626; }
+
+    /* All inputs styled the same for a clean, consistent look */
+    .form-row select,
+    .form-row textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 9px;
+      border: 1.5px solid #e5e9f5;
+      font-family: inherit;
+      font-size: 14px;
+      color: #0f1a3e;
+      background: #f8fafc;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-row select:focus,
+    .form-row textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      background: #fff;
+    }
+    .form-row textarea { resize: vertical; min-height: 90px; }
+
+    /* Read-only display of current case values */
+    .current-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .info-box {
+      background: #f0f7ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #1e40af;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .info-row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    .info-item { flex: 1; min-width: 120px; }
+    .info-item .info-label { font-size: 11px; color: #6b7280; font-weight: 600; }
+    .info-item .info-val   { font-size: 13px; font-weight: 700; color: #0f1a3e; margin-top: 2px; }
+
+    .hint { font-size: 11.5px; color: #9ca3af; margin-top: 5px; }
+    .action-row { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+    .btn {
+      padding: 12px 22px;
+      border-radius: 9px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover    { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-blue    { background: #2563eb; color: #fff; }
+    .btn-outline { background: #fff; color: #374151; border: 1.5px solid #d1d5db; }
+
+    .status-banner {
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 16px;
+      display: none;
+    }
+    .status-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .status-error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu" id="sidebarMenu"></nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Record Outcome</h1>
+        <p>Update a case status — all fields use dropdowns, nothing needs to be typed</p>
+      </div>
+    </header>
+
+    <div class="content" style="overflow-y:auto; display:block; padding:0;">
+      <div class="form-wrapper">
+
+        <div class="form-card">
+          <h3><i data-lucide="clipboard-list" style="vertical-align:middle; margin-right:6px;"></i>Record Case Outcome</h3>
+
+          <!-- STEP 1: Pick a case -->
+          <div class="form-row">
+            <label><i data-lucide="file-text"></i> Select Case <span class="required">*</span></label>
+            <select id="caseSelect">
+              <option value="">Loading cases…</option>
+            </select>
+            <p class="hint">All active cases are listed here. Select the one you are updating.</p>
+          </div>
+
+          <!-- Current case info box (shown after selection) -->
+          <div class="info-box" id="caseInfoBox">
+            <strong>Current case details:</strong>
+            <div class="info-row">
+              <div class="info-item">
+                <div class="info-label">Case Number</div>
+                <div class="info-val" id="infoNum">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Suspect</div>
+                <div class="info-val" id="infoSuspect">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Current Status</div>
+                <div class="info-val" id="infoStatus">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Risk Level</div>
+                <div class="info-val" id="infoRisk">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: New outcome — dropdown only, no typing -->
+          <div class="form-row">
+            <label><i data-lucide="check-circle"></i> New Outcome / Status <span class="required">*</span></label>
+            <select id="outcomeSelect">
+              <option value="">— Choose new status —</option>
+              <option value="OPEN">OPEN — Case is open and active</option>
+              <option value="PENDING">PENDING — Awaiting action or information</option>
+              <option value="RESOLVED">RESOLVED — Case has been concluded</option>
+            </select>
+            <p class="hint">You cannot type here — choose one of the three valid statuses.</p>
+          </div>
+
+          <!-- STEP 3: New risk level — dropdown only -->
+          <div class="form-row">
+            <label><i data-lucide="alert-triangle"></i> Update Risk Level</label>
+            <select id="riskSelect">
+              <option value="">— Keep current risk level —</option>
+              <option value="HIGH">HIGH — Immediate attention required</option>
+              <option value="MID">MID — Monitor closely</option>
+              <option value="LOW">LOW — Standard priority</option>
+            </select>
+            <p class="hint">Leave unchanged to keep the current risk level.</p>
+          </div>
+
+          <!-- STEP 4: Notes — the only free-text field -->
+          <div class="form-row">
+            <label><i data-lucide="message-square"></i> Investigation Notes</label>
+            <textarea
+              id="notesInput"
+              placeholder="Add notes about findings, evidence, actions taken, etc. (optional)"
+            ></textarea>
+            <p class="hint">Notes are appended to the case record. All other fields use dropdowns.</p>
+          </div>
+
+          <!-- Actions -->
+          <div class="action-row">
+            <button class="btn btn-blue" id="btnSave">
+              <i data-lucide="save"></i> Save Outcome
+            </button>
+            <button class="btn btn-outline" id="btnCancel">
+              <i data-lucide="x"></i> Cancel
+            </button>
+          </div>
+
+          <div class="status-banner" id="statusBanner"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ── AUTH ──────────────────────────────────────────────────────
+const token    = localStorage.getItem("token");
+const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
+if (!token) window.location.href = "login.html";
+
+const BASE_URL    = "http://localhost:3000";
+const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+
+document.getElementById("logoutLink").addEventListener("click", e => {
+  e.preventDefault(); localStorage.clear(); window.location.href = "login.html";
+});
+
+let allCases = [];
+
+// ── LOAD CASES ────────────────────────────────────────────────
+async function loadCases() {
+  const sel = document.getElementById("caseSelect");
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+    const raw = await res.json();
+    allCases  = Array.isArray(raw) ? raw : [];
+
+    sel.innerHTML = `<option value="">— Select a case to update —</option>`;
+    allCases.forEach(c => {
+      const displayId = c.case_number || c.id;
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `${displayId} — ${c.suspect_name || "Unknown"} [${(c.outcome || "OPEN").toUpperCase()}]`;
+      sel.appendChild(opt);
+    });
+
+    // Pre-select if navigated from cases page
+    const preId = localStorage.getItem("preselectedCaseId");
+    if (preId) {
+      sel.value = preId;
+      localStorage.removeItem("preselectedCaseId");
+      showCaseInfo(preId);
+    }
+  } catch (err) {
+    sel.innerHTML = `<option value="">Failed to load: ${err.message}</option>`;
+  }
+}
+
+// ── SHOW INFO BOX ─────────────────────────────────────────────
+function showCaseInfo(caseId) {
+  const c = allCases.find(x => String(x.id) === String(caseId));
+  if (!c) return;
+
+  document.getElementById("caseInfoBox").style.display = "block";
+  document.getElementById("infoNum").textContent     = c.case_number || c.id;
+  document.getElementById("infoSuspect").textContent = c.suspect_name || "Unknown";
+  document.getElementById("infoStatus").textContent  = (c.outcome || "OPEN").toUpperCase();
+  document.getElementById("infoRisk").textContent    = (c.risk_level || "LOW").toUpperCase();
+
+  // Pre-set dropdowns to current values
+  document.getElementById("outcomeSelect").value = c.outcome || "";
+  document.getElementById("riskSelect").value    = c.risk_level || "";
+}
+
+document.getElementById("caseSelect").addEventListener("change", function () {
+  if (this.value) showCaseInfo(this.value);
+  else document.getElementById("caseInfoBox").style.display = "none";
+});
+
+// ── SAVE ──────────────────────────────────────────────────────
+document.getElementById("btnSave").addEventListener("click", async () => {
+  const caseId  = document.getElementById("caseSelect").value;
+  const outcome = document.getElementById("outcomeSelect").value;
+  const risk    = document.getElementById("riskSelect").value;
+  const notes   = document.getElementById("notesInput").value.trim();
+  const banner  = document.getElementById("statusBanner");
+
+  if (!caseId) { showBanner("Please select a case.", "error"); return; }
+  if (!outcome) { showBanner("Please select a new status/outcome.", "error"); return; }
+
+  const btn  = document.getElementById("btnSave");
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader"></i> Saving…`;
+  lucide.createIcons();
+
+  const payload = { outcome };
+  if (risk)  payload.risk_level  = risk;
+  if (notes) payload.notes       = notes;
+  if (outcome === "RESOLVED") payload.resolved_at = new Date().toISOString();
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases/${caseId}`, {
+      method:  "PUT",
+      headers: authHeaders,
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || `Server error ${res.status}`);
+
+    showBanner(`✔ Case ${data.case_number || caseId} updated to ${outcome}.`, "success");
+
+    // Refresh the case list and re-show info
+    await loadCases();
+    document.getElementById("caseSelect").value = caseId;
+    showCaseInfo(caseId);
+    document.getElementById("notesInput").value = "";
+
+  } catch (err) {
+    showBanner(`Failed to save: ${err.message}`, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i data-lucide="save"></i> Save Outcome`;
+    lucide.createIcons();
+  }
+});
+
+// ── CANCEL ────────────────────────────────────────────────────
+document.getElementById("btnCancel").addEventListener("click", () => {
+  window.location.href = "caseList.html";
+});
+
+function showBanner(msg, type) {
+  const banner = document.getElementById("statusBanner");
+  banner.textContent  = msg;
+  banner.className    = `status-banner status-${type}`;
+  banner.style.display = "block";
+  if (type === "success") setTimeout(() => { banner.style.display = "none"; }, 5000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadCases();
+</script>
+<script src="../js/sidebar.js"></script>
+</body>
+</html>

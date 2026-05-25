@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- No external map API needed — address autocomplete uses Nominatim (same as map.js) -->
+  <style>
+    html,body,.layout,.main{height:100%;}
+    .main{display:flex;flex-direction:column;overflow:hidden;}
+    .page-body{flex:1;overflow-y:auto;padding:24px 32px;}
+    /* Stat cards */
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+    .stat-card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.05);border-left:4px solid #2563eb;}
+    .stat-card.red{border-color:#dc2626;} .stat-card.green{border-color:#16a34a;} .stat-card.purple{border-color:#7c3aed;}
+    .stat-card h4{font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+    .stat-card p{font-size:26px;font-weight:800;margin:4px 0 0;}
+    .stat-card.red p{color:#dc2626;} .stat-card.green p{color:#16a34a;} .stat-card.purple p{color:#7c3aed;}
+    .stat-card p.blue{color:#2563eb;}
+    /* Toolbar */
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+    .toolbar input{flex:1;min-width:200px;padding:10px 14px;border-radius:9px;border:1.5px solid #e5e9f5;font-family:inherit;font-size:13px;background:#f8fafc;}
+    .toolbar select{padding:10px 14px;border-radius:9px;border:1.5px solid #e5e9f5;font-family:inherit;font-size:13px;background:#f8fafc;}
+    .toolbar input:focus,.toolbar select:focus{outline:none;border-color:#2563eb;}
+    .btn{padding:10px 18px;border-radius:9px;border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:opacity .2s;white-space:nowrap;}
+    .btn:hover{opacity:.85;} .btn:disabled{opacity:.5;cursor:not-allowed;}
+    .btn-blue{background:#2563eb;color:#fff;} .btn-red{background:#dc2626;color:#fff;} .btn-outline{background:#fff;color:#374151;border:1.5px solid #d1d5db;}
+    .btn-green{background:#16a34a;color:#fff;}
+    /* Table */
+    .table-wrap{background:#fff;border-radius:14px;border:1.5px solid #e5e9f5;overflow:hidden;}
+    table{width:100%;border-collapse:collapse;min-width:700px;}
+    thead th{background:#0f1a3e;color:#fff;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:14px 16px;text-align:left;white-space:nowrap;}
+    thead th:first-child{border-radius:12px 0 0 0;} thead th:last-child{border-radius:0 12px 0 0;}
+    tbody tr{border-bottom:1px solid #f1f5f9;} tbody tr:hover{background:#f8fafc;}
+    tbody td{padding:12px 16px;font-size:13.5px;color:#374151;vertical-align:middle;}
+    .role-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;}
+    .role-admin{background:#ede9fe;color:#5b21b6;} .role-commander{background:#dbeafe;color:#1d4ed8;} .role-investigator{background:#dcfce7;color:#15803d;}
+    .active-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+    .dot-green{background:#16a34a;} .dot-red{background:#dc2626;}
+    .action-cell{white-space:nowrap;display:flex;gap:6px;}
+    .tbl-btn{padding:5px 11px;border-radius:6px;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .2s;}
+    .tbl-btn:hover{opacity:.8;}
+    .tbl-btn-blue{background:#dbeafe;color:#1d4ed8;} .tbl-btn-red{background:#fee2e2;color:#b91c1c;} .tbl-btn-green{background:#dcfce7;color:#15803d;} .tbl-btn-orange{background:#ffedd5;color:#c2410c;}
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:flex;align-items:center;justify-content:center;overflow-y:auto;}
+    .modal{background:#fff;border-radius:14px;padding:28px 32px;width:500px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.18);margin:auto;}
+    .modal h3{font-size:17px;font-weight:700;margin-bottom:12px;}
+    .modal h4{font-size:13px;font-weight:600;color:#6b7280;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.05em;}
+    .modal-row{margin-bottom:14px;}
+    .modal-row label{display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:5px;text-transform:uppercase;}
+    .modal-row input,.modal-row select,.modal-row textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #e5e9f5;font-family:inherit;font-size:13.5px;box-sizing:border-box;}
+    .modal-row textarea{resize:vertical;min-height:80px;}
+    .modal-row input:focus,.modal-row select:focus,.modal-row textarea:focus{outline:none;border-color:#2563eb;}
+    /* ── Address autocomplete — mirrors map.html suggestion styles ── */
+    .addr-suggestions {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      right: 0;
+      z-index: 1200;
+      background: #fff;
+      border: 1.5px solid #e5e9f5;
+      border-radius: 11px;
+      box-shadow: 0 8px 30px rgba(15,26,62,0.13);
+      overflow: hidden;
+      display: none;
+    }
+    .addr-suggestions.active { display: block; }
+    .suggestion-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.12s;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: #f0f7ff; }
+    .sug-icon {
+      font-size: 15px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+    }
+    .sug-text { display: flex; flex-direction: column; font-size: 13px; }
+    .sug-text strong { color: #0f1a3e; font-weight: 600; }
+    .sug-context { color: #6b7280; font-size: 11px; margin-top: 1px; }
+    .case-number-preview{background:#f0f4ff;padding:12px;border-radius:8px;margin-bottom:16px;border-left:4px solid #2563eb;display:none;}
+    .case-number-preview.active{display:block;}
+    .case-number-preview p{font-size:12px;color:#6b7280;margin:0 0 4px;}
+    .case-number-preview .number{font-size:18px;font-weight:700;color:#2563eb;font-family:'DM Mono',monospace;margin:0;}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;}
+    .modal-status{font-size:13px;margin-top:10px;padding:10px;border-radius:8px;display:none;}
+    .modal-status.success{background:#dcfce7;color:#15803d;} .modal-status.error{background:#fee2e2;color:#b91c1c;}
+    .breadcrumb{font-size:12px;color:#9ca3af;margin-bottom:16px;}
+    .breadcrumb a{color:#2563eb;text-decoration:none;}
+    .relative{position:relative;}
+    @media(max-width:700px){.stat-row{grid-template-columns:1fr 1fr;}.modal{width:calc(100vw - 40px);}}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu" id="sidebarMenu"><p class="menu-title">NAVIGATION</p></nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar" style="background:linear-gradient(90deg,#1e3a8a,#2563eb);">
+      <div><h1>User Management</h1><p>Create, edit, and manage all system users</p></div>
+    </header>
+
+    <div class="page-body">
+      <div class="breadcrumb"><a href="dashboard.html">Dashboard</a> › User Management</div>
+
+      <!-- Stats -->
+      <div class="stat-row">
+        <div class="stat-card"><h4>Total Users</h4><p class="blue" id="statTotal">—</p></div>
+        <div class="stat-card red"><h4>Admins</h4><p id="statAdmins">—</p></div>
+        <div class="stat-card"><h4>Commanders</h4><p class="blue" id="statCommanders">—</p></div>
+        <div class="stat-card green"><h4>Investigators</h4><p id="statInvestigators">—</p></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="Search by email or role…" oninput="applyFilters()">
+        <select id="filterRole" onchange="applyFilters()">
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="commander">Commander</option>
+          <option value="investigator">Investigator</option>
+        </select>
+        <select id="filterStatus" onchange="applyFilters()">
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <button class="btn btn-green" onclick="openCreateCaseModal()">
+          <i data-lucide="plus-circle"></i> Create Case
+        </button>
+        <button class="btn btn-blue" onclick="openCreateUserModal()">
+          <i data-lucide="user-plus"></i> Add User
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">Loading users…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- CREATE / EDIT USER MODAL -->
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 id="modalTitle">Add New User</h3>
+    <input type="hidden" id="editUserId">
+    <div class="modal-row">
+      <label>Email *</label>
+      <input type="email" id="modalEmail" placeholder="user@eskom.co.za">
+    </div>
+    <div class="modal-row">
+      <label>Full Name *</label>
+      <input type="text" id="modalFullName" placeholder="John Doe">
+    </div>
+    <div class="modal-row" id="passwordRow">
+      <label>Password *</label>
+      <input type="password" id="modalPassword" placeholder="Min 6 characters">
+    </div>
+    <div class="modal-row">
+      <label>Role *</label>
+      <select id="modalRole">
+        <option value="">— Select role —</option>
+        <option value="admin">Admin</option>
+        <option value="commander">Commander</option>
+        <option value="investigator">Investigator</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-blue" id="modalSaveBtn" onclick="saveUser()">Save User</button>
+      <button class="btn btn-outline" onclick="document.getElementById('modalOverlay').style.display='none'">Cancel</button>
+    </div>
+    <div class="modal-status" id="modalStatus"></div>
+  </div>
+</div>
+
+<!-- CREATE CASE MODAL -->
+<div class="modal-overlay" id="caseModalOverlay" style="display:none;" onclick="closeCaseModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>📋 Create New Case</h3>
+    <p style="font-size:12px;color:#6b7280;margin-bottom:16px;">Add a new case to the system with property details and address autocomplete</p>
+    
+    <!-- Case Number Preview -->
+    <div class="case-number-preview" id="caseNumberPreview">
+      <p>Auto-generated Case Number:</p>
+      <p class="number" id="previewCaseNumber">Case —</p>
+    </div>
+
+    <!-- Case Details Section -->
+    <h4>Case Details</h4>
+    
+    <div class="modal-row">
+      <label>Suspect Name *</label>
+      <input type="text" id="caseModalSuspectName" placeholder="Enter suspect full name">
+    </div>
+
+    <div class="modal-row">
+      <label>Description *</label>
+      <textarea id="caseModalDescription" placeholder="Provide details about the theft case..."></textarea>
+    </div>
+
+    <div class="modal-row">
+      <label>Risk Level *</label>
+      <select id="caseModalRiskLevel">
+        <option value="">— Select risk level —</option>
+        <option value="LOW">Low</option>
+        <option value="MID">Medium</option>
+        <option value="HIGH">High</option>
+      </select>
+    </div>
+
+    <!-- Property Details Section -->
+    <h4>Property Information</h4>
+    
+    <div class="modal-row relative">
+      <label>Property Address</label>
+      <input type="text" id="caseModalAddress" placeholder="Start typing address…" autocomplete="off">
+      <div class="addr-suggestions" id="addrSuggestions"></div>
+      <div id="addressVerifyStatus" style="font-size:11.5px;margin-top:5px;display:none;"></div>
+    </div>
+
+    <div class="modal-row">
+      <label>Additional Property Details</label>
+      <textarea id="caseModalPropertyDetails" placeholder="Notes about the property (e.g., location notes, access details)"></textarea>
+    </div>
+
+    <!-- Location Data (hidden) -->
+    <input type="hidden" id="caseModalLat">
+    <input type="hidden" id="caseModalLng">
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn btn-green" id="caseSaveBtn" onclick="saveCase()">✔ Create Case</button>
+      <button class="btn btn-outline" onclick="closeCaseModal()">Cancel</button>
+    </div>
+    <div class="modal-status" id="caseModalStatus"></div>
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+const token    = localStorage.getItem('token');
+const userRole = (localStorage.getItem('userRole')||'').toLowerCase();
+const userId   = localStorage.getItem('userId');
+if (!token) window.location.href = 'login.html';
+if (userRole !== 'admin') { alert('Admin access only.'); window.location.href = 'dashboard.html'; }
+
+const BASE_URL    = 'http://localhost:3000';
+const authHeaders = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
+
+function setAddressStatus(type, msg) {
+  const el = document.getElementById('addressVerifyStatus');
+  if (!el) return;
+  if (!msg) { el.style.display = 'none'; return; }
+  const styles = {
+    verified: 'color:#15803d;background:#dcfce7;border:1px solid #bbf7d0;',
+    manual:   'color:#92400e;background:#fef3c7;border:1px solid #fde68a;',
+    loading:  'color:#1d4ed8;background:#dbeafe;border:1px solid #bfdbfe;',
+  };
+  el.style.cssText = `font-size:11.5px;margin-top:5px;padding:5px 9px;border-radius:6px;${styles[type]||''}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── ADDRESS AUTOCOMPLETE — Nominatim (mirrors map.js) ──────────
+// Same debounce, SA bounding box, icon logic, and dropdown structure
+// as the map page search bar for full consistency.
+
+let _addrSearchTimeout = null;
+
+/** Pick an emoji icon based on Nominatim category/type — identical to map.js */
+function getPoiIcon(r) {
+  const cat     = r.extratags?.amenity || r.extratags?.leisure || r.type || r.class || '';
+  const iconMap = {
+    golf_course: '⛳', sports_centre: '🏟', stadium: '🏟', club: '🏌️',
+    school: '🏫', hospital: '🏥', restaurant: '🍽', cafe: '☕',
+    hotel: '🏨', fuel: '⛽', park: '🌳', place_of_worship: '⛪',
+    residential: '🏘', road: '🛣', administrative: '🏛',
+  };
+  for (const [k, v] of Object.entries(iconMap)) {
+    if (cat.toLowerCase().includes(k)) return v;
+  }
+  return '<i class="fa-solid fa-location-dot" style="color:#2563eb"></i>';
+}
+
+function initAutocomplete() {
+  const input      = document.getElementById('caseModalAddress');
+  const suggestEl  = document.getElementById('addrSuggestions');
+  if (!input || !suggestEl) return;
+
+  input.addEventListener('input', () => {
+    // Clear previously captured coords whenever the user edits
+    document.getElementById('caseModalLat').value = '';
+    document.getElementById('caseModalLng').value = '';
+
+    const query = input.value.trim();
+
+    if (query.length < 3) {
+      suggestEl.innerHTML = '';
+      suggestEl.classList.remove('active');
+      setAddressStatus(null);
+      return;
+    }
+
+    setAddressStatus('manual', '✏️ Address not yet verified — will geocode on save');
+
+    clearTimeout(_addrSearchTimeout);
+    _addrSearchTimeout = setTimeout(async () => {
+      suggestEl.classList.add('active');
+      suggestEl.innerHTML = `<div style="padding:10px;color:#6b7280;font-size:13px;">Searching…</div>`;
+
+      try {
+        const params = new URLSearchParams({
+          q:              query,
+          format:         'json',
+          limit:          8,
+          addressdetails: 1,
+          extratags:      1,
+          namedetails:    1,
+          'accept-language': 'en',
+          countrycodes:   'za',
+          viewbox:        '16.4,-34.9,32.9,-22.1',  // South Africa bounding box
+          bounded:        1,
+        });
+
+        const res  = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+          headers: { 'User-Agent': 'EskomTheftDetectionApp/1.0' }
+        });
+        const data = await res.json();
+
+        if (!data.length) {
+          suggestEl.innerHTML = `<div style="padding:10px;color:#dc2626;font-size:13px;">No results found. Try a broader query.</div>`;
+          return;
+        }
+
+        suggestEl.innerHTML = data.map(r => {
+          const name    = r.namedetails?.name || r.display_name.split(',')[0];
+          const context = r.display_name.split(',').slice(1, 3).join(',').trim();
+          const icon    = getPoiIcon(r);
+          return `<div class="suggestion-item"
+                       data-lat="${r.lat}"
+                       data-lon="${r.lon}"
+                       data-display="${encodeURIComponent(r.display_name)}">
+                    <span class="sug-icon">${icon}</span>
+                    <span class="sug-text">
+                      <strong>${name}</strong>
+                      ${context ? `<span class="sug-context">${context}</span>` : ''}
+                    </span>
+                  </div>`;
+        }).join('');
+
+        suggestEl.querySelectorAll('.suggestion-item').forEach(item => {
+          // mousedown prevents blur from closing the list before click fires
+          item.addEventListener('mousedown', e => e.preventDefault());
+          item.addEventListener('click', () => {
+            const lat   = parseFloat(item.dataset.lat);
+            const lon   = parseFloat(item.dataset.lon);
+            const label = decodeURIComponent(item.dataset.display);
+
+            input.value = label.split(',')[0].trim();
+            document.getElementById('caseModalLat').value = lat;
+            document.getElementById('caseModalLng').value = lon;
+
+            suggestEl.innerHTML = '';
+            suggestEl.classList.remove('active');
+            setAddressStatus('verified', '📍 Address verified and coordinates captured');
+          });
+        });
+
+      } catch (e) {
+        suggestEl.innerHTML = `<div style="padding:10px;color:#dc2626;font-size:13px;">Search error — check connection.</div>`;
+      }
+    }, 350);   // same debounce as map.js
+  });
+
+  // Close suggestions when clicking outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#caseModalAddress') && !e.target.closest('#addrSuggestions')) {
+      suggestEl.innerHTML = '';
+      suggestEl.classList.remove('active');
+    }
+  });
+}
+
+/** Nominatim geocode fallback — used in saveCase() when coords weren't captured via autocomplete */
+async function geocodeWithNominatim(address) {
+  try {
+    const params = new URLSearchParams({
+      q: address, format: 'json', limit: 1, countrycodes: 'za',
+    });
+    const res  = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: { 'User-Agent': 'EskomTheftDetectionApp/1.0' }
+    });
+    const data = await res.json();
+    if (data.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch (e) {}
+  return null;
+}
+
+// Sidebar
+(function(){
+  const m = document.getElementById('sidebarMenu');
+  const items = [
+    {href:'dashboard.html',  icon:'layout-dashboard', label:'Main Dashboard'},
+    {href:'map.html',        icon:'map',              label:'Map View'},
+    {href:'assign.html',     icon:'user-check',       label:'Assign Investigator'},
+    {href:'resolved.html',   icon:'check-circle',     label:'Resolved Cases'},
+    {href:'caseList.html',   icon:'list',             label:'Case List'},
+    {href:'report.html',     icon:'bar-chart-3',      label:'Report Screen'},
+  ];
+  m.innerHTML = `<p class="menu-title">NAVIGATION</p>` +
+    items.map(i=>`<a href="${i.href}" class="${i.active?'active':''}" style="display:flex;align-items:center;gap:10px;">
+      <i data-lucide="${i.icon}"></i>${i.label}</a>`).join('') +
+    `<a href="login.html" style="display:flex;align-items:center;gap:10px;" onclick="localStorage.clear()">
+      <i data-lucide="log-out"></i>Logout</a>`;
+  lucide.createIcons();
+})();
+
+let allUsers   = [];
+let filtered   = [];
+
+// ── LOAD USERS ────────────────────────────────────────────────
+async function loadUsers() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/users`, { headers: authHeaders });
+    allUsers  = await res.json();
+    updateStats();
+    applyFilters();
+  } catch(e) {
+    document.getElementById('userTableBody').innerHTML =
+      `<tr><td colspan="5" style="text-align:center;padding:40px;color:#dc2626;">Failed to load users: ${e.message}</td></tr>`;
+  }
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent        = allUsers.length;
+  document.getElementById('statAdmins').textContent       = allUsers.filter(u=>u.role==='admin').length;
+  document.getElementById('statCommanders').textContent   = allUsers.filter(u=>u.role==='commander').length;
+  document.getElementById('statInvestigators').textContent= allUsers.filter(u=>u.role==='investigator').length;
+}
+
+function applyFilters() {
+  const q     = document.getElementById('searchInput').value.toLowerCase();
+  const role  = document.getElementById('filterRole').value;
+  const status= document.getElementById('filterStatus').value;
+  filtered = allUsers.filter(u => {
+    const matchQ  = !q    || u.email.toLowerCase().includes(q) || u.role.includes(q);
+    const matchR  = !role || u.role === role;
+    const matchS  = !status || (status==='active' ? u.is_active !== false : u.is_active === false);
+    return matchQ && matchR && matchS;
+  });
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('userTableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">No users match your filters.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(u => {
+    const active  = u.is_active !== false;
+    const created = u.created_at ? new Date(u.created_at).toLocaleDateString('en-ZA') : 'N/A';
+    return `<tr>
+      <td style="font-weight:600;">${u.email}</td>
+      <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+      <td>
+        <span class="active-dot ${active?'dot-green':'dot-red'}"></span>
+        ${active ? 'Active' : 'Inactive'}
+      </td>
+      <td>${created}</td>
+      <td><div class="action-cell">
+        <button class="tbl-btn tbl-btn-blue" onclick="openEditUserModal('${u.id}')">Edit</button>
+        <button class="tbl-btn ${active?'tbl-btn-orange':'tbl-btn-green'}"
+          onclick="toggleStatus('${u.id}', ${active})">${active ? 'Deactivate' : 'Activate'}</button>
+        <button class="tbl-btn tbl-btn-red" onclick="deleteUser('${u.id}', '${u.email}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CREATE/EDIT USER MODAL ────────────────────────────────────
+function openCreateUserModal() {
+  document.getElementById('modalTitle').textContent = 'Add New User';
+  document.getElementById('editUserId').value       = '';
+  document.getElementById('modalEmail').value       = '';
+  document.getElementById('modalFullName').value    = '';
+  document.getElementById('modalPassword').value    = '';
+  document.getElementById('modalRole').value        = '';
+  document.getElementById('passwordRow').style.display = '';
+  document.getElementById('modalStatus').style.display = 'none';
+  document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function openEditUserModal(userId) {
+  const u = allUsers.find(x => x.id === userId);
+  if (!u) return;
+  document.getElementById('modalTitle').textContent = 'Edit User';
+  document.getElementById('editUserId').value       = u.id;
+  document.getElementById('modalEmail').value       = u.email;
+  document.getElementById('modalPassword').value    = '';
+  document.getElementById('modalRole').value        = u.role;
+  document.getElementById('passwordRow').style.display = 'none';
+  document.getElementById('modalStatus').style.display = 'none';
+  document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').style.display = 'none';
+}
+
+// ── CREATE CASE MODAL ──────────────────────────────────────────
+async function openCreateCaseModal() {
+  // Fetch next case number for preview
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases/next-number`, { headers: authHeaders });
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('previewCaseNumber').textContent = data.nextCaseNumber;
+      document.getElementById('caseNumberPreview').classList.add('active');
+    }
+  } catch (err) {
+    console.error('Error fetching next case number:', err);
+  }
+
+  // Reset form
+  document.getElementById('caseModalSuspectName').value = '';
+  document.getElementById('caseModalDescription').value = '';
+  document.getElementById('caseModalRiskLevel').value = '';
+  document.getElementById('caseModalAddress').value = '';
+  document.getElementById('caseModalPropertyDetails').value = '';
+  document.getElementById('caseModalLat').value = '';
+  document.getElementById('caseModalLng').value = '';
+  document.getElementById('caseModalStatus').style.display = 'none';
+  // Reset address suggestions dropdown
+  const sug = document.getElementById('addrSuggestions');
+  if (sug) { sug.innerHTML = ''; sug.classList.remove('active'); }
+  setAddressStatus(null);
+
+  document.getElementById('caseModalOverlay').style.display = 'flex';
+}
+
+function closeCaseModal(e) {
+  if (e && e.target !== document.getElementById('caseModalOverlay')) return;
+  document.getElementById('caseModalOverlay').style.display = 'none';
+}
+
+// ── SAVE CASE ──────────────────────────────────────────────────
+async function saveCase() {
+  const suspectName     = document.getElementById('caseModalSuspectName').value.trim();
+  const description     = document.getElementById('caseModalDescription').value.trim();
+  const riskLevel       = document.getElementById('caseModalRiskLevel').value;
+  const address         = document.getElementById('caseModalAddress').value.trim();
+  const propertyDetails = document.getElementById('caseModalPropertyDetails').value.trim();
+  const btn             = document.getElementById('caseSaveBtn');
+
+  if (!suspectName) { showCaseStatus('Suspect name is required.', 'error'); return; }
+  if (!description) { showCaseStatus('Description is required.', 'error'); return; }
+  if (!riskLevel)   { showCaseStatus('Risk level is required.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Creating...';
+
+  // Use coords from Google Places selection if available.
+  // Otherwise geocode the typed address via Google Geocoder before saving.
+  let lat = document.getElementById('caseModalLat').value || null;
+  let lng = document.getElementById('caseModalLng').value || null;
+
+  if (address && (!lat || !lng)) {
+    setAddressStatus('loading', '⏳ Geocoding address…');
+    const coords = await geocodeWithNominatim(address);
+    if (coords) {
+      lat = coords.lat;
+      lng = coords.lng;
+      setAddressStatus('verified', '📍 Address geocoded successfully');
+    } else {
+      setAddressStatus('manual', '⚠️ Could not geocode — address saved as text only');
+    }
+  }
+
+  try {
+    const caseRes = await fetch(`${BASE_URL}/api/cases`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        suspect_name: suspectName,
+        description,
+        risk_level:   riskLevel,
+        outcome:      'OPEN',
+        ...(address ? { location: address }  : {}),
+        ...(lat     ? { latitude:  lat }     : {}),
+        ...(lng     ? { longitude: lng }     : {}),
+      })
+    });
+
+    if (!caseRes.ok) {
+      const errData = await caseRes.json();
+      throw new Error(errData.error || 'Failed to create case');
+    }
+
+    const caseData = await caseRes.json();
+    const caseId   = caseData.id;
+
+    if (address) {
+      await fetch(`${BASE_URL}/api/cases/${caseId}/properties`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ address, additional_details: propertyDetails || null })
+      }).catch(err => console.error('Property creation warning:', err));
+    }
+
+    showCaseStatus(`✔ Case ${caseData.case_number} created successfully!`, 'success');
+    setTimeout(() => { document.getElementById('caseModalOverlay').style.display = 'none'; }, 1500);
+  } catch (err) {
+    showCaseStatus(`❌ ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✔ Create Case';
+  }
+}
+
+function showCaseStatus(msg, type) {
+  const el = document.getElementById('caseModalStatus');
+  el.textContent = msg;
+  el.className = `modal-status ${type}`;
+  el.style.display = 'block';
+}
+
+// ── SAVE USER ──────────────────────────────────────────────────
+async function saveUser() {
+  const id        = document.getElementById('editUserId').value;
+  const email     = document.getElementById('modalEmail').value.trim();
+  const full_name = document.getElementById('modalFullName').value.trim();
+  const pass      = document.getElementById('modalPassword').value;
+  const role      = document.getElementById('modalRole').value;
+  const btn       = document.getElementById('modalSaveBtn');
+
+  if (!email || !role) { showModalStatus('Email and role are required.', 'error'); return; }
+  if (!id && !pass)    { showModalStatus('Password is required for new users.', 'error'); return; }
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    if (id) {
+      const res = await fetch(`${BASE_URL}/api/users/${id}/role`, {
+        method:'PUT', headers: authHeaders, body: JSON.stringify({ role })
+      });
+      if (!res.ok) { const e=await res.json(); throw new Error(e.message||e.error); }
+    } else {
+      const res = await fetch(`${BASE_URL}/api/users`, {
+        method:'POST', headers: authHeaders,
+        body: JSON.stringify({ email, password: pass, role, full_name: full_name || email })
+      });
+      if (!res.ok) { const e=await res.json(); throw new Error(e.message||e.error); }
+    }
+    showModalStatus('✔ Saved successfully.', 'success');
+    setTimeout(() => {
+      document.getElementById('modalOverlay').style.display = 'none';
+      loadUsers();
+    }, 1200);
+  } catch(e) {
+    showModalStatus(`Failed: ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save User';
+  }
+}
+
+function showModalStatus(msg, type) {
+  const el = document.getElementById('modalStatus');
+  el.textContent = msg; el.className = `modal-status ${type}`; el.style.display = 'block';
+}
+
+// ── TOGGLE STATUS ──────────────────────────────────────────────
+async function toggleStatus(id, currentlyActive) {
+  const action = currentlyActive ? 'deactivate' : 'activate';
+  if (!confirm(`${action.charAt(0).toUpperCase()+action.slice(1)} this user?`)) return;
+  try {
+    const res = await fetch(`${BASE_URL}/api/users/${id}/status`, {
+      method:'PUT', headers: authHeaders, body: JSON.stringify({ is_active: !currentlyActive })
+    });
+    if (!res.ok) { const e=await res.json(); throw new Error(e.message); }
+    await loadUsers();
+  } catch(e) { alert(`Failed: ${e.message}`); }
+}
+
+// ── DELETE USER ────────────────────────────────────────────────
+async function deleteUser(id, email) {
+  if (!confirm(`Permanently delete user:\n${email}\n\nThis cannot be undone.`)) return;
+  try {
+    const res = await fetch(`${BASE_URL}/api/users/${id}`, { method:'DELETE', headers: authHeaders });
+    if (!res.ok) { const e=await res.json(); throw new Error(e.message); }
+    await loadUsers();
+  } catch(e) { alert(`Failed: ${e.message}`); }
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+loadUsers();
+initAutocomplete();
+</script>
+</body>
+</html>

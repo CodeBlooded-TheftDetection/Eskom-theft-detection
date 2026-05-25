@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Screen — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .report-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 20px 20px 40px;
+    }
+    .selector-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 22px;
+    }
+    .selector-card label {
+      display: block;
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    #caseSelect {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 9px;
+      border: 1.5px solid #e5e9f5;
+      font-family: inherit;
+      font-size: 14px;
+      color: #0f1a3e;
+      background: #f8fafc;
+      cursor: pointer;
+    }
+    /* ── Report Preview Card ────────────────────────────────── */
+    .report-preview {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+      display: none; /* hidden until a case is selected */
+    }
+    .report-header-band {
+      background: linear-gradient(90deg, #0f1a3e, #2563eb);
+      color: #fff;
+      padding: 28px 32px;
+    }
+    .report-header-band h2 { font-size: 22px; margin-bottom: 4px; }
+    .report-header-band p  { font-size: 13px; opacity: 0.75; }
+    .report-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #e5e9f5;
+      border-bottom: 1px solid #e5e9f5;
+    }
+    .meta-cell {
+      background: #f8fafc;
+      padding: 16px 20px;
+    }
+    .meta-cell .label { font-size: 11px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .meta-cell .value { font-size: 14px; font-weight: 700; color: #0f1a3e; margin-top: 4px; }
+    .report-body { padding: 28px 32px; }
+    .section-heading {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #e5e9f5;
+      padding-bottom: 8px;
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 28px;
+      margin-bottom: 28px;
+    }
+    .field-item .f-label { font-size: 12px; color: #9ca3af; font-weight: 500; }
+    .field-item .f-value { font-size: 14px; color: #0f1a3e; font-weight: 600; margin-top: 3px; }
+    .desc-field { grid-column: 1 / span 2; }
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 16px 32px;
+      border-top: 1px solid #e5e9f5;
+      background: #f8fafc;
+    }
+    .btn {
+      padding: 11px 20px;
+      border-radius: 9px;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover    { opacity: 0.85; }
+    .btn-blue     { background: #2563eb; color: #fff; }
+    .btn-outline  { background: #fff; color: #374151; border: 1.5px solid #d1d5db; }
+    #downloadStatus { font-size: 13px; color: #6b7280; margin-top: 10px; display: none; }
+    .empty-state { text-align: center; padding: 50px 20px; color: #6b7280; }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: #374151; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu" id="sidebarMenu"></nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Report Screen</h1>
+        <p>Select a case to preview its report — then download a PDF copy</p>
+      </div>
+    </header>
+
+    <div class="content" style="overflow-y:auto; display:block; padding:0;">
+      <div class="report-container">
+
+        <!-- ── Step 1: Choose a case ──────────────────────────── -->
+        <div class="selector-card">
+          <label for="caseSelect">
+            Select a case to generate a report for:
+          </label>
+          <select id="caseSelect">
+            <option value="">Loading cases…</option>
+          </select>
+        </div>
+
+        <!-- ── Step 2: Preview (shown after selection) ─────────── -->
+        <div id="emptyState" class="empty-state">
+          <h3>No case selected</h3>
+          <p>Choose a case from the dropdown above to preview and download its report.</p>
+        </div>
+
+        <div class="report-preview" id="reportPreview">
+
+          <!-- Coloured header band -->
+          <div class="report-header-band" id="reportBand">
+            <h2 id="rTitle">Case Report</h2>
+            <p>Eskom Theft Detection System — Official Report</p>
+          </div>
+
+          <!-- Three meta chips: case number, risk, status -->
+          <div class="report-meta">
+            <div class="meta-cell">
+              <div class="label">Case Number</div>
+              <div class="value" id="rCaseNum">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="label">Risk Level</div>
+              <div class="value" id="rRisk">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="label">Status</div>
+              <div class="value" id="rStatus">—</div>
+            </div>
+          </div>
+
+          <!-- Report body fields -->
+          <div class="report-body">
+            <div class="section-heading">Case Information</div>
+            <div class="field-grid">
+              <div class="field-item">
+                <div class="f-label">Suspect Name</div>
+                <div class="f-value" id="rSuspect">—</div>
+              </div>
+              <div class="field-item">
+                <div class="f-label">Date Reported</div>
+                <div class="f-value" id="rDate">—</div>
+              </div>
+              <div class="field-item">
+                <div class="f-label">Assigned Investigator</div>
+                <div class="f-value" id="rInvestigator">—</div>
+              </div>
+              <div class="field-item">
+                <div class="f-label">Date Resolved</div>
+                <div class="f-value" id="rResolved">—</div>
+              </div>
+              <div class="field-item desc-field">
+                <div class="f-label">Description</div>
+                <div class="f-value" id="rDesc" style="font-weight:400; line-height:1.6;">—</div>
+              </div>
+              <div class="field-item desc-field" id="rNotesRow" style="display:none;">
+                <div class="f-label">Investigation Notes</div>
+                <div class="f-value" id="rNotes" style="font-weight:400; line-height:1.6;"></div>
+              </div>
+            </div>
+
+            <div class="section-heading">Report Details</div>
+            <div class="field-grid">
+              <div class="field-item">
+                <div class="f-label">Report Generated</div>
+                <div class="f-value" id="rGenerated">—</div>
+              </div>
+              <div class="field-item">
+                <div class="f-label">Generated By</div>
+                <div class="f-value">System — Eskom ETD</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="action-row">
+            <!-- FIXED: Download calls the server API to generate the PDF -->
+            <button class="btn btn-blue" id="btnDownload">
+              <i data-lucide="download"></i> Download PDF Report
+            </button>
+            <!-- FIXED: Back to Cases navigates to caseList.html -->
+            <button class="btn btn-outline" id="btnBack">
+              <i data-lucide="arrow-left"></i> Back to Cases
+            </button>
+          </div>
+          <p id="downloadStatus"></p>
+
+        </div><!-- end #reportPreview -->
+
+      </div><!-- end .report-container -->
+    </div>
+
+  </main>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ── AUTH ──────────────────────────────────────────────────────
+const token    = localStorage.getItem("token");
+const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
+if (!token) window.location.href = "login.html";
+
+const BASE_URL    = "http://localhost:3000";
+const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+
+document.getElementById("logoutLink").addEventListener("click", e => {
+  e.preventDefault(); localStorage.clear(); window.location.href = "login.html";
+});
+
+let allCases     = [];
+let selectedCase = null;
+
+// ── LOAD CASE PICKER ──────────────────────────────────────────
+// FIXED: no hardcoded cases — all loaded from the API.
+async function loadCasePicker() {
+  const sel = document.getElementById("caseSelect");
+  try {
+    const res  = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+    const raw  = await res.json();
+    allCases   = Array.isArray(raw) ? raw : [];
+
+    sel.innerHTML = `<option value="">— Choose a case to generate a report —</option>`;
+    allCases.forEach(c => {
+      const displayId = c.case_number || c.id;
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `${displayId} — ${c.suspect_name || "Unknown"} (${(c.outcome || "OPEN").toUpperCase()})`;
+      sel.appendChild(opt);
+    });
+
+    // If the user came from dashboard/cases, pre-select that case
+    const preId = localStorage.getItem("selectedCaseId");
+    if (preId) {
+      sel.value = preId;
+      localStorage.removeItem("selectedCaseId");
+      renderPreview(preId);
+    }
+  } catch (err) {
+    sel.innerHTML = `<option value="">Could not load cases: ${err.message}</option>`;
+  }
+}
+
+// ── RENDER PREVIEW ────────────────────────────────────────────
+function renderPreview(caseId) {
+  const c = allCases.find(x => String(x.id) === String(caseId));
+  if (!c) return;
+
+  selectedCase = c;
+
+  const displayId = c.case_number || c.id;
+  const riskLabel = (c.risk_level || "LOW").toUpperCase();
+  const statLabel = (c.outcome    || "OPEN").toUpperCase();
+  const invName   = c.investigators
+    ? (c.investigators.full_name || c.investigators.email)
+    : (c.assigned_to ? "Assigned" : "Unassigned");
+
+  // Colour the header band based on risk level
+  const colours = { HIGH: "#b91c1c", MID: "#b45309", LOW: "#15803d", DEFAULT: "#1e3a8a" };
+  const bandColour = colours[riskLabel] || colours.DEFAULT;
+  document.getElementById("reportBand").style.background = `linear-gradient(90deg, ${bandColour}, ${bandColour}cc)`;
+
+  document.getElementById("rTitle").textContent      = `Report: ${displayId}`;
+  document.getElementById("rCaseNum").textContent    = displayId;
+  document.getElementById("rRisk").textContent       = riskLabel;
+  document.getElementById("rStatus").textContent     = statLabel;
+  document.getElementById("rSuspect").textContent    = c.suspect_name || "Not recorded";
+  document.getElementById("rDate").textContent       = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A";
+  document.getElementById("rInvestigator").textContent = invName;
+  document.getElementById("rResolved").textContent   = c.resolved_at ? new Date(c.resolved_at).toLocaleDateString("en-ZA") : "Not yet resolved";
+  document.getElementById("rDesc").textContent       = c.description || "No description recorded";
+  document.getElementById("rGenerated").textContent  = new Date().toLocaleString("en-ZA");
+
+  // Show notes section only if notes exist
+  if (c.notes) {
+    document.getElementById("rNotes").textContent  = c.notes;
+    document.getElementById("rNotesRow").style.display = "";
+  } else {
+    document.getElementById("rNotesRow").style.display = "none";
+  }
+
+  // Show the preview, hide the empty state
+  document.getElementById("emptyState").style.display  = "none";
+  document.getElementById("reportPreview").style.display = "block";
+
+  lucide.createIcons();
+}
+
+// ── DROPDOWN HANDLER ──────────────────────────────────────────
+document.getElementById("caseSelect").addEventListener("change", function () {
+  if (this.value) {
+    renderPreview(this.value);
+  } else {
+    selectedCase = null;
+    document.getElementById("emptyState").style.display  = "";
+    document.getElementById("reportPreview").style.display = "none";
+  }
+});
+
+// ── DOWNLOAD PDF ──────────────────────────────────────────────
+// FIXED: actually calls the backend /api/reports/:id endpoint.
+// The server generates the PDF and returns a download URL.
+document.getElementById("btnDownload").addEventListener("click", async () => {
+  if (!selectedCase) { alert("Please select a case first."); return; }
+
+  const btn    = document.getElementById("btnDownload");
+  const status = document.getElementById("downloadStatus");
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader"></i> Generating PDF…`;
+  lucide.createIcons();
+  status.style.display = "block";
+  status.textContent   = "Connecting to server…";
+
+  try {
+    const res  = await fetch(`${BASE_URL}/api/reports/${selectedCase.id}`, { headers: authHeaders });
+    const data = await res.json();
+
+    if (!res.ok || !data.url) {
+      throw new Error(data.message || "PDF generation failed");
+    }
+
+    // Open the PDF in a new tab — the browser's built-in PDF viewer
+    // allows the user to save/print from there.
+    window.open(data.url, "_blank");
+    status.textContent = "✔ PDF opened in a new tab. Use your browser to save it.";
+    status.style.color = "#16a34a";
+
+  } catch (err) {
+    status.textContent = `Could not generate PDF: ${err.message}`;
+    status.style.color = "#dc2626";
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i data-lucide="download"></i> Download PDF Report`;
+    lucide.createIcons();
+  }
+});
+
+// ── BACK TO CASES ─────────────────────────────────────────────
+// FIXED: was doing nothing. Now navigates to caseList.html.
+document.getElementById("btnBack").addEventListener("click", () => {
+  window.location.href = "caseList.html";
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+loadCasePicker();
+</script>
+<script src="../js/sidebar.js"></script>
+</body>
+</html>

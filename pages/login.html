@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eskom Theft Detection - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      max-width: 1200px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .login-hero {
+      color: white;
+    }
+
+    .login-hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .login-hero p {
+      font-size: 18px;
+      opacity: 0.95;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .feature {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .feature-text h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .feature-text p {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 48px 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 24px;
+    }
+
+    .login-card h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f1f3f;
+      margin-bottom: 8px;
+    }
+
+    .login-card .subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f1f3f;
+      margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 24px;
+    }
+
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+    }
+
+    #errorMsg {
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: #fee2e2;
+      color: #b91c1c;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+
+    #errorMsg.show {
+      display: block;
+    }
+
+    .demo-hint {
+      margin-top: 24px;
+      padding: 12px 14px;
+      background: #f0f4ff;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #667eea;
+      border: 1px solid #d5deff;
+    }
+
+    .demo-hint strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .login-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .login-hero {
+        display: none;
+      }
+
+      .login-card {
+        padding: 36px 24px;
+      }
+
+      .login-card h2 {
+        font-size: 24px;
+      }
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <!-- Hero Section -->
+    <div class="login-hero">
+      <h1>Detect. Investigate. Resolve.</h1>
+      <p>Join thousands of investigators protecting South Africa's power grid from electricity theft.</p>
+      
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <div class="feature-text">
+            <h3>Intelligent Detection</h3>
+            <p>AI-powered theft detection system</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-map-location"></i></div>
+          <div class="feature-text">
+            <h3>Real-Time Mapping</h3>
+            <p>Track all cases on interactive maps</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-chart-simple"></i></div>
+          <div class="feature-text">
+            <h3>Data-Driven Insights</h3>
+            <p>Comprehensive analytics and reporting</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-shield"></i></div>
+          <div class="feature-text">
+            <h3>Secure & Reliable</h3>
+            <p>Enterprise-grade security</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+      <div class="logo"><i class="fa-solid fa-bolt" style="color:white;font-size:28px;"></i></div>
+      <h2>Eskom Theft Detection</h2>
+      <p class="subtitle">Sign in to your dashboard</p>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            placeholder="your.email@eskom.co.za"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="role">Your Role</label>
+          <select id="role" required>
+            <option value="">Select your role</option>
+            <option value="user">Community Reporter</option>
+            <option value="investigator">Field Investigator</option>
+            <option value="commander">Commander</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+
+        <button type="submit" class="login-button">Sign In</button>
+      </form>
+
+      <div id="errorMsg"></div>
+
+      <div class="demo-hint">
+        <strong>Demo Credentials:</strong>
+        Admin: admin@eskom.co.za / password123<br>
+        Commander: commander@eskom.co.za / password123<br>
+        Investigator: investigator@eskom.co.za / password123<br>
+        User: user@eskom.co.za / password123
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/auth.js"></script>
+</body>
+</html>

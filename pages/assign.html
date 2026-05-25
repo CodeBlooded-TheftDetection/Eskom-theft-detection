@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assign Investigator</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/assign.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div>
+        <h2>Eskom</h2>
+        <p>Theft Detection</p>
+      </div>
+    </div>
+    <nav class="menu" id="sidebarMenu"></nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="topbar">
+      <h1>Assign Investigator</h1>
+      <p>Case Assignment Panel</p>
+    </div>
+
+    <div class="assign-grid" style="padding: 20px;">
+
+      <!-- LEFT: INVESTIGATOR LIST
+           assign.js fetches /api/commander/stats and builds one
+           clickable .investigator-card per investigator from the DB.
+           Hardcoded names are gone — every card comes from Supabase. -->
+      <div class="card">
+        <h2>Available Investigators</h2>
+        <p style="font-size:13px; color:#6b7280; margin-bottom:12px;">
+          Click a card to select an investigator.
+        </p>
+        <!-- assign.js populates this container dynamically -->
+        <div id="investigatorList">
+          <p style="color:#6b7280;">Loading investigators…</p>
+        </div>
+      </div>
+
+      <!-- RIGHT: CASE SELECTION + ASSIGN BUTTON
+           assign.js populates the <select> with live cases from /api/cases.
+           The case summary panel updates when the admin picks a case. -->
+      <div class="card">
+        <h2>Select Case</h2>
+        <p style="font-size:13px; color:#6b7280; margin-bottom:12px;">
+          Choose the case to assign the selected investigator to.
+        </p>
+
+        <!-- assign.js fills this dropdown with all open/assigned cases -->
+        <select id="caseSelect" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:14px;">
+          <option value="">Loading cases…</option>
+        </select>
+
+        <!-- Case summary updates dynamically when a case is selected.
+             assign.js writes the suspect name, status, and description here. -->
+        <div id="caseSummary" style="background:#f8fafc; border-radius:8px; padding:14px; min-height:80px; font-size:13.5px; color:#374151; margin-bottom:14px;">
+          <p style="color:#6b7280;">Select a case above to see its details.</p>
+        </div>
+
+        <!-- Triggers assignInvestigator() in assign.js which calls
+             PUT /api/cases/:id with the selected investigator's ID -->
+        <button class="btn-primary" onclick="assignInvestigator()">Assign</button>
+
+        <!-- assign.js writes success/error feedback here -->
+        <p id="message" style="margin-top:10px;"></p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>lucide.createIcons();</script>
+<script src="../js/sidebar.js"></script>
+<!-- assign.js fetches investigators and cases from the DB,
+     handles card selection, and submits the assignment via the API -->
+<script src="../js/assign.js"></script>
+
+</body>
+</html>
