@@ -715,19 +715,11 @@
 
       const actionButtons = isManager
         ? `
-          <button class="tbl-btn tbl-btn-blue" onclick="viewDetail('${c.id}')" title="View full details">
-            <i class="fa-solid fa-eye"></i> Detail
-          </button>
           <button class="tbl-btn tbl-btn-blue" onclick="goRecord('${c.id}')" title="Record outcome">
             <i class="fa-solid fa-pen"></i> Update
           </button>
-          <button class="tbl-btn tbl-btn-green" onclick="goReport('${c.id}')" title="Generate report">
-            <i class="fa-solid fa-file-pdf"></i> Report
-          </button>
         `
-        : `<button class="tbl-btn tbl-btn-blue" onclick="viewDetail('${c.id}')" title="View case details">
-            <i class="fa-solid fa-eye"></i> View
-          </button>`;
+        : ``;
 
       return `
         <tr>

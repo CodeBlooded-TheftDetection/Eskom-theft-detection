@@ -3,122 +3,499 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Report Screen — Eskom Theft Detection</title>
+  <title>Report Generator — Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
-    .report-container {
-      max-width: 860px;
+    /* ═══════════════════════════════════════════════════════
+       BASE OVERRIDES — keep sidebar/topbar as-is from
+       dashboard.css and only style the report content area
+    ═══════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body { font-family: 'IBM Plex Sans', sans-serif; }
+
+    .content {
+      overflow-y: auto !important;
+      display: block !important;
+      padding: 0 !important;
+      background: #f0f2f8;
+    }
+
+    /* ── Page shell ──────────────────────────────────────── */
+    .rpt-shell {
+      max-width: 900px;
       margin: 0 auto;
-      padding: 20px 20px 40px;
+      padding: 28px 24px 60px;
     }
-    .selector-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      margin-bottom: 22px;
-    }
-    .selector-card label {
-      display: block;
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-    #caseSelect {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 9px;
-      border: 1.5px solid #e5e9f5;
-      font-family: inherit;
-      font-size: 14px;
-      color: #0f1a3e;
-      background: #f8fafc;
-      cursor: pointer;
-    }
-    /* ── Report Preview Card ────────────────────────────────── */
-    .report-preview {
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      overflow: hidden;
-      display: none; /* hidden until a case is selected */
-    }
-    .report-header-band {
-      background: linear-gradient(90deg, #0f1a3e, #2563eb);
-      color: #fff;
-      padding: 28px 32px;
-    }
-    .report-header-band h2 { font-size: 22px; margin-bottom: 4px; }
-    .report-header-band p  { font-size: 13px; opacity: 0.75; }
-    .report-meta {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: #e5e9f5;
-      border-bottom: 1px solid #e5e9f5;
-    }
-    .meta-cell {
-      background: #f8fafc;
-      padding: 16px 20px;
-    }
-    .meta-cell .label { font-size: 11px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
-    .meta-cell .value { font-size: 14px; font-weight: 700; color: #0f1a3e; margin-top: 4px; }
-    .report-body { padding: 28px 32px; }
-    .section-heading {
-      font-size: 12px;
+
+    /* ── Section label ───────────────────────────────────── */
+    .rpt-eyebrow {
+      font-size: 11px;
       font-weight: 700;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      color: #2563eb;
+      margin-bottom: 6px;
+    }
+    .rpt-page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f1a3e;
+      margin: 0 0 24px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SEARCH PANEL
+    ═══════════════════════════════════════════════════════ */
+    .search-panel {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(15,26,62,.07), 0 4px 16px rgba(15,26,62,.05);
+      margin-bottom: 20px;
+    }
+    .search-panel-label {
+      font-size: 12px;
+      font-weight: 600;
       color: #6b7280;
-      margin-bottom: 14px;
-      border-bottom: 1px solid #e5e9f5;
-      padding-bottom: 8px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
     }
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px 28px;
-      margin-bottom: 28px;
-    }
-    .field-item .f-label { font-size: 12px; color: #9ca3af; font-weight: 500; }
-    .field-item .f-value { font-size: 14px; color: #0f1a3e; font-weight: 600; margin-top: 3px; }
-    .desc-field { grid-column: 1 / span 2; }
-    .action-row {
+
+    /* Search input row */
+    .search-row {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
-      padding: 16px 32px;
-      border-top: 1px solid #e5e9f5;
-      background: #f8fafc;
+      align-items: stretch;
     }
-    .btn {
-      padding: 11px 20px;
-      border-radius: 9px;
+    .search-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      font-size: 14px;
+      pointer-events: none;
+    }
+    #caseSearch {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px 0 40px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f4;
+      background: #f8fafc;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      color: #0f1a3e;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    #caseSearch:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+      background: #fff;
+    }
+    #caseSearch::placeholder { color: #b0b8cc; }
+
+    #btnSearch {
+      height: 46px;
+      padding: 0 20px;
+      border-radius: 10px;
       border: none;
-      font-family: inherit;
+      background: #2563eb;
+      color: #fff;
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 7px;
-      transition: opacity 0.2s;
+      transition: background .15s, transform .1s;
+      white-space: nowrap;
     }
-    .btn:hover    { opacity: 0.85; }
-    .btn-blue     { background: #2563eb; color: #fff; }
+    #btnSearch:hover   { background: #1d4ed8; }
+    #btnSearch:active  { transform: scale(.97); }
+
+    /* Hint chips */
+    .search-hints {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .hint-label { font-size: 11px; color: #9ca3af; }
+    .hint-chip {
+      font-size: 11px;
+      font-weight: 600;
+      background: #eff2ff;
+      color: #3b5bdb;
+      border-radius: 6px;
+      padding: 3px 9px;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .hint-chip:hover { background: #dbe4ff; }
+
+    /* ═══════════════════════════════════════════════════════
+       SEARCH RESULTS LIST
+    ═══════════════════════════════════════════════════════ */
+    #searchResults { margin-bottom: 20px; }
+
+    .results-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding: 0 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .results-count {
+      background: #e0e7ff;
+      color: #3730a3;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 2px 8px;
+    }
+
+    .result-card {
+      background: #fff;
+      border: 1.5px solid #e8ecf5;
+      border-radius: 12px;
+      padding: 15px 18px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color .15s, box-shadow .15s, transform .1s;
+    }
+    .result-card:hover {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+      transform: translateY(-1px);
+    }
+    .result-card.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    .result-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .icon-high   { background: #fef2f2; color: #b91c1c; }
+    .icon-medium { background: #fffbeb; color: #b45309; }
+    .icon-low    { background: #f0fdf4; color: #15803d; }
+    .icon-default{ background: #eff6ff; color: #1d4ed8; }
+
+    .result-card-body { flex: 1; min-width: 0; }
+    .result-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f1a3e;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .result-card-sub {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .result-card-badges { display: flex; gap: 6px; flex-shrink: 0; }
+    .rbadge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      border-radius: 6px;
+      padding: 3px 9px;
+    }
+    .rbadge-open     { background: #dbeafe; color: #1d4ed8; }
+    .rbadge-resolved { background: #dcfce7; color: #15803d; }
+    .rbadge-assigned { background: #ede9fe; color: #6d28d9; }
+    .rbadge-high     { background: #fef2f2; color: #b91c1c; }
+    .rbadge-medium   { background: #fffbeb; color: #b45309; }
+    .rbadge-low      { background: #f0fdf4; color: #15803d; }
+
+    /* No-results & loading states */
+    .state-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 40px 24px;
+      text-align: center;
+      border: 1.5px dashed #e2e8f4;
+    }
+    .state-box .state-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: .4;
+    }
+    .state-box h3 { font-size: 16px; color: #374151; margin: 0 0 6px; }
+    .state-box p  { font-size: 13px; color: #9ca3af; margin: 0; }
+
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid #e2e8f4;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════════════════════════
+       REPORT PREVIEW
+    ═══════════════════════════════════════════════════════ */
+    #reportPreview { display: none; }
+
+    .report-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(15,26,62,.09);
+      overflow: hidden;
+    }
+
+    /* Header band */
+    .report-band {
+      padding: 30px 36px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-band::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(255,255,255,.03) 0px,
+        rgba(255,255,255,.03) 1px,
+        transparent 1px,
+        transparent 8px
+      );
+      pointer-events: none;
+    }
+    .report-band-inner { position: relative; z-index: 1; }
+    .band-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .band-logo-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #fff;
+    }
+    .band-logo-text { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.9); }
+    .band-logo-sub  { font-size: 11px; color: rgba(255,255,255,.55); }
+
+    .band-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 5px;
+    }
+    .band-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,.65);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Meta strip */
+    .meta-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: #e8ecf5;
+      border-bottom: 1px solid #e8ecf5;
+    }
+    .meta-cell {
+      background: #fff;
+      padding: 14px 18px;
+    }
+    .mc-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+    }
+    .mc-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f1a3e;
+      margin-top: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .mc-value.badge-open     { color: #1d4ed8; }
+    .mc-value.badge-resolved { color: #15803d; }
+    .mc-value.badge-assigned { color: #6d28d9; }
+
+    /* Body */
+    .report-body { padding: 28px 36px; }
+
+    .sec-head {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+      border-bottom: 1px solid #e8ecf5;
+      padding-bottom: 8px;
+      margin-bottom: 18px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 32px;
+      margin-bottom: 30px;
+    }
+    .fi-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+    }
+    .fi-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a2445;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+    .fi-value.mono { font-family: 'IBM Plex Mono', monospace; }
+    .span-2 { grid-column: 1 / span 2; }
+    .fi-value.prose { font-weight: 400; line-height: 1.7; font-size: 13px; }
+
+    /* Risk pill */
+    .risk-pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      border-radius: 20px;
+      padding: 3px 12px;
+      text-transform: uppercase;
+    }
+    .risk-high   { background: #fef2f2; color: #b91c1c; }
+    .risk-medium { background: #fffbeb; color: #b45309; }
+    .risk-low    { background: #f0fdf4; color: #15803d; }
+
+    /* Footer strip */
+    .report-footer {
+      background: #f8fafc;
+      border-top: 1px solid #e8ecf5;
+      padding: 18px 36px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      height: 42px;
+      padding: 0 20px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .15s, transform .1s, opacity .15s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .btn-primary  { background: #0f1a3e; color: #fff; }
+    .btn-primary:hover:not(:disabled)  { background: #1e3a6e; }
     .btn-outline  { background: #fff; color: #374151; border: 1.5px solid #d1d5db; }
-    #downloadStatus { font-size: 13px; color: #6b7280; margin-top: 10px; display: none; }
-    .empty-state { text-align: center; padding: 50px 20px; color: #6b7280; }
-    .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: #374151; }
+    .btn-outline:hover  { background: #f9fafb; }
+
+    .dl-status {
+      font-size: 12px;
+      color: #6b7280;
+      margin-left: 4px;
+      display: none;
+    }
+    .dl-status.ok  { color: #15803d; display: inline; }
+    .dl-status.err { color: #b91c1c; display: inline; }
+
+    /* ── Watermark area in body ───────────────────────────── */
+    .official-seal {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border: 1px solid #e8ecf5;
+      border-radius: 10px;
+      margin-bottom: 28px;
+    }
+    .seal-icon { font-size: 18px; color: #374151; }
+    .seal-text { font-size: 11px; color: #6b7280; line-height: 1.5; }
+    .seal-text strong { color: #374151; display: block; margin-bottom: 1px; }
+
+    /* ═══════════════════════════════════════════════════════
+       PRINT STYLES — clean PDF output
+    ═══════════════════════════════════════════════════════ */
+    @media print {
+      .sidebar, .topbar, .search-panel, #searchResults,
+      .report-footer, .rpt-eyebrow, .rpt-page-title { display: none !important; }
+
+      body, .layout, .main, .content, .rpt-shell { all: unset; }
+      body { font-family: 'IBM Plex Sans', sans-serif; }
+
+      #reportPreview { display: block !important; }
+      .report-card {
+        box-shadow: none;
+        border-radius: 0;
+        border: none;
+      }
+      .report-band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .meta-strip  { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .meta-cell   { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .field-grid  { gap: 14px 24px; }
+      .report-body { padding: 22px 28px; }
+    }
   </style>
 </head>
+
 <body>
 <div class="layout">
 
-  <!-- SIDEBAR -->
+  <!-- ── SIDEBAR (populated by sidebar.js) ─────────────────── -->
   <aside class="sidebar">
     <div class="logo">
       <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -127,273 +504,544 @@
     <nav class="menu" id="sidebarMenu"></nav>
   </aside>
 
-  <!-- MAIN -->
+  <!-- ── MAIN ──────────────────────────────────────────────── -->
   <main class="main">
     <header class="topbar">
       <div>
-        <h1>Report Screen</h1>
-        <p>Select a case to preview its report — then download a PDF copy</p>
+        <h1>Report Generator</h1>
+        <p>Search for a case, preview the report, and download a PDF copy</p>
       </div>
     </header>
 
-    <div class="content" style="overflow-y:auto; display:block; padding:0;">
-      <div class="report-container">
+    <div class="content">
+      <div class="rpt-shell">
 
-        <!-- ── Step 1: Choose a case ──────────────────────────── -->
-        <div class="selector-card">
-          <label for="caseSelect">
-            Select a case to generate a report for:
-          </label>
-          <select id="caseSelect">
-            <option value="">Loading cases…</option>
-          </select>
-        </div>
+        <!-- Page heading -->
+        <div class="rpt-eyebrow">Official Documentation</div>
+        <div class="rpt-page-title">Case Report Generator</div>
 
-        <!-- ── Step 2: Preview (shown after selection) ─────────── -->
-        <div id="emptyState" class="empty-state">
-          <h3>No case selected</h3>
-          <p>Choose a case from the dropdown above to preview and download its report.</p>
-        </div>
+        <!-- ══════════════════════════════════════════════════
+             SEARCH PANEL
+        ══════════════════════════════════════════════════ -->
+        <div class="search-panel">
+          <div class="search-panel-label">Search cases</div>
 
-        <div class="report-preview" id="reportPreview">
-
-          <!-- Coloured header band -->
-          <div class="report-header-band" id="reportBand">
-            <h2 id="rTitle">Case Report</h2>
-            <p>Eskom Theft Detection System — Official Report</p>
-          </div>
-
-          <!-- Three meta chips: case number, risk, status -->
-          <div class="report-meta">
-            <div class="meta-cell">
-              <div class="label">Case Number</div>
-              <div class="value" id="rCaseNum">—</div>
+          <div class="search-row">
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input
+                type="text"
+                id="caseSearch"
+                placeholder="Enter case number, suspect name, or keyword…"
+                autocomplete="off"
+                spellcheck="false"
+              >
             </div>
-            <div class="meta-cell">
-              <div class="label">Risk Level</div>
-              <div class="value" id="rRisk">—</div>
-            </div>
-            <div class="meta-cell">
-              <div class="label">Status</div>
-              <div class="value" id="rStatus">—</div>
-            </div>
-          </div>
-
-          <!-- Report body fields -->
-          <div class="report-body">
-            <div class="section-heading">Case Information</div>
-            <div class="field-grid">
-              <div class="field-item">
-                <div class="f-label">Suspect Name</div>
-                <div class="f-value" id="rSuspect">—</div>
-              </div>
-              <div class="field-item">
-                <div class="f-label">Date Reported</div>
-                <div class="f-value" id="rDate">—</div>
-              </div>
-              <div class="field-item">
-                <div class="f-label">Assigned Investigator</div>
-                <div class="f-value" id="rInvestigator">—</div>
-              </div>
-              <div class="field-item">
-                <div class="f-label">Date Resolved</div>
-                <div class="f-value" id="rResolved">—</div>
-              </div>
-              <div class="field-item desc-field">
-                <div class="f-label">Description</div>
-                <div class="f-value" id="rDesc" style="font-weight:400; line-height:1.6;">—</div>
-              </div>
-              <div class="field-item desc-field" id="rNotesRow" style="display:none;">
-                <div class="f-label">Investigation Notes</div>
-                <div class="f-value" id="rNotes" style="font-weight:400; line-height:1.6;"></div>
-              </div>
-            </div>
-
-            <div class="section-heading">Report Details</div>
-            <div class="field-grid">
-              <div class="field-item">
-                <div class="f-label">Report Generated</div>
-                <div class="f-value" id="rGenerated">—</div>
-              </div>
-              <div class="field-item">
-                <div class="f-label">Generated By</div>
-                <div class="f-value">System — Eskom ETD</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action buttons -->
-          <div class="action-row">
-            <!-- FIXED: Download calls the server API to generate the PDF -->
-            <button class="btn btn-blue" id="btnDownload">
-              <i data-lucide="download"></i> Download PDF Report
-            </button>
-            <!-- FIXED: Back to Cases navigates to caseList.html -->
-            <button class="btn btn-outline" id="btnBack">
-              <i data-lucide="arrow-left"></i> Back to Cases
+            <button id="btnSearch">
+              <i class="fa-solid fa-magnifying-glass"></i> Search
             </button>
           </div>
-          <p id="downloadStatus"></p>
 
+          <div class="search-hints">
+            <span class="hint-label">Try:</span>
+            <span class="hint-chip" data-hint="OPEN">Open cases</span>
+            <span class="hint-chip" data-hint="HIGH">High risk</span>
+            <span class="hint-chip" data-hint="Resolved">Resolved</span>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════
+             SEARCH RESULTS
+        ══════════════════════════════════════════════════ -->
+        <div id="searchResults">
+          <!-- Populated by JS -->
+          <div class="state-box">
+            <div class="state-icon"><i class="fa-regular fa-folder-open"></i></div>
+            <h3>Search for a case above</h3>
+            <p>Type a case number or suspect name and press Search to find cases.</p>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════
+             REPORT PREVIEW (shown when a case is selected)
+        ══════════════════════════════════════════════════ -->
+        <div id="reportPreview">
+          <div class="report-card" id="reportCard">
+
+            <!-- Header band -->
+            <div class="report-band" id="reportBand" style="background: linear-gradient(135deg, #0f1a3e 0%, #2563eb 100%);">
+              <div class="report-band-inner">
+                <div class="band-logo">
+                  <div class="band-logo-icon"><i class="fa-solid fa-bolt"></i></div>
+                  <div>
+                    <div class="band-logo-text">Eskom Theft Detection System</div>
+                    <div class="band-logo-sub">Confidential — Official Use Only</div>
+                  </div>
+                </div>
+                <div class="band-title" id="rTitle">Case Report</div>
+                <div class="band-sub" id="rSubtitle">—</div>
+              </div>
+            </div>
+
+            <!-- Meta strip: 4 key facts at a glance -->
+            <div class="meta-strip">
+              <div class="meta-cell">
+                <div class="mc-label">Case Number</div>
+                <div class="mc-value" id="rCaseNum">—</div>
+              </div>
+              <div class="meta-cell">
+                <div class="mc-label">Risk Level</div>
+                <div class="mc-value" id="rRisk">—</div>
+              </div>
+              <div class="meta-cell">
+                <div class="mc-label">Status</div>
+                <div class="mc-value" id="rStatus">—</div>
+              </div>
+              <div class="meta-cell">
+                <div class="mc-label">Date Reported</div>
+                <div class="mc-value" id="rDate">—</div>
+              </div>
+            </div>
+
+            <!-- Report body -->
+            <div class="report-body">
+
+              <!-- Official document notice -->
+              <div class="official-seal">
+                <div class="seal-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="seal-text">
+                  <strong>OFFICIAL ESKOM DOCUMENT</strong>
+                  This report is confidential and intended for authorised personnel only.
+                  Unauthorised disclosure is prohibited.
+                </div>
+              </div>
+
+              <!-- Case information -->
+              <div class="sec-head">Case Information</div>
+              <div class="field-grid">
+                <div class="fi">
+                  <div class="fi-label">Suspect Name</div>
+                  <div class="fi-value" id="rSuspect">—</div>
+                </div>
+                <div class="fi">
+                  <div class="fi-label">Assigned Investigator</div>
+                  <div class="fi-value" id="rInvestigator">—</div>
+                </div>
+                <div class="fi">
+                  <div class="fi-label">Date Reported</div>
+                  <div class="fi-value mono" id="rDateFull">—</div>
+                </div>
+                <div class="fi">
+                  <div class="fi-label">Date Resolved</div>
+                  <div class="fi-value mono" id="rResolved">—</div>
+                </div>
+                <div class="fi">
+                  <div class="fi-label">Risk Level</div>
+                  <div class="fi-value" id="rRiskDetail">—</div>
+                </div>
+                <div class="fi">
+                  <div class="fi-label">Outcome</div>
+                  <div class="fi-value" id="rOutcome">—</div>
+                </div>
+                <div class="fi span-2">
+                  <div class="fi-label">Description</div>
+                  <div class="fi-value prose" id="rDesc">—</div>
+                </div>
+              </div>
+
+              <!-- Investigator notes (shown only when notes exist) -->
+              <div id="rNotesSection" style="display:none;">
+                <div class="sec-head">Investigator Notes</div>
+                <div class="field-grid">
+                  <div class="fi span-2">
+                    <div class="fi-value prose" id="rNotes"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Report metadata -->
+              <div class="sec-head">Report Details</div>
+              <div class="field-grid">
+                <div class="fi">
+                  <div class="fi-label">Report Generated</div>
+                  <div class="fi-value mono" id="rGenerated">—</div>
+                </div>
+                <div class="fi">
+                  <div class="fi-label">Generated By</div>
+                  <div class="fi-value" id="rGeneratedBy">System — Eskom ETD</div>
+                </div>
+              </div>
+
+            </div><!-- end .report-body -->
+
+            <!-- Action footer -->
+            <div class="report-footer">
+              <button class="btn btn-primary" id="btnDownload">
+                <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+              </button>
+              <button class="btn btn-outline" id="btnClear">
+                <i class="fa-solid fa-rotate-left"></i> New Search
+              </button>
+              <button class="btn btn-outline" id="btnBack">
+                <i class="fa-solid fa-arrow-left"></i> Back to Cases
+              </button>
+              <span class="dl-status" id="dlStatus"></span>
+            </div>
+
+          </div><!-- end .report-card -->
         </div><!-- end #reportPreview -->
 
-      </div><!-- end .report-container -->
-    </div>
-
+      </div><!-- end .rpt-shell -->
+    </div><!-- end .content -->
   </main>
-</div>
 
+</div><!-- end .layout -->
+
+<!-- ═════════════════════════════════════════════════════════
+     SCRIPT
+═════════════════════════════════════════════════════════ -->
 <script>
 lucide.createIcons();
 
-// ── AUTH ──────────────────────────────────────────────────────
+// ── AUTH ───────────────────────────────────────────────────
 const token    = localStorage.getItem("token");
 const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
 if (!token) window.location.href = "login.html";
 
 const BASE_URL    = "http://localhost:3000";
-const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+const authHeaders = {
+  "Content-Type":  "application/json",
+  "Authorization": `Bearer ${token}`
+};
 
-document.getElementById("logoutLink").addEventListener("click", e => {
-  e.preventDefault(); localStorage.clear(); window.location.href = "login.html";
-});
+// ── STATE ──────────────────────────────────────────────────
+let allCases     = [];   // full list from API (loaded once)
+let selectedCase = null; // currently previewed case
 
-let allCases     = [];
-let selectedCase = null;
-
-// ── LOAD CASE PICKER ──────────────────────────────────────────
-// FIXED: no hardcoded cases — all loaded from the API.
-async function loadCasePicker() {
-  const sel = document.getElementById("caseSelect");
+// ══════════════════════════════════════════════════════════
+//  LOAD ALL CASES FROM API (called once on boot)
+// ══════════════════════════════════════════════════════════
+async function fetchAllCases() {
   try {
-    const res  = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
-    const raw  = await res.json();
-    allCases   = Array.isArray(raw) ? raw : [];
-
-    sel.innerHTML = `<option value="">— Choose a case to generate a report —</option>`;
-    allCases.forEach(c => {
-      const displayId = c.case_number || c.id;
-      const opt = document.createElement("option");
-      opt.value = c.id;
-      opt.textContent = `${displayId} — ${c.suspect_name || "Unknown"} (${(c.outcome || "OPEN").toUpperCase()})`;
-      sel.appendChild(opt);
-    });
-
-    // If the user came from dashboard/cases, pre-select that case
-    const preId = localStorage.getItem("selectedCaseId");
-    if (preId) {
-      sel.value = preId;
-      localStorage.removeItem("selectedCaseId");
-      renderPreview(preId);
+    const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear();
+      window.location.href = "login.html";
+      return;
     }
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    allCases = Array.isArray(data) ? data : [];
   } catch (err) {
-    sel.innerHTML = `<option value="">Could not load cases: ${err.message}</option>`;
+    allCases = [];
+    console.error("Failed to load cases:", err.message);
   }
 }
 
-// ── RENDER PREVIEW ────────────────────────────────────────────
-function renderPreview(caseId) {
+// ══════════════════════════════════════════════════════════
+//  SEARCH LOGIC
+// ══════════════════════════════════════════════════════════
+function doSearch() {
+  const query = document.getElementById("caseSearch").value.trim().toLowerCase();
+  const el    = document.getElementById("searchResults");
+
+  if (!query) {
+    el.innerHTML = `
+      <div class="state-box">
+        <div class="state-icon"><i class="fa-regular fa-folder-open"></i></div>
+        <h3>Search for a case above</h3>
+        <p>Type a case number or suspect name and press Search.</p>
+      </div>`;
+    return;
+  }
+
+  // Filter across multiple fields
+  const matches = allCases.filter(c => {
+    const caseNum    = String(c.case_number || c.id || "").toLowerCase();
+    const suspect    = (c.suspect_name  || "").toLowerCase();
+    const status     = (c.status        || c.outcome || "").toLowerCase();
+    const risk       = (c.risk_level    || "").toLowerCase();
+    const desc       = (c.description   || "").toLowerCase();
+    return caseNum.includes(query) || suspect.includes(query) ||
+           status.includes(query)  || risk.includes(query)    ||
+           desc.includes(query);
+  });
+
+  if (matches.length === 0) {
+    el.innerHTML = `
+      <div class="state-box">
+        <div class="state-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+        <h3>No cases found</h3>
+        <p>No cases matched "<strong>${escHtml(query)}</strong>". Try a different search term.</p>
+      </div>`;
+    return;
+  }
+
+  let html = `
+    <div class="results-header">
+      Results <span class="results-count">${matches.length}</span>
+    </div>`;
+
+  matches.forEach(c => {
+    const displayId = escHtml(c.case_number || String(c.id));
+    const suspect   = escHtml(c.suspect_name || "Unknown suspect");
+    const status    = (c.status || c.outcome || "Open").toUpperCase();
+    const risk      = (c.risk_level || "LOW").toUpperCase();
+    const date      = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A";
+    const desc      = escHtml((c.description || "No description").substring(0, 80));
+
+    const iconClass = risk === "HIGH" ? "icon-high" : risk === "MEDIUM" ? "icon-medium" : risk === "LOW" ? "icon-low" : "icon-default";
+    const iconSymbol = risk === "HIGH" ? "fa-triangle-exclamation" : risk === "MEDIUM" ? "fa-circle-exclamation" : "fa-shield-halved";
+
+    const statusBadgeClass = status.includes("RESOLV") ? "rbadge-resolved"
+                           : status.includes("ASSIGN") ? "rbadge-assigned"
+                           : "rbadge-open";
+    const riskBadgeClass = risk === "HIGH" ? "rbadge-high" : risk === "MEDIUM" ? "rbadge-medium" : "rbadge-low";
+
+    html += `
+      <div class="result-card" data-id="${c.id}" onclick="selectCase('${c.id}')">
+        <div class="result-card-icon ${iconClass}">
+          <i class="fa-solid ${iconSymbol}"></i>
+        </div>
+        <div class="result-card-body">
+          <div class="result-card-title">${displayId}</div>
+          <div class="result-card-sub">${suspect} · ${date} · ${desc}</div>
+        </div>
+        <div class="result-card-badges">
+          <span class="rbadge ${riskBadgeClass}">${risk}</span>
+          <span class="rbadge ${statusBadgeClass}">${status}</span>
+        </div>
+      </div>`;
+  });
+
+  el.innerHTML = html;
+
+  // Re-highlight the active card if the same case is still selected
+  if (selectedCase) {
+    const active = el.querySelector(`[data-id="${selectedCase.id}"]`);
+    if (active) active.classList.add("active");
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SELECT A CASE → RENDER REPORT PREVIEW
+// ══════════════════════════════════════════════════════════
+function selectCase(caseId) {
   const c = allCases.find(x => String(x.id) === String(caseId));
   if (!c) return;
-
   selectedCase = c;
 
-  const displayId = c.case_number || c.id;
-  const riskLabel = (c.risk_level || "LOW").toUpperCase();
-  const statLabel = (c.outcome    || "OPEN").toUpperCase();
-  const invName   = c.investigators
-    ? (c.investigators.full_name || c.investigators.email)
-    : (c.assigned_to ? "Assigned" : "Unassigned");
+  // Highlight active result card
+  document.querySelectorAll(".result-card").forEach(el => el.classList.remove("active"));
+  const active = document.querySelector(`[data-id="${caseId}"]`);
+  if (active) active.classList.add("active");
 
-  // Colour the header band based on risk level
-  const colours = { HIGH: "#b91c1c", MID: "#b45309", LOW: "#15803d", DEFAULT: "#1e3a8a" };
-  const bandColour = colours[riskLabel] || colours.DEFAULT;
-  document.getElementById("reportBand").style.background = `linear-gradient(90deg, ${bandColour}, ${bandColour}cc)`;
-
-  document.getElementById("rTitle").textContent      = `Report: ${displayId}`;
-  document.getElementById("rCaseNum").textContent    = displayId;
-  document.getElementById("rRisk").textContent       = riskLabel;
-  document.getElementById("rStatus").textContent     = statLabel;
-  document.getElementById("rSuspect").textContent    = c.suspect_name || "Not recorded";
-  document.getElementById("rDate").textContent       = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A";
-  document.getElementById("rInvestigator").textContent = invName;
-  document.getElementById("rResolved").textContent   = c.resolved_at ? new Date(c.resolved_at).toLocaleDateString("en-ZA") : "Not yet resolved";
-  document.getElementById("rDesc").textContent       = c.description || "No description recorded";
-  document.getElementById("rGenerated").textContent  = new Date().toLocaleString("en-ZA");
-
-  // Show notes section only if notes exist
-  if (c.notes) {
-    document.getElementById("rNotes").textContent  = c.notes;
-    document.getElementById("rNotesRow").style.display = "";
-  } else {
-    document.getElementById("rNotesRow").style.display = "none";
-  }
-
-  // Show the preview, hide the empty state
-  document.getElementById("emptyState").style.display  = "none";
-  document.getElementById("reportPreview").style.display = "block";
-
-  lucide.createIcons();
+  renderReport(c);
 }
 
-// ── DROPDOWN HANDLER ──────────────────────────────────────────
-document.getElementById("caseSelect").addEventListener("change", function () {
-  if (this.value) {
-    renderPreview(this.value);
-  } else {
-    selectedCase = null;
-    document.getElementById("emptyState").style.display  = "";
-    document.getElementById("reportPreview").style.display = "none";
-  }
-});
+// ══════════════════════════════════════════════════════════
+//  RENDER REPORT PREVIEW
+// ══════════════════════════════════════════════════════════
+function renderReport(c) {
+  const displayId   = c.case_number || String(c.id);
+  const riskRaw     = (c.risk_level || "LOW").toUpperCase();
+  const statusRaw   = (c.status || c.outcome || "Open");
+  const statusLabel = statusRaw.toUpperCase();
 
-// ── DOWNLOAD PDF ──────────────────────────────────────────────
-// FIXED: actually calls the backend /api/reports/:id endpoint.
-// The server generates the PDF and returns a download URL.
+  // Band colour by risk
+  const bandGradients = {
+    HIGH:   "linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%)",
+    MEDIUM: "linear-gradient(135deg, #78350f 0%, #b45309 100%)",
+    LOW:    "linear-gradient(135deg, #052e16 0%, #15803d 100%)",
+    DEFAULT:"linear-gradient(135deg, #0f1a3e 0%, #2563eb 100%)"
+  };
+  document.getElementById("reportBand").style.background = bandGradients[riskRaw] || bandGradients.DEFAULT;
+
+  // Investigator name
+  const invName = c.investigators
+    ? (c.investigators.full_name || c.investigators.email || "Assigned")
+    : (c.assigned_to || "Unassigned");
+
+  // ── Populate fields ──────────────────────────────────────
+  document.getElementById("rTitle").textContent      = `Case Report — ${displayId}`;
+  document.getElementById("rSubtitle").textContent   = `Generated ${new Date().toLocaleDateString("en-ZA", { day:"numeric", month:"long", year:"numeric" })} · Eskom ETD System`;
+
+  document.getElementById("rCaseNum").textContent    = displayId;
+
+  // Risk with pill
+  document.getElementById("rRisk").innerHTML = `<span class="risk-pill risk-${riskRaw.toLowerCase()}">${riskRaw}</span>`;
+
+  // Status with colour class
+  const statusClass = statusLabel.includes("RESOLV") ? "badge-resolved"
+                    : statusLabel.includes("ASSIGN") ? "badge-assigned"
+                    : "badge-open";
+  const rStatusEl = document.getElementById("rStatus");
+  rStatusEl.textContent = statusLabel;
+  rStatusEl.className   = `mc-value ${statusClass}`;
+
+  document.getElementById("rDate").textContent       = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A";
+  document.getElementById("rSuspect").textContent    = c.suspect_name   || "Not recorded";
+  document.getElementById("rInvestigator").textContent = invName;
+  document.getElementById("rDateFull").textContent   = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA", { day:"numeric", month:"long", year:"numeric" }) : "N/A";
+  document.getElementById("rResolved").textContent   = c.resolved_at ? new Date(c.resolved_at).toLocaleDateString("en-ZA", { day:"numeric", month:"long", year:"numeric" }) : "Not yet resolved";
+  document.getElementById("rRiskDetail").innerHTML   = `<span class="risk-pill risk-${riskRaw.toLowerCase()}">${riskRaw} RISK</span>`;
+  document.getElementById("rOutcome").textContent    = c.outcome || statusRaw;
+  document.getElementById("rDesc").textContent       = c.description || "No description recorded";
+  document.getElementById("rGenerated").textContent  = new Date().toLocaleString("en-ZA", { day:"numeric", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  document.getElementById("rGeneratedBy").textContent = "System — Eskom ETD";
+
+  // Notes
+  if (c.notes && c.notes.trim()) {
+    document.getElementById("rNotes").textContent = c.notes;
+    document.getElementById("rNotesSection").style.display = "";
+  } else {
+    document.getElementById("rNotesSection").style.display = "none";
+  }
+
+  // Show preview, reset download status
+  document.getElementById("reportPreview").style.display = "block";
+  const dlStatus = document.getElementById("dlStatus");
+  dlStatus.className   = "dl-status";
+  dlStatus.textContent = "";
+
+  // Scroll to preview
+  setTimeout(() => {
+    document.getElementById("reportPreview").scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 80);
+}
+
+// ══════════════════════════════════════════════════════════
+//  DOWNLOAD PDF
+//  Tries the backend /api/reports/:id endpoint first.
+//  Falls back to window.print() if that fails.
+// ══════════════════════════════════════════════════════════
 document.getElementById("btnDownload").addEventListener("click", async () => {
   if (!selectedCase) { alert("Please select a case first."); return; }
 
-  const btn    = document.getElementById("btnDownload");
-  const status = document.getElementById("downloadStatus");
-  btn.disabled = true;
-  btn.innerHTML = `<i data-lucide="loader"></i> Generating PDF…`;
-  lucide.createIcons();
-  status.style.display = "block";
-  status.textContent   = "Connecting to server…";
+  const btn      = document.getElementById("btnDownload");
+  const dlStatus = document.getElementById("dlStatus");
+
+  btn.disabled      = true;
+  btn.innerHTML     = `<i class="fa-solid fa-spinner fa-spin"></i> Generating…`;
+  dlStatus.className   = "dl-status";
+  dlStatus.textContent = "";
 
   try {
-    const res  = await fetch(`${BASE_URL}/api/reports/${selectedCase.id}`, { headers: authHeaders });
-    const data = await res.json();
+    const res = await fetch(`${BASE_URL}/api/reports/${selectedCase.id}`, { headers: authHeaders });
 
-    if (!res.ok || !data.url) {
-      throw new Error(data.message || "PDF generation failed");
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, "_blank");
+        dlStatus.textContent = "✓ PDF opened in a new tab";
+        dlStatus.className   = "dl-status ok";
+        return;
+      }
     }
+    // Server didn't supply a URL — fall through to print
+    throw new Error("No URL from server");
 
-    // Open the PDF in a new tab — the browser's built-in PDF viewer
-    // allows the user to save/print from there.
-    window.open(data.url, "_blank");
-    status.textContent = "✔ PDF opened in a new tab. Use your browser to save it.";
-    status.style.color = "#16a34a";
+  } catch (_) {
+    // Fallback: use the browser print dialog (report.css hides UI chrome)
+    window.print();
+    dlStatus.textContent = "✓ Print dialog opened — save as PDF";
+    dlStatus.className   = "dl-status ok";
 
-  } catch (err) {
-    status.textContent = `Could not generate PDF: ${err.message}`;
-    status.style.color = "#dc2626";
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="download"></i> Download PDF Report`;
-    lucide.createIcons();
+    btn.disabled  = false;
+    btn.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> Download PDF`;
   }
 });
 
-// ── BACK TO CASES ─────────────────────────────────────────────
-// FIXED: was doing nothing. Now navigates to caseList.html.
+// ── CLEAR / NEW SEARCH ─────────────────────────────────────
+document.getElementById("btnClear").addEventListener("click", () => {
+  selectedCase = null;
+  document.getElementById("caseSearch").value = "";
+  document.getElementById("reportPreview").style.display = "none";
+  document.getElementById("searchResults").innerHTML = `
+    <div class="state-box">
+      <div class="state-icon"><i class="fa-regular fa-folder-open"></i></div>
+      <h3>Search for a case above</h3>
+      <p>Type a case number or suspect name and press Search.</p>
+    </div>`;
+  document.getElementById("caseSearch").focus();
+});
+
+// ── BACK TO CASES ──────────────────────────────────────────
 document.getElementById("btnBack").addEventListener("click", () => {
   window.location.href = "caseList.html";
 });
 
-// ── INIT ──────────────────────────────────────────────────────
-loadCasePicker();
+// ── SEARCH TRIGGERS ────────────────────────────────────────
+document.getElementById("btnSearch").addEventListener("click", doSearch);
+document.getElementById("caseSearch").addEventListener("keydown", e => {
+  if (e.key === "Enter") doSearch();
+});
+
+// Hint chips → populate search field and auto-search
+document.querySelectorAll(".hint-chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.getElementById("caseSearch").value = chip.dataset.hint;
+    doSearch();
+  });
+});
+
+// ── PRE-SELECT FROM DASHBOARD/CASES ───────────────────────
+// If another page stored a selectedCaseId in localStorage,
+// auto-load that case immediately.
+async function init() {
+  showLoading();
+  await fetchAllCases();
+  hideLoading();
+
+  const preId = localStorage.getItem("selectedCaseId");
+  if (preId) {
+    localStorage.removeItem("selectedCaseId");
+    const c = allCases.find(x => String(x.id) === String(preId));
+    if (c) {
+      document.getElementById("caseSearch").value = c.case_number || String(c.id);
+      doSearch();
+      selectCase(String(preId));
+    }
+  }
+}
+
+function showLoading() {
+  document.getElementById("searchResults").innerHTML = `
+    <div class="state-box">
+      <div class="spinner"></div>
+      <h3>Loading cases…</h3>
+      <p>Connecting to the database.</p>
+    </div>`;
+}
+function hideLoading() {
+  document.getElementById("searchResults").innerHTML = `
+    <div class="state-box">
+      <div class="state-icon"><i class="fa-regular fa-folder-open"></i></div>
+      <h3>Search for a case above</h3>
+      <p>Type a case number or suspect name and press Search.</p>
+    </div>`;
+}
+
+// ── HTML ESCAPE HELPER ─────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ── LOGOUT (wired up by sidebar.js, but guard here too) ───
+document.addEventListener("click", e => {
+  if (e.target.id === "logoutLink" || e.target.closest("#logoutLink")) {
+    e.preventDefault();
+    localStorage.clear();
+    window.location.href = "login.html";
+  }
+});
+
+init();
 </script>
+
 <script src="../js/sidebar.js"></script>
 </body>
 </html>
