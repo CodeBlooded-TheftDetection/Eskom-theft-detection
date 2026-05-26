@@ -71,17 +71,22 @@ function setRoleInfo() {
 }
 
 // ── STAT CARDS ────────────────────────────────────────────────
+// For investigators, ALL stat card values are derived from their own
+// cases inside loadAlertBanner(). Calling /api/dashboard/stats for
+// investigators returns system-wide totals and would overwrite the
+// correct per-investigator numbers — so we skip it entirely here.
 async function loadStats() {
+  if (userRole === 'investigator') return;
+
   try {
     const res  = await fetch(`${BASE_URL}/api/dashboard/stats`, { headers: authHeaders });
     const data = await res.json();
     setEl('statTotal',    data.totalCases         ?? 0);
+    setEl('statHigh',     data.byRisk?.HIGH        ?? 0);
     setEl('statMid',      data.byRisk?.MID         ?? 0);
     setEl('statLow',      data.byRisk?.LOW         ?? 0);
     setEl('statOpen',     data.byOutcome?.PENDING  ?? 0);
     setEl('statResolved', data.byOutcome?.RESOLVED ?? 0);
-    // High risk will be set by the live alert banner data so the headline count
-    // and banner stay consistent with pending review performance.
     // Render admin chart if chart.js is available
     try { renderAdminChart(data); } catch(e) {}
   } catch (e) {
@@ -275,10 +280,10 @@ function renderCases(cases, container) {
 
 // ── MOCK TEAM DATA ────────────────────────────────────────────
 const mockTeam = [
-  { full_name: 'John Mthembu', email: 'john.m@eskom.co.za', assigned: 8, resolved: 6 },
-  { full_name: 'Sarah Khumalo', email: 'sarah.k@eskom.co.za', assigned: 12, resolved: 10 },
-  { full_name: 'Thabo Ndlela', email: 'thabo.n@eskom.co.za', assigned: 5, resolved: 5 },
-  { full_name: 'Lesego Mkhize', email: 'lesego.m@eskom.co.za', assigned: 9, resolved: 7 }
+  { id: 'mock-1', full_name: 'John Mthembu',   email: 'john.m@eskom.co.za',   assigned: 8,  resolved: 6  },
+  { id: 'mock-2', full_name: 'Sarah Khumalo',  email: 'sarah.k@eskom.co.za',  assigned: 12, resolved: 10 },
+  { id: 'mock-3', full_name: 'Thabo Ndlela',   email: 'thabo.n@eskom.co.za',  assigned: 5,  resolved: 5  },
+  { id: 'mock-4', full_name: 'Lesego Mkhize',  email: 'lesego.m@eskom.co.za', assigned: 9,  resolved: 7  }
 ];
 
 // ── TEAM PERFORMANCE ──────────────────────────────────────────
@@ -334,7 +339,9 @@ function renderTeamPerformance(invs, container) {
     const resolved = Number(inv.resolved || 0);
     const rate = assigned > 0 ? Math.round((resolved / assigned) * 100) : 0;
     const initial = label[0]?.toUpperCase() || '?';
-    return `<div class="team-row">
+    const invId = inv.id || inv.investigator_id || inv.email || '';
+    const safeName = label.replace(/'/g, "\\'");
+    return `<div class="team-row" style="cursor:pointer;" title="Click to view evaluations" onclick="openEvalPanel('${invId}', '${safeName}')">
       <div class="team-row-info">
         <div class="team-avatar">${initial}</div>
         <div class="team-text">
@@ -347,7 +354,10 @@ function renderTeamPerformance(invs, container) {
         <span>Resolved: ${resolved}</span>
         <div class="team-progress"><div class="team-progress-fill" style="width:${rate}%;"></div></div>
       </div>
-      <span class="team-rate">${rate}%</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="team-rate">${rate}%</span>
+        <span style="color:#a855f7;font-size:12px;font-weight:600;white-space:nowrap;opacity:0.8;"><i class="fa-solid fa-star" style="font-size:11px;"></i> Evals</span>
+      </div>
     </div>`;
   }).join('')}</div>`;
 }
@@ -411,23 +421,61 @@ async function loadAlertBanner() {
       </div>
     `;
   } else if (userRole === 'investigator') {
+    let myCases = [];
+    try {
+      const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+      const cases = await res.json();
+      if (Array.isArray(cases)) myCases = cases;
+    } catch (e) {
+      console.warn('Failed to fetch cases for investigator banner:', e.message);
+    }
+
+    const myTotal    = myCases.length;
+    const myHigh     = myCases.filter(c => (c.risk_level || '').toUpperCase() === 'HIGH').length;
+    const myMid      = myCases.filter(c => (c.risk_level || '').toUpperCase() === 'MID').length;
+    const myLow      = myCases.filter(c => (c.risk_level || '').toUpperCase() === 'LOW').length;
+    const myOpen     = myCases.filter(c => ['OPEN','PENDING'].includes((c.outcome || c.status || '').toUpperCase())).length;
+    const myResolved = myCases.filter(c => (c.outcome || c.status || '').toUpperCase() === 'RESOLVED').length;
+
+    // Set ALL stat cards from this investigator's own cases only.
+    // loadStats() is skipped for investigators so these values are
+    // never overwritten by system-wide totals from /api/dashboard/stats.
+    setEl('statTotal',    myTotal);
+    setEl('statHigh',     myHigh);
+    setEl('statMid',      myMid);
+    setEl('statLow',      myLow);
+    setEl('statOpen',     myOpen);
+    setEl('statResolved', myResolved);
+
+    const heading = myTotal === 0
+      ? 'No Cases Assigned'
+      : `${myTotal} Case${myTotal === 1 ? '' : 's'} Assigned to You`;
+
+    const message = myTotal === 0
+      ? 'You have no active cases. Check back later or contact your administrator.'
+      : `${myHigh > 0 ? `${myHigh} high-priority` : 'No high-priority'}, ${myOpen} active. View your case list for details.`;
+
+    const isAlert = myHigh > 0;
+
     alertBanner.innerHTML = `
       <div style="
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        border: 2px solid #7dd3fc;
+        background: ${isAlert ? 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)' : 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)'};
+        border: 2px solid ${isAlert ? '#fca5a5' : '#7dd3fc'};
         border-radius: 12px;
         padding: 16px 20px;
         display: flex;
         gap: 12px;
         align-items: flex-start;
       ">
-        <span style="font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-circle-check" style="color:#0c4a6e;font-size:20px;"></i></span>
+        <span style="font-size: 20px; flex-shrink: 0;">
+          <i class="fa-solid ${isAlert ? 'fa-triangle-exclamation' : 'fa-circle-check'}" style="color:${isAlert ? '#b91c1c' : '#0c4a6e'};font-size:20px;"></i>
+        </span>
         <div>
-          <h3 style="font-size: 14px; font-weight: 700; color: #0c4a6e; margin-bottom: 2px;">
-            5 Cases Assigned to You
+          <h3 style="font-size: 14px; font-weight: 700; color: ${isAlert ? '#7f1d1d' : '#0c4a6e'}; margin-bottom: 2px;">
+            ${heading}
           </h3>
-          <p style="font-size: 13px; color: #075985; margin: 0;">
-            2 high-priority, 3 standard. View your cases dashboard for details.
+          <p style="font-size: 13px; color: ${isAlert ? '#b91c1c' : '#075985'}; margin: 0;">
+            ${message}
           </p>
         </div>
       </div>
@@ -529,10 +577,12 @@ function filterAndShowCases(filterType) {
     filtered = allCases;
     filterLabel = 'All Cases';
   } else if (filterType === 'HIGH_RISK') {
-    filtered = allCases.filter(c => 
-      (c.risk_level || '').toString().toUpperCase().trim() === 'HIGH'
-    );
-    filterLabel = 'High Risk Cases';
+    filtered = allCases.filter(c => {
+      const risk   = (c.risk_level || '').toString().toUpperCase().trim() === 'HIGH';
+      const status = (c.outcome || c.status || '').toString().toUpperCase().trim();
+      return risk && status !== 'RESOLVED';
+    });
+    filterLabel = 'High Risk — Open / Pending';
   } else if (filterType === 'PENDING') {
     filtered = allCases.filter(c => 
       (c.outcome || c.status || '').toString().toUpperCase().trim() === 'PENDING'
@@ -590,6 +640,130 @@ function setEl(id, val) {
   if (el) el.textContent = val;
 }
 
+// ── EVALUATIONS SIDE PANEL ────────────────────────────────────
+// Opens a slide-in drawer showing all evaluations for a given investigator.
+// Called when an admin clicks any team row in the Team Performance section.
+
+function openEvalPanel(invId, invName) {
+  const panel = document.getElementById('evalSidePanel');
+  const overlay = document.getElementById('evalPanelOverlay');
+  if (!panel || !overlay) return;
+
+  document.getElementById('evalPanelTitle').textContent = invName || 'Investigator';
+  document.getElementById('evalPanelSub').textContent = 'Performance evaluations';
+  document.getElementById('evalPanelContent').innerHTML =
+    '<p style="color:#9ca3af;text-align:center;padding:40px 0;">Loading evaluations…</p>';
+
+  panel.style.right = '0';
+  overlay.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  loadInvestigatorEvaluations(invId);
+}
+
+function closeEvalPanel() {
+  const panel = document.getElementById('evalSidePanel');
+  const overlay = document.getElementById('evalPanelOverlay');
+  if (panel)   panel.style.right = '-460px';
+  if (overlay) overlay.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function loadInvestigatorEvaluations(invId) {
+  const content = document.getElementById('evalPanelContent');
+  if (!content) return;
+  try {
+    const res = await fetch(`${BASE_URL}/api/evaluations`, { headers: authHeaders });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const all = await res.json();
+    const evals = Array.isArray(all)
+      ? all.filter(e => String(e.investigator_id) === String(invId))
+      : [];
+
+    if (evals.length === 0) {
+      content.innerHTML = `
+        <div style="text-align:center;padding:48px 20px;color:#9ca3af;">
+          <i class="fa-solid fa-clipboard-list" style="font-size:40px;margin-bottom:14px;display:block;opacity:0.35;"></i>
+          <p style="font-size:14px;font-weight:700;color:#64748b;margin:0 0 6px;">No evaluations yet</p>
+          <p style="font-size:12px;margin:0;">Submit one from the
+            <a href="evaluations.html" style="color:#7c3aed;font-weight:600;text-decoration:none;">Evaluations page</a>.
+          </p>
+        </div>`;
+      return;
+    }
+
+    // Average scores
+    const avg = field => {
+      const vals = evals.map(e => Number(e[field] || 0)).filter(v => v > 0);
+      return vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
+    };
+
+    const avgOverall = avg('rating_overall');
+
+    content.innerHTML = `
+      <!-- Summary bar -->
+      <div style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #c4b5fd;border-radius:12px;padding:16px;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-size:12px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:0.06em;">Summary — ${evals.length} Evaluation${evals.length===1?'':'s'}</span>
+          <span style="font-size:22px;font-weight:800;color:#7c3aed;">${avgOverall}<span style="font-size:13px;color:#a78bfa;">/5</span></span>
+        </div>
+        <div style="display:grid;gap:7px;">
+          ${evalBar('Communication',   avg('rating_communication'))}
+          ${evalBar('Case Handling',   avg('rating_case_handling'))}
+          ${evalBar('Professionalism', avg('rating_professionalism'))}
+          ${evalBar('Speed',           avg('rating_speed'))}
+        </div>
+      </div>
+
+      <!-- Individual evals -->
+      ${evals.map((e, idx) => {
+        const stars = Array.from({length:5}, (_,i) =>
+          `<i class="fa-${i < (e.rating_overall||0) ? 'solid' : 'regular'} fa-star"
+              style="color:${i < (e.rating_overall||0) ? '#f59e0b' : '#d1d5db'};font-size:13px;"></i>`
+        ).join('');
+        const date = e.evaluation_date
+          ? new Date(e.evaluation_date).toLocaleDateString('en-ZA')
+          : 'N/A';
+        return `
+          <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(15,23,42,0.04);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="font-size:11px;color:#64748b;font-weight:600;"><i class="fa-regular fa-calendar" style="margin-right:4px;"></i>${date}</span>
+              <span>${stars}</span>
+            </div>
+            ${e.written_feedback ? `<p style="font-size:13px;color:#374151;margin:0 0 12px;line-height:1.6;border-left:3px solid #a855f7;padding-left:10px;font-style:italic;">${e.written_feedback}</p>` : ''}
+            <div style="display:grid;gap:6px;margin-bottom:10px;">
+              ${evalBar('Communication',   e.rating_communication)}
+              ${evalBar('Case Handling',   e.rating_case_handling)}
+              ${evalBar('Professionalism', e.rating_professionalism)}
+              ${evalBar('Speed',           e.rating_speed)}
+            </div>
+            ${e.strengths ? `<p style="font-size:12px;color:#15803d;margin:6px 0 0;"><strong style="font-weight:700;">✦ Strengths:</strong> ${e.strengths}</p>` : ''}
+            ${e.weaknesses ? `<p style="font-size:12px;color:#b91c1c;margin:5px 0 0;"><strong style="font-weight:700;">✦ Weaknesses:</strong> ${e.weaknesses}</p>` : ''}
+            ${e.recommendations ? `<p style="font-size:12px;color:#1d4ed8;margin:5px 0 0;"><strong style="font-weight:700;">✦ Recommendations:</strong> ${e.recommendations}</p>` : ''}
+          </div>`;
+      }).join('')}`;
+
+  } catch (err) {
+    content.innerHTML = `<p style="color:#dc2626;text-align:center;padding:20px;font-size:13px;">
+      <i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i>Could not load evaluations: ${err.message}
+    </p>`;
+  }
+}
+
+function evalBar(label, value) {
+  const num = parseFloat(value) || 0;
+  const pct = Math.round((num / 5) * 100);
+  const color = num >= 4 ? '#16a34a' : num >= 3 ? '#2563eb' : num >= 2 ? '#f59e0b' : '#dc2626';
+  return `
+    <div style="display:grid;grid-template-columns:110px 1fr 36px;gap:8px;align-items:center;">
+      <span style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap;">${label}</span>
+      <div style="background:#e5e7eb;border-radius:999px;height:6px;overflow:hidden;">
+        <div style="height:100%;background:${color};width:${pct}%;border-radius:999px;transition:width 0.4s;"></div>
+      </div>
+      <span style="font-size:11px;color:#374151;font-weight:700;text-align:right;">${value}/5</span>
+    </div>`;
+}
+
 // ── INIT ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   buildSidebar();
@@ -598,4 +772,172 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadStats();
   loadCases();
   loadTeamPerformance();
+  loadMyEvaluationsSidebar();
 });
+// ── INVESTIGATOR: MY EVALUATIONS SIDEBAR ─────────────────────
+// Fetches and renders the logged-in investigator's own evaluations
+// into the right-hand sidebar panel (#myEvalSidebarContent).
+// Uses /api/my-evaluations — an investigator-safe endpoint that
+// the server scopes to the authenticated user's own records only.
+// The general /api/evaluations endpoint is blocked (403) for investigators.
+
+async function loadMyEvaluationsSidebar() {
+  if (userRole !== 'investigator') return;
+  const box = document.getElementById('myEvalSidebarContent');
+  if (!box) return;
+
+  box.innerHTML = `
+    <div style="text-align:center;padding:24px 0;color:#9ca3af;">
+      <i class="fa-solid fa-spinner fa-spin" style="font-size:22px;margin-bottom:8px;display:block;"></i>
+      <span style="font-size:13px;">Loading your evaluations…</span>
+    </div>`;
+
+  let evals = [];
+  try {
+    // Primary: dedicated investigator-safe endpoint
+    const res = await fetch(`${BASE_URL}/api/my-evaluations`, { headers: authHeaders });
+
+    if (res.ok) {
+      // Endpoint exists and returned data — use it directly
+      const data = await res.json();
+      evals = Array.isArray(data) ? data : [];
+    } else {
+      // Endpoint not yet live (any non-2xx: 404, 405, 500…) —
+      // fall back to the general endpoint filtered by the logged-in user's ID.
+      // NOTE: this fallback only works if the server allows investigators to
+      // read their own records via /api/evaluations. If the server returns 403
+      // for investigators, add a dedicated /api/my-evaluations route (see below).
+      const res2 = await fetch(`${BASE_URL}/api/evaluations`, { headers: authHeaders });
+      if (res2.ok) {
+        const all = await res2.json();
+        evals = Array.isArray(all)
+          ? all.filter(e => String(e.investigator_id) === String(userId))
+          : [];
+      } else if (res2.status === 403) {
+        // Backend is blocking investigators on /api/evaluations (expected).
+        // Show a "not yet set up" state — NOT an error — because the admin HAS
+        // likely submitted evaluations; the missing piece is the backend route.
+        box.innerHTML = `
+          <div style="text-align:center;padding:28px 16px;">
+            <i class="fa-solid fa-clipboard-list" style="font-size:32px;color:#c4b5fd;margin-bottom:10px;display:block;opacity:0.6;"></i>
+            <p style="font-size:13px;font-weight:700;color:#64748b;margin:0 0 6px;">Evaluations Loading Soon</p>
+            <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.5;">
+              Your evaluations are ready — the <code style="background:#f1f5f9;padding:1px 4px;border-radius:4px;">/api/my-evaluations</code> endpoint needs to be added to your server to display them here.
+            </p>
+          </div>`;
+        return;
+      } else {
+        throw new Error(`${res2.status}`);
+      }
+    }
+  } catch (err) {
+    box.innerHTML = `
+      <div style="text-align:center;padding:28px 16px;">
+        <i class="fa-solid fa-lock" style="font-size:28px;color:#cbd5e1;margin-bottom:10px;display:block;"></i>
+        <p style="font-size:13px;font-weight:700;color:#64748b;margin:0 0 6px;">Evaluations Unavailable</p>
+        <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.5;">Your evaluations will appear here once your administrator has submitted them.</p>
+      </div>`;
+    return;
+  }
+
+  if (evals.length === 0) {
+    box.innerHTML = `
+      <div style="text-align:center;padding:28px 16px;">
+        <i class="fa-solid fa-clipboard-list" style="font-size:32px;color:#c4b5fd;margin-bottom:10px;display:block;opacity:0.6;"></i>
+        <p style="font-size:13px;font-weight:700;color:#64748b;margin:0 0 6px;">No Evaluations Yet</p>
+        <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.5;">Your performance evaluations from your team lead will appear here.</p>
+      </div>`;
+    return;
+  }
+
+  // ── Average across all evaluations ───────────────────────────
+  const avg = field => {
+    const vals = evals.map(e => Number(e[field] || 0)).filter(v => v > 0);
+    return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+  };
+  const avgOverall = avg('rating_overall');
+  const avgComm    = avg('rating_communication');
+  const avgCase    = avg('rating_case_handling');
+  const avgProf    = avg('rating_professionalism');
+  const avgSpeed   = avg('rating_speed');
+
+  const overallStars = Array.from({ length: 5 }, (_, i) =>
+    `<i class="fa-${i < Math.round(avgOverall) ? 'solid' : 'regular'} fa-star"
+        style="color:${i < Math.round(avgOverall) ? '#f59e0b' : '#d1d5db'};font-size:15px;"></i>`
+  ).join('');
+
+  const myEvalBar = (label, value) => {
+    const num = parseFloat(value) || 0;
+    const pct = Math.round((num / 5) * 100);
+    const color = num >= 4 ? '#16a34a' : num >= 3 ? '#2563eb' : num >= 2 ? '#f59e0b' : '#dc2626';
+    return `
+      <div style="display:grid;grid-template-columns:90px 1fr 32px;gap:7px;align-items:center;">
+        <span style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap;">${label}</span>
+        <div style="background:#e5e7eb;border-radius:999px;height:6px;overflow:hidden;">
+          <div style="height:100%;background:${color};width:${pct}%;border-radius:999px;"></div>
+        </div>
+        <span style="font-size:11px;color:#374151;font-weight:700;text-align:right;">${num.toFixed(1)}</span>
+      </div>`;
+  };
+
+  box.innerHTML = `
+    <!-- Overall summary chip -->
+    <div style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #c4b5fd;border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#7c3aed;margin-bottom:8px;">
+        Your Overall Rating
+      </div>
+      <div style="font-size:36px;font-weight:900;color:#6d28d9;line-height:1;">
+        ${avgOverall.toFixed(1)}<span style="font-size:16px;color:#a78bfa;font-weight:600;">/5</span>
+      </div>
+      <div style="margin:8px 0 10px;">${overallStars}</div>
+      <div style="font-size:11px;color:#7c3aed;font-weight:600;">${evals.length} Evaluation${evals.length === 1 ? '' : 's'} on record</div>
+    </div>
+
+    <!-- Category averages -->
+    <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:10px;">
+        Category Averages
+      </div>
+      <div style="display:grid;gap:8px;">
+        ${myEvalBar('Communication',   avgComm.toFixed(1))}
+        ${myEvalBar('Case Handling',   avgCase.toFixed(1))}
+        ${myEvalBar('Professionalism', avgProf.toFixed(1))}
+        ${myEvalBar('Speed',           avgSpeed.toFixed(1))}
+      </div>
+    </div>
+
+    <!-- Individual evaluation cards -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:10px;">
+      All Evaluations
+    </div>
+    ${evals.map(e => {
+      const stars = Array.from({ length: 5 }, (_, i) =>
+        `<i class="fa-${i < (e.rating_overall || 0) ? 'solid' : 'regular'} fa-star"
+            style="color:${i < (e.rating_overall || 0) ? '#f59e0b' : '#d1d5db'};font-size:12px;"></i>`
+      ).join('');
+      const date = e.evaluation_date
+        ? new Date(e.evaluation_date).toLocaleDateString('en-ZA')
+        : 'N/A';
+      return `
+        <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 2px 6px rgba(15,23,42,0.04);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:11px;color:#64748b;font-weight:600;">
+              <i class="fa-regular fa-calendar" style="margin-right:3px;"></i>${date}
+            </span>
+            <span>${stars}</span>
+          </div>
+          ${e.written_feedback
+            ? `<p style="font-size:12px;color:#374151;margin:0 0 10px;line-height:1.55;border-left:3px solid #a855f7;padding-left:8px;font-style:italic;">${e.written_feedback}</p>`
+            : ''}
+          ${e.strengths
+            ? `<p style="font-size:11px;color:#15803d;margin:5px 0 0;"><strong>✦ Strengths:</strong> ${e.strengths}</p>`
+            : ''}
+          ${e.weaknesses
+            ? `<p style="font-size:11px;color:#b91c1c;margin:4px 0 0;"><strong>✦ Weaknesses:</strong> ${e.weaknesses}</p>`
+            : ''}
+          ${e.recommendations
+            ? `<p style="font-size:11px;color:#1d4ed8;margin:4px 0 0;"><strong>✦ Recommendations:</strong> ${e.recommendations}</p>`
+            : ''}
+        </div>`;
+    }).join('')}`;
+}

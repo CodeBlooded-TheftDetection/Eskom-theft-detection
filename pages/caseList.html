@@ -5,316 +5,444 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Case List — Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* ── Full-screen layout ──────────────────────────────────── */
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
     html, body, .layout, .main { height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0f4f0; }
+
     .main { display: flex; flex-direction: column; overflow: hidden; }
-    .list-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0 20px 20px; }
+
+    .page-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0 28px 24px;
+      gap: 0;
+    }
 
     /* ── Topbar ──────────────────────────────────────────────── */
     .topbar {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
-      padding: 24px 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, #0c1f3f 0%, #1a3a6b 60%, #1e4080 100%) !important;
+      padding: 22px 28px !important;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 4px 24px rgba(12,31,63,0.28);
+      position: relative;
+      overflow: hidden;
       flex-shrink: 0;
     }
-
-    .topbar h1 {
-      font-size: 26px;
-      font-weight: 800;
-      margin-bottom: 4px;
+    .topbar::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: rgba(96,165,250,0.07);
+      pointer-events: none;
+    }
+    .topbar::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; right: 140px;
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: rgba(96,165,250,0.04);
+      pointer-events: none;
     }
 
-    .topbar p {
-      font-size: 14px;
-      opacity: 0.95;
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .topbar-title h1 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+      margin: 0 0 4px;
+    }
+    .topbar-title p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.52);
+      margin: 0;
+      font-weight: 400;
+    }
+
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(96,165,250,0.14);
+      border: 1px solid rgba(96,165,250,0.28);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #93c5fd;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .topbar-badge::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #60a5fa;
+      box-shadow: 0 0 6px #60a5fa;
+    }
+
+    /* ── Stats Strip ─────────────────────────────────────────── */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 20px 0 6px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 20px 16px;
+      border: 1px solid #e4eaf4;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      transform: translateY(-1px);
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card.blue::after   { background: linear-gradient(90deg,#2563eb,#60a5fa); }
+    .stat-card.amber::after  { background: linear-gradient(90deg,#d97706,#fbbf24); }
+    .stat-card.rose::after   { background: linear-gradient(90deg,#e11d48,#fb7185); }
+    .stat-card.indigo::after { background: linear-gradient(90deg,#4f46e5,#818cf8); }
+
+    .stat-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .stat-ico {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stat-ico svg { width: 17px; height: 17px; }
+    .stat-card.blue   .stat-ico { background: #dbeafe; color: #2563eb; }
+    .stat-card.amber  .stat-ico { background: #fef3c7; color: #d97706; }
+    .stat-card.rose   .stat-ico { background: #ffe4e6; color: #e11d48; }
+    .stat-card.indigo .stat-ico { background: #ede9fe; color: #4f46e5; }
+
+    .stat-card h4 {
+      font-size: 10.5px;
+      color: #9ca3af;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0;
+    }
+    .stat-card .stat-num {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 2px 0 0;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+    .stat-card.blue   .stat-num { color: #1d4ed8; }
+    .stat-card.amber  .stat-num { color: #b45309; }
+    .stat-card.rose   .stat-num { color: #be123c; }
+    .stat-card.indigo .stat-num { color: #4338ca; }
+    .stat-card .stat-sub {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 6px;
+      display: block;
     }
 
     /* ── Toolbar ─────────────────────────────────────────────── */
     .list-toolbar {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
-      padding: 18px 0;
+      padding: 14px 0 10px;
       flex-wrap: wrap;
-      margin-bottom: 6px;
+      animation: fadeUp 0.4s 0.1s ease both;
     }
 
-    .toolbar-group {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
+    .search-wrap {
       flex: 1;
-    }
-
-    .search-box {
-      flex: 1;
-      min-width: 220px;
+      min-width: 240px;
       position: relative;
     }
-
-    .search-box input {
-      width: 100%;
-      padding: 11px 16px 11px 40px;
-      border-radius: 10px;
-      border: 1.5px solid #e2e8f0;
-      font-family: inherit;
-      font-size: 14px;
-      background: #ffffff;
-      color: #0f172a;
-      transition: all 0.2s;
-    }
-
-    .search-box input:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-
-    .search-icon {
+    .search-wrap svg {
       position: absolute;
-      left: 14px;
-      top: 50%;
+      left: 12px; top: 50%;
       transform: translateY(-50%);
       color: #9ca3af;
-      font-size: 14px;
+      width: 15px; height: 15px;
       pointer-events: none;
     }
-
-    .filter-select {
-      padding: 11px 14px;
+    .search-wrap input {
+      width: 100%;
+      padding: 10px 14px 10px 36px;
       border-radius: 10px;
-      border: 1.5px solid #e2e8f0;
-      font-family: inherit;
-      font-size: 13px;
-      background: #ffffff;
-      color: #0f172a;
-      cursor: pointer;
-      transition: all 0.2s;
+      border: 1.5px solid #e5e9ee;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      background: #fff;
+      color: #1a2744;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-
-    .filter-select:focus {
+    .search-wrap input:focus {
       outline: none;
       border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
     }
+    .search-wrap input::placeholder { color: #b0bec5; }
+
+    .toolbar-select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e9ee;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: #fff;
+      color: #374151;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .toolbar-select:focus { outline: none; border-color: #2563eb; }
 
     .toolbar-count {
-      font-size: 13px;
-      color: #64748b;
-      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: #6b7280;
       white-space: nowrap;
       padding: 8px 14px;
-      background: #f1f5f9;
+      background: #f1f5fb;
       border-radius: 8px;
+      font-weight: 600;
+      border: 1px solid #e4eaf4;
     }
 
-    /* ── Loading Spinner ─────────────────────────────────────── */
+    /* ── Spinner ─────────────────────────────────────────────── */
     .spinner {
       display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 3px solid #e5e7eb;
+      width: 13px; height: 13px;
+      border: 2px solid #e5e7eb;
       border-top-color: #2563eb;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       vertical-align: middle;
-      margin-right: 6px;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Table ───────────────────────────────────────────────── */
     .table-wrap {
       flex: 1;
       overflow-y: auto;
       border-radius: 14px;
-      border: 1.5px solid #e2e8f0;
-      background: #ffffff;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      border: 1px solid #e4eaf4;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 20px rgba(0,0,0,0.05);
+      animation: fadeUp 0.4s 0.15s ease both;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 800px;
-    }
-
-    thead {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    thead { position: sticky; top: 0; z-index: 10; }
     thead th {
-      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-      color: #ffffff;
-      font-size: 12px;
+      background: #0c1f3f;
+      color: rgba(255,255,255,0.72);
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      padding: 16px 18px;
+      letter-spacing: 0.1em;
+      padding: 14px 18px;
       text-align: left;
       white-space: nowrap;
-      border-bottom: 2px solid #1e40af;
     }
+    thead th:first-child { border-radius: 13px 0 0 0; }
+    thead th:last-child  { border-radius: 0 13px 0 0; }
+    thead th.col-active  { color: #93c5fd; }
 
     tbody tr {
-      border-bottom: 1px solid #f1f5f9;
-      transition: all 0.2s ease;
+      border-bottom: 1px solid #f3f6fb;
+      transition: background 0.15s;
     }
-
-    tbody tr:hover {
-      background: #f8fafc;
-      box-shadow: inset 0 0 0 1px #e2e8f0;
-    }
-
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f5f8ff; }
     tbody td {
-      padding: 15px 18px;
-      font-size: 13.5px;
+      padding: 14px 18px;
+      font-size: 13px;
       color: #374151;
       vertical-align: middle;
     }
 
     .case-num-cell {
-      font-family: 'DM Mono', monospace, sans-serif;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
       font-weight: 700;
-      color: #0f1a3e;
+      color: #0c1f3f;
       white-space: nowrap;
-      letter-spacing: -0.01em;
     }
 
+    /* ── Risk Badges ─────────────────────────────────────────── */
     .badge {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      border-radius: 999px;
+      gap: 5px;
       font-size: 11px;
       font-weight: 700;
-      padding: 5px 11px;
-      white-space: nowrap;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-
-    .badge.high {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .badge.mid {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .badge.low {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .badge.open {
-      background: #dbeafe;
-      color: #0c4a6e;
-    }
-
-    .badge.pending {
-      background: #fce7f3;
-      color: #9d174d;
-    }
-
-    .badge.resolved {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .action-cell {
       white-space: nowrap;
-      display: flex;
-      gap: 8px;
-      align-items: center;
+    }
+    .badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
+    /* Risk levels */
+    .badge.high   { background: #fee2e2; color: #b91c1c; }
+    .badge.high::before   { background: #ef4444; }
+    .badge.mid,
+    .badge.medium { background: #fef3c7; color: #92400e; }
+    .badge.mid::before,
+    .badge.medium::before { background: #f59e0b; }
+    .badge.low    { background: #dcfce7; color: #15803d; }
+    .badge.low::before    { background: #22c55e; }
+
+    /* Status badges — no dot */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .status-badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-badge.open     { background: #dbeafe; color: #1e40af; }
+    .status-badge.open::before     { background: #3b82f6; }
+    .status-badge.pending  { background: #fce7f3; color: #9d174d; }
+    .status-badge.pending::before  { background: #ec4899; }
+    .status-badge.resolved { background: #dcfce7; color: #15803d; }
+    .status-badge.resolved::before { background: #22c55e; }
+
+    /* ── Investigator Cell ───────────────────────────────────── */
+    .inv-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .inv-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#1e3a8a,#2563eb);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .inv-name { font-size: 13px; color: #374151; font-weight: 500; }
+
+    .date-cell { font-size: 12.5px; color: #6b7280; white-space: nowrap; }
+
+    /* ── Action Buttons ──────────────────────────────────────── */
     .tbl-btn {
-      padding: 7px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 13px;
       border-radius: 8px;
       border: none;
-      font-family: inherit;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      margin-right: 4px;
+      transition: all 0.15s;
       white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
+    .tbl-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+    .tbl-btn svg { width: 13px; height: 13px; }
 
-    .tbl-btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .tbl-btn-blue {
-      background: #2563eb;
-      color: #ffffff;
-    }
-
-    .tbl-btn-blue:hover {
-      background: #1d4ed8;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    }
-
-    .tbl-btn-green {
-      background: #16a34a;
-      color: #ffffff;
-    }
-
-    .tbl-btn-green:hover {
-      background: #15803d;
-      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
-    }
-
-    /* ── Empty / Loading / Error States ──────────────────────── */
-    .state-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      color: #6b7280;
-      gap: 12px;
-    }
-
-    .state-icon {
-      font-size: 48px;
-      margin-bottom: 8px;
-      opacity: 0.5;
-    }
-
-    .state-title {
-      font-size: 16px;
-      font-weight: 700;
+    .tbl-btn-blue   { background: #2563eb; color: #fff; }
+    .tbl-btn-blue:hover   { background: #1d4ed8; box-shadow: 0 3px 10px rgba(37,99,235,0.3); }
+    .tbl-btn-outline {
+      background: #fff;
       color: #374151;
+      border: 1.5px solid #e5e9ee;
     }
+    .tbl-btn-outline:hover { background: #f5f8ff; border-color: #93c5fd; color: #1d4ed8; }
 
-    .state-subtitle {
-      font-size: 13px;
-      color: #9ca3af;
-    }
-
+    /* ── Empty / Loading / Error States ─────────────────────── */
     .state-row td {
       text-align: center;
-      padding: 60px 20px;
+      padding: 72px 20px;
+      color: #9ca3af;
+      font-size: 14px;
     }
+    .state-icon-wrap {
+      width: 52px; height: 52px;
+      background: #f0f5ff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      color: #2563eb;
+    }
+    .state-icon-wrap svg { width: 24px; height: 24px; }
+    .state-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+    .state-subtitle { font-size: 13px; color: #9ca3af; }
 
     /* ── Pagination ──────────────────────────────────────────── */
     .pagination {
@@ -323,139 +451,62 @@
       align-items: center;
       padding: 14px 0 0;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
+      animation: fadeUp 0.4s 0.2s ease both;
     }
-
     .page-info {
-      font-size: 13px;
-      color: #64748b;
-      font-weight: 600;
+      font-size: 12.5px;
+      color: #9ca3af;
+      font-weight: 500;
     }
-
-    .page-btns {
-      display: flex;
-      gap: 6px;
-    }
-
+    .page-btns  { display: flex; gap: 5px; }
     .page-btn {
-      padding: 8px 14px;
+      padding: 7px 13px;
       border-radius: 8px;
-      border: 1.5px solid #e2e8f0;
-      background: #ffffff;
-      font-family: inherit;
+      border: 1.5px solid #e5e9ee;
+      background: #fff;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       color: #374151;
-      transition: all 0.2s;
+      transition: all 0.15s;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
-
-    .page-btn:hover:not(:disabled) {
-      border-color: #2563eb;
-      color: #2563eb;
-    }
-
-    .page-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
+    .page-btn:hover:not(:disabled) { border-color: #2563eb; color: #2563eb; }
+    .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .page-btn.active {
       background: #2563eb;
-      color: #ffffff;
+      color: #fff;
       border-color: #2563eb;
-      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.30);
     }
+
+    /* ── Animations ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────────── */
+    .table-wrap::-webkit-scrollbar { width: 6px; }
+    .table-wrap::-webkit-scrollbar-track { background: transparent; }
+    .table-wrap::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+    .table-wrap::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
     /* ── Responsive ──────────────────────────────────────────── */
-    @media (max-width: 1024px) {
-      .topbar {
-        padding: 16px 20px;
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
-      }
-
-      .topbar h1 {
-        font-size: 20px;
-      }
-
-      .list-toolbar {
-        gap: 10px;
-      }
-
-      .toolbar-group {
-        width: 100%;
-      }
-
-      .search-box {
-        width: 100%;
-      }
-
-      table {
-        min-width: 100%;
-      }
-
-      .action-cell {
-        flex-direction: column;
-      }
-
-      .tbl-btn {
-        width: 100%;
-        justify-content: center;
-      }
+    @media (max-width: 1100px) {
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
     }
-
-    @media (max-width: 768px) {
-      .list-body {
-        padding: 0 12px 12px;
-      }
-
-      .list-toolbar {
-        flex-direction: column;
-        gap: 10px;
-        padding: 12px 0;
-      }
-
-      .toolbar-group {
-        width: 100%;
-        flex-direction: column;
-      }
-
-      .search-box {
-        width: 100%;
-      }
-
-      .filter-select {
-        width: 100%;
-      }
-
-      .toolbar-count {
-        width: 100%;
-        text-align: center;
-      }
-
-      table {
-        font-size: 12px;
-        min-width: 100%;
-      }
-
-      tbody td {
-        padding: 12px;
-      }
-
-      .action-cell {
-        flex-direction: column;
-        gap: 6px;
-      }
-
-      .tbl-btn {
-        width: 100%;
-        justify-content: center;
-      }
+    @media (max-width: 700px) {
+      .page-body { padding: 0 14px 16px; }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .list-toolbar { gap: 8px; }
+      .search-wrap { min-width: 0; }
+      .topbar { padding: 16px 18px !important; }
+      .topbar-title h1 { font-size: 18px; }
     }
   </style>
 </head>
@@ -475,38 +526,100 @@
 
   <!-- MAIN -->
   <main class="main">
-    <header class="topbar">
-      <div>
-        <h1>Case List</h1>
-        <p>All active and pending cases — search, filter, and manage investigations</p>
+
+    <!-- Header -->
+    <header class="topbar" style="flex-shrink:0;">
+      <div class="topbar-inner">
+        <div class="topbar-title">
+          <h1>Case List</h1>
+          <p>Active and pending investigations — search, filter, and manage cases</p>
+        </div>
+        <div class="topbar-meta">
+          <div class="topbar-badge">Live Cases</div>
+        </div>
       </div>
     </header>
 
-    <div class="list-body">
+    <div class="page-body">
 
-      <!-- Toolbar: search + filters -->
-      <div class="list-toolbar">
-        <div class="toolbar-group">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="searchInput" placeholder="Search by case #, suspect, or description…"/>
+      <!-- ── Stats Strip ─────────────────────────────────────── -->
+      <div class="stats-strip">
+        <div class="stat-card blue">
+          <div class="stat-top">
+            <div>
+              <h4>Total Active</h4>
+              <div class="stat-num" id="statTotal">—</div>
+            </div>
+            <div class="stat-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
           </div>
-          <select id="filterRisk" class="filter-select">
-            <option value="">All Risk Levels</option>
-            <option value="HIGH">High Risk</option>
-            <option value="MID">Medium Risk</option>
-            <option value="LOW">Low Risk</option>
-          </select>
-          <select id="filterStatus" class="filter-select">
-            <option value="">All Statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="PENDING">Pending</option>
-          </select>
+          <span class="stat-sub">Open + pending cases</span>
         </div>
-        <span class="toolbar-count"><span class="spinner"></span>Loading…</span>
+
+        <div class="stat-card rose">
+          <div class="stat-top">
+            <div>
+              <h4>High Risk</h4>
+              <div class="stat-num" id="statHigh">—</div>
+            </div>
+            <div class="stat-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+          </div>
+          <span class="stat-sub">Immediate attention needed</span>
+        </div>
+
+        <div class="stat-card amber">
+          <div class="stat-top">
+            <div>
+              <h4>Pending</h4>
+              <div class="stat-num" id="statPending">—</div>
+            </div>
+            <div class="stat-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+          <span class="stat-sub">Awaiting action</span>
+        </div>
+
+        <div class="stat-card indigo">
+          <div class="stat-top">
+            <div>
+              <h4>Open</h4>
+              <div class="stat-num" id="statOpen">—</div>
+            </div>
+            <div class="stat-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+          </div>
+          <span class="stat-sub">Under investigation</span>
+        </div>
       </div>
 
-      <!-- Case table -->
+      <!-- ── Toolbar ─────────────────────────────────────────── -->
+      <div class="list-toolbar">
+        <div class="search-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Search by case #, suspect, or description…"/>
+        </div>
+        <select class="toolbar-select" id="filterRisk">
+          <option value="">All Risk Levels</option>
+          <option value="HIGH">High Risk</option>
+          <option value="MID">Medium Risk</option>
+          <option value="LOW">Low Risk</option>
+        </select>
+        <select class="toolbar-select" id="filterStatus">
+          <option value="">All Statuses</option>
+          <option value="OPEN">Open</option>
+          <option value="PENDING">Pending</option>
+        </select>
+        <span class="toolbar-count" id="countLabel">
+          <span class="spinner"></span> Loading…
+        </span>
+      </div>
+
+      <!-- ── Case Table ─────────────────────────────────────── -->
       <div class="table-wrap">
         <table>
           <thead>
@@ -514,27 +627,27 @@
               <th>Case #</th>
               <th>Suspect</th>
               <th>Risk Level</th>
-              <th>Status</th>
+              <th class="col-active">Status</th>
               <th>Investigator</th>
               <th>Reported</th>
-              <th>Actions</th>
+              <th id="actionsHeader">Actions</th>
             </tr>
           </thead>
           <tbody id="caseTableBody">
             <tr class="state-row">
               <td colspan="7">
-                <div class="state-container">
-                  <i class="fa-solid fa-hourglass-start state-icon"></i>
-                  <div class="state-title">Loading cases…</div>
-                  <div class="state-subtitle">Fetching data from the database</div>
+                <div class="state-icon-wrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
+                <div class="state-title">Loading cases…</div>
+                <div class="state-subtitle">Fetching data from the database</div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Pagination -->
+      <!-- ── Pagination ─────────────────────────────────────── -->
       <div class="pagination">
         <span class="page-info" id="pageInfo">—</span>
         <div class="page-btns" id="pageBtns"></div>
@@ -544,8 +657,6 @@
   </main>
 </div>
 
-<script src="https://unpkg.com/lucide@latest"></script>
-<script src="../js/sidebar.js"></script>
 <script>
   lucide.createIcons();
 
@@ -566,12 +677,11 @@
 
     const allItems = [
       { href: "dashboard.html",   icon: "layout-dashboard", label: "Main Dashboard",      roles: ["admin","investigator"] },
-  
       { href: "map.html",         icon: "map",              label: "Map View",             roles: ["admin","investigator"] },
       { href: "report.html",      icon: "bar-chart-3",      label: "Report Screen",        roles: ["admin"] },
       { href: "record.html",      icon: "edit-3",           label: "Record Outcome",       roles: ["investigator"] },
       { href: "caseList.html",    icon: "list",             label: "Case List",            roles: ["admin","investigator"] },
-      { href: "resolved.html",    icon: "check-circle",     label: "Resolved Cases",       roles: ["admin"] },
+      { href: "resolved.html",    icon: "check-circle",     label: "Resolved Cases",       roles: ["admin", "investigator"] },
       { href: "assign.html",      icon: "user-check",       label: "Assign Investigator",  roles: ["admin"] },
     ];
 
@@ -595,6 +705,12 @@
 
   buildSidebar();
 
+  // Hide the Actions column header entirely for investigators
+  if (userRole === "investigator") {
+    const actionsHeader = document.getElementById("actionsHeader");
+    if (actionsHeader) actionsHeader.style.display = "none";
+  }
+
   // ── PAGINATION STATE ──────────────────────────────────────────
   const PAGE_SIZE  = 15;
   let   currentPage = 1;
@@ -602,17 +718,15 @@
   let   filtered    = [];
 
   // ── LOAD CASES ────────────────────────────────────────────────
-  // NOTE: caseList.html shows ACTIVE cases (OPEN + PENDING) only.
-  // Resolved cases are on resolved.html.
   async function loadCases() {
-    const tbody = document.getElementById("caseTableBody");
-    const countLabel = document.querySelector(".toolbar-count");
+    const tbody      = document.getElementById("caseTableBody");
+    const countLabel = document.getElementById("countLabel");
 
     try {
-      countLabel.innerHTML = '<span class="spinner"></span>Loading…';
-      
+      countLabel.innerHTML = '<span class="spinner"></span> Loading…';
+
       const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
-      
+
       if (res.status === 401 || res.status === 403) {
         localStorage.clear();
         window.location.href = "login.html";
@@ -622,19 +736,21 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
       const raw = await res.json();
-      
-      // Show only OPEN and PENDING — resolved.html has RESOLVED cases
+
+      // Show only OPEN and PENDING — resolved.html handles RESOLVED cases
       allCases = (Array.isArray(raw) ? raw : [])
         .filter(c => (c.outcome || "OPEN").toUpperCase() !== "RESOLVED");
+
+      computeStats();
 
       if (allCases.length === 0) {
         countLabel.textContent = "No cases found";
         tbody.innerHTML = `<tr class="state-row"><td colspan="7">
-          <div class="state-container">
-            <i class="fa-solid fa-inbox state-icon"></i>
-            <div class="state-title">No active cases</div>
-            <div class="state-subtitle">All cases are resolved or no cases exist yet</div>
+          <div class="state-icon-wrap" style="background:#f3f4f6;color:#9ca3af;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6H4M20 12H4M20 18H4"/></svg>
           </div>
+          <div class="state-title">No active cases</div>
+          <div class="state-subtitle">All cases are resolved or no cases exist yet</div>
         </td></tr>`;
         renderPagination(0, 0);
         return;
@@ -643,16 +759,29 @@
       applyFilters();
     } catch (err) {
       console.error("Failed to load cases:", err);
-      countLabel.textContent = "Error loading";
-      tbody.innerHTML = `<tr class="state-row"><td colspan="7">
-        <div class="state-container">
-          <i class="fa-solid fa-exclamation-circle state-icon" style="color:#dc2626;"></i>
-          <div class="state-title">Failed to load cases</div>
-          <div class="state-subtitle">${err.message || "An unexpected error occurred"}</div>
+      document.getElementById("countLabel").textContent = "Error loading";
+      document.getElementById("caseTableBody").innerHTML = `<tr class="state-row"><td colspan="7">
+        <div class="state-icon-wrap" style="background:#fef2f2;color:#ef4444;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
+        <div class="state-title">Failed to load cases</div>
+        <div class="state-subtitle">${err.message || "An unexpected error occurred"}</div>
       </td></tr>`;
       renderPagination(0, 0);
     }
+  }
+
+  // ── COMPUTE STATS ─────────────────────────────────────────────
+  function computeStats() {
+    const total   = allCases.length;
+    const high    = allCases.filter(c => (c.risk_level || "").toUpperCase() === "HIGH").length;
+    const pending = allCases.filter(c => (c.outcome   || "").toUpperCase() === "PENDING").length;
+    const open    = allCases.filter(c => (c.outcome   || "OPEN").toUpperCase() === "OPEN").length;
+
+    document.getElementById("statTotal").textContent   = total;
+    document.getElementById("statHigh").textContent    = high;
+    document.getElementById("statPending").textContent = pending;
+    document.getElementById("statOpen").textContent    = open;
   }
 
   // ── FILTER + SEARCH ───────────────────────────────────────────
@@ -677,24 +806,24 @@
 
   // ── RENDER TABLE ──────────────────────────────────────────────
   function renderTable() {
-    const tbody     = document.getElementById("caseTableBody");
-    const countLabel = document.querySelector(".toolbar-count");
-    const total     = filtered.length;
+    const tbody      = document.getElementById("caseTableBody");
+    const countLabel = document.getElementById("countLabel");
+    const total      = filtered.length;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    currentPage     = Math.min(currentPage, totalPages);
+    currentPage      = Math.min(currentPage, totalPages);
 
-    const start   = (currentPage - 1) * PAGE_SIZE;
+    const start     = (currentPage - 1) * PAGE_SIZE;
     const pageCases = filtered.slice(start, start + PAGE_SIZE);
 
     countLabel.textContent = `${total} case${total !== 1 ? "s" : ""} found`;
 
     if (!pageCases.length) {
       tbody.innerHTML = `<tr class="state-row"><td colspan="7">
-        <div class="state-container">
-          <i class="fa-solid fa-magnifying-glass state-icon"></i>
-          <div class="state-title">No results</div>
-          <div class="state-subtitle">Try adjusting your search or filters</div>
+        <div class="state-icon-wrap" style="background:#f3f4f6;color:#9ca3af;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </div>
+        <div class="state-title">No results</div>
+        <div class="state-subtitle">Try adjusting your search or filters</div>
       </td></tr>`;
       renderPagination(0, 0);
       return;
@@ -704,32 +833,39 @@
 
     tbody.innerHTML = pageCases.map(c => {
       const displayId  = c.case_number || c.id || "N/A";
-      const risk = (c.risk_level || "low").toUpperCase();
+      const risk       = (c.risk_level || "low").toUpperCase();
       const riskClass  = risk === "HIGH" ? "high" : risk === "MID" ? "mid" : "low";
-      const stat = (c.outcome || "open").toUpperCase();
+      const riskLabel  = risk === "HIGH" ? "High" : risk === "MID" ? "Medium" : "Low";
+      const stat       = (c.outcome || "OPEN").toUpperCase();
       const statClass  = stat === "RESOLVED" ? "resolved" : stat === "PENDING" ? "pending" : "open";
       const invName    = c.investigators
         ? (c.investigators.full_name || c.investigators.email || "Unassigned")
         : "Unassigned";
+      const invInitial = invName === "Unassigned" ? "?" : invName.charAt(0).toUpperCase();
       const reported   = c.created_at ? new Date(c.created_at).toLocaleDateString("en-ZA") : "N/A";
 
-      const actionButtons = isManager
-        ? `
-          <button class="tbl-btn tbl-btn-blue" onclick="goRecord('${c.id}')" title="Record outcome">
-            <i class="fa-solid fa-pen"></i> Update
-          </button>
-        `
-        : ``;
+      // Investigators: no actions column at all
+      const actionCell = isManager
+        ? `<td><button class="tbl-btn tbl-btn-blue" onclick="goRecord('${c.id}')">
+             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+             Update
+           </button></td>`
+        : "";
 
       return `
         <tr>
           <td class="case-num-cell">${displayId}</td>
-          <td>${c.suspect_name || "Unknown Suspect"}</td>
-          <td><span class="badge ${riskClass}">${riskClass === "high" ? "High" : riskClass === "mid" ? "Medium" : "Low"}</span></td>
-          <td><span class="badge ${statClass}">${stat}</span></td>
-          <td>${invName}</td>
-          <td>${reported}</td>
-          <td class="action-cell">${actionButtons}</td>
+          <td style="font-weight:500;color:#1f2937;">${c.suspect_name || "Unknown Suspect"}</td>
+          <td><span class="badge ${riskClass}">${riskLabel}</span></td>
+          <td><span class="status-badge ${statClass}">${stat}</span></td>
+          <td>
+            <div class="inv-cell">
+              <div class="inv-avatar">${invInitial}</div>
+              <span class="inv-name">${invName}</span>
+            </div>
+          </td>
+          <td class="date-cell">${reported}</td>
+          ${actionCell}
         </tr>`;
     }).join("");
 
@@ -740,35 +876,34 @@
   // ── PAGINATION ────────────────────────────────────────────────
   function renderPagination(page, totalPages) {
     document.getElementById("pageInfo").textContent =
-      totalPages > 0 ? `Page ${page} of ${totalPages}` : "—";
+      totalPages > 0 ? `Page ${page} of ${totalPages}` : "No results";
 
     const btns = document.getElementById("pageBtns");
     btns.innerHTML = "";
-
     if (totalPages <= 1) return;
 
     const prev = document.createElement("button");
     prev.className = "page-btn";
-    prev.innerHTML = '<i class="fa-solid fa-chevron-left"></i> Prev';
-    prev.disabled    = page <= 1;
-    prev.onclick = () => { currentPage--; renderTable(); };
+    prev.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg> Prev`;
+    prev.disabled  = page <= 1;
+    prev.onclick   = () => { currentPage--; renderTable(); };
     btns.appendChild(prev);
 
     const start = Math.max(1, page - 2);
     const end   = Math.min(totalPages, start + 4);
     for (let i = start; i <= end; i++) {
       const b = document.createElement("button");
-      b.className  = `page-btn${i === page ? " active" : ""}`;
+      b.className   = `page-btn${i === page ? " active" : ""}`;
       b.textContent = i;
-      b.onclick    = ((pg) => () => { currentPage = pg; renderTable(); })(i);
+      b.onclick     = ((pg) => () => { currentPage = pg; renderTable(); })(i);
       btns.appendChild(b);
     }
 
     const next = document.createElement("button");
     next.className = "page-btn";
-    next.innerHTML = 'Next <i class="fa-solid fa-chevron-right"></i>';
-    next.disabled    = page >= totalPages;
-    next.onclick = () => { currentPage++; renderTable(); };
+    next.innerHTML = `Next <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+    next.disabled  = page >= totalPages;
+    next.onclick   = () => { currentPage++; renderTable(); };
     btns.appendChild(next);
   }
 
@@ -796,5 +931,6 @@
   // ── INIT ──────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", loadCases);
 </script>
+<script src="../js/sidebar.js"></script>
 </body>
 </html>

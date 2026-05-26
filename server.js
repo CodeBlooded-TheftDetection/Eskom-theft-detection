@@ -169,14 +169,15 @@ async function getLatestCaseNumber() {
 }
 
 // ── MANUAL INVESTIGATOR ENRICHMENT ───────────────────────────
-// Cases and investigators are now independent tables (no FK join).
-// We fetch investigators separately and attach them in JS.
-// This avoids ALL schema cache issues with Supabase joins.
+// Fetches users with role='investigator' and attaches them to cases.
+// All investigator data now comes from the users table — the separate
+// investigators table is no longer used anywhere in this system.
 async function enrichCasesWithInvestigators(cases) {
     if (!cases || cases.length === 0) return cases;
     const { data: investigators, error } = await supabase
-        .from('investigators')
-        .select('id, full_name, email, badge_number, investigator_code');
+        .from('users')
+        .select('id, full_name, email, is_active')
+        .eq('role', 'investigator');
     if (error) {
         console.error('Investigator enrichment failed:', error.message);
         return cases; // return cases without enrichment rather than failing
@@ -203,10 +204,11 @@ app.post('/api/auth/login', async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
     const { data: user, error } = await supabase
         .from('users')
-        .select('id, email, password_hash, role')
+        .select('id, email, password_hash, role, is_active')
         .eq('email', cleanEmail)
         .single();
     if (error || !user) return res.status(404).json({ message: 'Email not found' });
+    if (user.is_active === false) return res.status(403).json({ message: 'Account deactivated. Contact your administrator.' });
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ message: 'Wrong password' });
     if (user.role.toLowerCase() !== role.toLowerCase())
@@ -374,45 +376,51 @@ app.post('/api/cases/:id/reopen', authenticateToken, requireRole(['admin']), asy
 
 // ─────────────────────────────────────────────────────────────
 // INVESTIGATORS — GET
-// Returns investigators with live case counts attached.
-// Used by: assign.html, evaluations.html (commander view consolidated into dashboard.html)
+// Returns users whose role = 'investigator', with live case counts.
+// All investigator data now comes exclusively from the users table.
+// The separate investigators table is no longer queried anywhere.
+// Response shape is preserved so assign.html / evaluations.html
+// continue to work without modification.
 // ─────────────────────────────────────────────────────────────
 app.get('/api/investigators', authenticateToken, async (req, res) => {
-    let query = supabase.from('investigators').select('id, full_name, email, badge_number, investigator_code, is_active, created_at');
+    let query = supabase
+        .from('users')
+        .select('id, full_name, email, is_active, created_at')
+        .eq('role', 'investigator');
+
+    // Investigators can only see their own record
     if (req.user.role === 'investigator') query = query.eq('id', req.user.id);
+
     const { data: investigators, error } = await query;
     if (error) return res.status(500).json({ message: error.message });
 
-    // Attach case counts without a join — fetch all cases once
-    const { data: cases } = await supabase.from('cases').select('assigned_investigator_id, outcome');
+    // Attach case counts — no join required
+    const { data: cases } = await supabase
+        .from('cases')
+        .select('assigned_investigator_id, outcome');
+
     const enriched = (investigators || []).map(inv => ({
         ...inv,
+        // badge_number / investigator_code do not exist on users;
+        // return null so the UI falls back to "N/A" gracefully.
+        badge_number:      null,
+        investigator_code: null,
         assigned: (cases || []).filter(c => c.assigned_investigator_id === inv.id).length,
         resolved: (cases || []).filter(c => c.assigned_investigator_id === inv.id && c.outcome === 'RESOLVED').length,
     }));
     res.json(enriched);
 });
 
-// ─────────────────────────────────────────────────────────────
-// INVESTIGATORS — CREATE
-// ─────────────────────────────────────────────────────────────
-app.post('/api/investigators', authenticateToken, requireRole(['admin']), async (req, res) => {
-    const { full_name, email, badge_number, user_id } = req.body;
-    if (!full_name || !email) return res.status(400).json({ error: 'full_name and email are required' });
-    const { data, error } = await supabase.from('investigators').insert([{
-        full_name, email, investigator_code: badge_number || null,
-        user_id: user_id || null, is_active: true, created_at: new Date().toISOString()
-    }]).select();
-    if (error) return res.status(500).json({ message: error.message });
-    res.status(201).json(data[0]);
-});
+// NOTE: POST /api/investigators has been removed.
+// Investigators are now created through POST /api/users with role='investigator'.
+// This eliminates the duplicate data problem between the two tables.
 
 // ─────────────────────────────────────────────────────────────
 // USERS — GET (admin only)
 // ─────────────────────────────────────────────────────────────
 app.get('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
     const { data, error } = await supabase
-        .from('users').select('id, email, role, created_at, is_active');
+        .from('users').select('id, email, full_name, role, created_at, is_active');
     if (error) return res.status(500).json({ message: error.message });
     res.json(data);
 });
@@ -421,18 +429,20 @@ app.get('/api/users', authenticateToken, requireRole(['admin']), async (req, res
 // USERS — CREATE (admin only)
 // ─────────────────────────────────────────────────────────────
 app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password, role, full_name } = req.body;
     if (!email || !password || !role) return res.status(400).json({ error: 'email, password and role required' });
+    if (!full_name || !full_name.trim()) return res.status(400).json({ error: 'full_name is required' });
     const validRoles = ['admin', 'commander', 'investigator'];
     if (!validRoles.includes(role.toLowerCase())) return res.status(400).json({ error: 'Invalid role' });
     const password_hash = await bcrypt.hash(password, 10);
     const { data, error } = await supabase.from('users').insert([{
-        email: email.trim().toLowerCase(),
+        email:      email.trim().toLowerCase(),
+        full_name:  full_name.trim(),
         password_hash,
-        role: role.toLowerCase(),
-        is_active: true,
+        role:       role.toLowerCase(),
+        is_active:  true,
         created_at: new Date().toISOString()
-    }]).select('id, email, role, created_at, is_active');
+    }]).select('id, email, full_name, role, created_at, is_active');
     if (error) return res.status(500).json({ message: error.message });
     res.status(201).json(data[0]);
 });
@@ -451,10 +461,12 @@ app.put('/api/users/:id/status', authenticateToken, requireRole(['admin']), asyn
 // USERS — UPDATE ROLE (admin only)
 // ─────────────────────────────────────────────────────────────
 app.put('/api/users/:id/role', authenticateToken, requireRole(['admin']), async (req, res) => {
-    const { role } = req.body;
+    const { role, full_name } = req.body;
     const validRoles = ['admin', 'commander', 'investigator'];
     if (!validRoles.includes(role?.toLowerCase())) return res.status(400).json({ error: 'Invalid role' });
-    const { data, error } = await supabase.from('users').update({ role: role.toLowerCase() }).eq('id', req.params.id).select();
+    const updates = { role: role.toLowerCase() };
+    if (full_name && full_name.trim()) updates.full_name = full_name.trim();
+    const { data, error } = await supabase.from('users').update(updates).eq('id', req.params.id).select();
     if (error) return res.status(500).json({ message: error.message });
     res.json(data[0]);
 });
@@ -587,15 +599,18 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────
 // TEAM PERFORMANCE / COMMANDER STATS
-// Powers: team overview (shown in dashboard.html), assign.html investigator cards
-// This must read from the investigators table so only real investigators appear.
+// Powers: team overview (shown in dashboard.html), assign.html investigator cards.
+// Reads from the users table (role='investigator') — single source of truth.
 // ─────────────────────────────────────────────────────────────
 async function getTeamPerformance(req, res) {
     const { data: cases, error: ce } = await supabase.from('cases').select('*');
     if (ce) return res.status(500).json({ message: ce.message });
 
+    // Query users table for role='investigator' — single source of truth
     const { data: investigators, error: ie } = await supabase
-        .from('investigators').select('id, email, full_name, badge_number, investigator_code');
+        .from('users')
+        .select('id, email, full_name, is_active')
+        .eq('role', 'investigator');
     if (ie) return res.status(500).json({ message: ie.message });
 
     const invList = investigators || [];
@@ -642,6 +657,24 @@ app.get('/api/evaluations', authenticateToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// MY EVALUATIONS — GET /api/my-evaluations
+// Investigator-safe endpoint: returns only the evaluations that
+// belong to the logged-in investigator (scoped by investigator_id).
+// Admins and commanders can also call this to see their own record
+// if they were ever evaluated, but the primary consumer is the
+// investigator's dashboard sidebar (#myEvalSidebarContent).
+// ─────────────────────────────────────────────────────────────
+app.get('/api/my-evaluations', authenticateToken, async (req, res) => {
+    const { data, error } = await supabase
+        .from('investigator_evaluations')
+        .select('*')
+        .eq('investigator_id', req.user.id)
+        .order('evaluation_date', { ascending: false });
+    if (error) return res.status(500).json({ message: error.message });
+    res.json(data || []);
+});
+
+// ─────────────────────────────────────────────────────────────
 // EVALUATIONS — CREATE/UPDATE (upsert)
 // ─────────────────────────────────────────────────────────────
 app.post('/api/evaluations', authenticateToken, requireRole(['admin', 'commander']), async (req, res) => {
@@ -676,12 +709,15 @@ app.get('/api/reports/:caseId', authenticateToken, async (req, res) => {
     if (req.user.role === 'investigator' && caseData.assigned_investigator_id !== req.user.id)
         return res.status(403).json({ error: 'Can only report on your own cases' });
 
-    // Fetch investigator separately — no join needed
+    // Fetch investigator from users table (role='investigator') — no separate table
     let inv = null;
     if (caseData.assigned_investigator_id) {
-        const { data } = await supabase.from('investigators')
-            .select('full_name, email, badge_number, investigator_code')
-            .eq('id', caseData.assigned_investigator_id).single();
+        const { data } = await supabase
+            .from('users')
+            .select('full_name, email')
+            .eq('id', caseData.assigned_investigator_id)
+            .eq('role', 'investigator')
+            .single();
         inv = data;
     }
 
@@ -716,8 +752,7 @@ app.get('/api/reports/:caseId', authenticateToken, async (req, res) => {
     if (inv) {
         doc.fontSize(11).font('Helvetica')
            .text(`Name:  ${inv.full_name || 'N/A'}`)
-           .text(`Email: ${inv.email || 'N/A'}`)
-           .text(`Badge: ${inv.badge_number || 'N/A'}`);
+           .text(`Email: ${inv.email || 'N/A'}`);
     } else {
         doc.fontSize(11).font('Helvetica').text('No investigator assigned.');
     }

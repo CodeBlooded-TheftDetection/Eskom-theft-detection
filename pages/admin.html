@@ -101,6 +101,20 @@
     .breadcrumb a{color:#2563eb;text-decoration:none;}
     .relative{position:relative;}
     @media(max-width:700px){.stat-row{grid-template-columns:1fr 1fr;}.modal{width:calc(100vw - 40px);}}
+    /* Address field locked state — applied once a suggestion is chosen */
+    #caseModalAddress.addr-locked {
+      background: #f0fdf4;
+      border-color: #16a34a;
+      color: #14532d;
+      font-weight: 600;
+    }
+    .addr-lock-hint {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 3px;
+      display: none;
+    }
+    .addr-lock-hint.visible { display: block; }
   </style>
 </head>
 <body>
@@ -179,7 +193,7 @@
     <input type="hidden" id="editUserId">
     <div class="modal-row">
       <label>Email *</label>
-      <input type="email" id="modalEmail" placeholder="user@eskom.co.za">
+      <input type="email" id="modalEmail" placeholder="user@coldblooded.com">
     </div>
     <div class="modal-row">
       <label>Full Name *</label>
@@ -194,7 +208,6 @@
       <select id="modalRole">
         <option value="">— Select role —</option>
         <option value="admin">Admin</option>
-        <option value="commander">Commander</option>
         <option value="investigator">Investigator</option>
       </select>
     </div>
@@ -249,6 +262,9 @@
       <input type="text" id="caseModalAddress" placeholder="Start typing address…" autocomplete="off">
       <div class="addr-suggestions" id="addrSuggestions"></div>
       <div id="addressVerifyStatus" style="font-size:11.5px;margin-top:5px;display:none;"></div>
+      <p class="addr-lock-hint" id="addrLockHint">
+        ✏️ Clear the field and retype to pick a different address
+      </p>
     </div>
 
     <div class="modal-row">
@@ -299,7 +315,8 @@ function setAddressStatus(type, msg) {
 // Same debounce, SA bounding box, icon logic, and dropdown structure
 // as the map page search bar for full consistency.
 
-let _addrSearchTimeout = null;
+let _addrSearchTimeout    = null;
+let _addressConfirmed     = false;   // true only when user picks from the suggestions list
 
 /** Pick an emoji icon based on Nominatim category/type — identical to map.js */
 function getPoiIcon(r) {
@@ -322,9 +339,12 @@ function initAutocomplete() {
   if (!input || !suggestEl) return;
 
   input.addEventListener('input', () => {
-    // Clear previously captured coords whenever the user edits
+    // Any manual edit resets the confirmed state — user must re-pick from suggestions
+    _addressConfirmed = false;
     document.getElementById('caseModalLat').value = '';
     document.getElementById('caseModalLng').value = '';
+    input.classList.remove('addr-locked');
+    document.getElementById('addrLockHint').classList.remove('visible');
 
     const query = input.value.trim();
 
@@ -335,7 +355,7 @@ function initAutocomplete() {
       return;
     }
 
-    setAddressStatus('manual', '✏️ Address not yet verified — will geocode on save');
+    setAddressStatus('manual', '⚠️ Type to search, then select an address from the list below');
 
     clearTimeout(_addrSearchTimeout);
     _addrSearchTimeout = setTimeout(async () => {
@@ -390,13 +410,19 @@ function initAutocomplete() {
             const lon   = parseFloat(item.dataset.lon);
             const label = decodeURIComponent(item.dataset.display);
 
-            input.value = label.split(',')[0].trim();
+            // Store the full display name so the field reflects the chosen location
+            input.value = label.split(',').slice(0, 2).join(',').trim();
             document.getElementById('caseModalLat').value = lat;
             document.getElementById('caseModalLng').value = lon;
 
+            // Lock: mark as confirmed and style the field green
+            _addressConfirmed = true;
+            input.classList.add('addr-locked');
+            document.getElementById('addrLockHint').classList.add('visible');
+
             suggestEl.innerHTML = '';
             suggestEl.classList.remove('active');
-            setAddressStatus('verified', '📍 Address verified and coordinates captured');
+            setAddressStatus('verified', '✅ Address confirmed from suggestions — coordinates captured');
           });
         });
 
@@ -531,6 +557,7 @@ function openEditUserModal(userId) {
   document.getElementById('modalTitle').textContent = 'Edit User';
   document.getElementById('editUserId').value       = u.id;
   document.getElementById('modalEmail').value       = u.email;
+  document.getElementById('modalFullName').value    = u.full_name || '';
   document.getElementById('modalPassword').value    = '';
   document.getElementById('modalRole').value        = u.role;
   document.getElementById('passwordRow').style.display = 'none';
@@ -566,6 +593,12 @@ async function openCreateCaseModal() {
   document.getElementById('caseModalLat').value = '';
   document.getElementById('caseModalLng').value = '';
   document.getElementById('caseModalStatus').style.display = 'none';
+  // Reset address field lock state
+  _addressConfirmed = false;
+  const addrInput = document.getElementById('caseModalAddress');
+  if (addrInput) addrInput.classList.remove('addr-locked');
+  const lockHint = document.getElementById('addrLockHint');
+  if (lockHint) lockHint.classList.remove('visible');
   // Reset address suggestions dropdown
   const sug = document.getElementById('addrSuggestions');
   if (sug) { sug.innerHTML = ''; sug.classList.remove('active'); }
@@ -591,6 +624,12 @@ async function saveCase() {
   if (!suspectName) { showCaseStatus('Suspect name is required.', 'error'); return; }
   if (!description) { showCaseStatus('Description is required.', 'error'); return; }
   if (!riskLevel)   { showCaseStatus('Risk level is required.', 'error'); return; }
+  // If an address was entered but not selected from the autocomplete list, block the save
+  if (address && !_addressConfirmed) {
+    showCaseStatus('Please select a valid address from the suggestions dropdown. Free-text addresses are not accepted.', 'error');
+    document.getElementById('caseModalAddress').focus();
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = '⏳ Creating...';
@@ -669,20 +708,22 @@ async function saveUser() {
   const role      = document.getElementById('modalRole').value;
   const btn       = document.getElementById('modalSaveBtn');
 
-  if (!email || !role) { showModalStatus('Email and role are required.', 'error'); return; }
-  if (!id && !pass)    { showModalStatus('Password is required for new users.', 'error'); return; }
+  if (!email || !role)    { showModalStatus('Email and role are required.', 'error'); return; }
+  if (!full_name)         { showModalStatus('Full name is required.', 'error'); return; }
+  if (!id && !pass)       { showModalStatus('Password is required for new users.', 'error'); return; }
 
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
     if (id) {
       const res = await fetch(`${BASE_URL}/api/users/${id}/role`, {
-        method:'PUT', headers: authHeaders, body: JSON.stringify({ role })
+        method:'PUT', headers: authHeaders,
+        body: JSON.stringify({ role, full_name })
       });
       if (!res.ok) { const e=await res.json(); throw new Error(e.message||e.error); }
     } else {
       const res = await fetch(`${BASE_URL}/api/users`, {
         method:'POST', headers: authHeaders,
-        body: JSON.stringify({ email, password: pass, role, full_name: full_name || email })
+        body: JSON.stringify({ email, password: pass, role, full_name })
       });
       if (!res.ok) { const e=await res.json(); throw new Error(e.message||e.error); }
     }

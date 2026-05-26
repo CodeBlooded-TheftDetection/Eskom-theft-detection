@@ -389,6 +389,10 @@
     #message.error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     #message.info    { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
+    /* ── Selected cases bar ─────────────────────────────────── */
+    #selectedCasesBar { display: none !important; }
+    #selectedCasesBar.visible { display: flex !important; }
+
     /* ── Animations ──────────────────────────────────────────── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(10px); }
@@ -440,28 +444,25 @@
       ══════════════════════════════════════════════════════ -->
       <div class="panel">
         <div class="panel-header">
-          <h2>Available Investigators</h2>
-          <p>Click a card to select an investigator for assignment</p>
+          <h2>Investigators</h2>
+          <p>Click a card to select an investigator, then assign one or more cases</p>
         </div>
 
-        <!-- Filter tabs -->
+        <!-- Sort controls -->
         <div class="filter-tabs">
-          <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">
-            All <span class="tab-count" id="countAll">—</span>
+          <span style="font-size:11.5px;color:#6b7280;font-weight:600;align-self:center;white-space:nowrap;">Sort by cases:</span>
+          <button class="filter-tab active" data-sort="desc" onclick="setSortOrder('desc')">
+            Most assigned <span class="tab-count" id="sortDescIcon">↓</span>
           </button>
-          <button class="filter-tab tab-available" data-filter="available" onclick="setFilter('available')">
-            Available <span class="tab-count" id="countAvailable">—</span>
-          </button>
-          <button class="filter-tab tab-occupied" data-filter="occupied" onclick="setFilter('occupied')">
-            Occupied <span class="tab-count" id="countOccupied">—</span>
+          <button class="filter-tab" data-sort="asc" onclick="setSortOrder('asc')">
+            Least assigned <span class="tab-count" id="sortAscIcon">↑</span>
           </button>
         </div>
 
         <div class="panel-body">
-          <!-- Legend -->
           <div class="legend" style="margin-bottom:12px;">
-            <div class="legend-item"><div class="legend-dot" style="background:#16a34a;"></div> Available — no open cases</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#d97706;"></div> Occupied — has active cases</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#16a34a;"></div> Active investigator</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#9ca3af;"></div> Inactive</div>
           </div>
 
           <div id="investigatorList">
@@ -475,8 +476,8 @@
       ══════════════════════════════════════════════════════ -->
       <div class="panel">
         <div class="panel-header">
-          <h2>Select Case</h2>
-          <p>Search by suspect name or case number to find and select a case</p>
+          <h2>Select Cases</h2>
+          <p>Search and click cases to select them — multiple selections allowed</p>
         </div>
 
         <div class="panel-body">
@@ -507,9 +508,13 @@
         </div>
 
         <div class="panel-footer">
+          <div id="selectedCasesBar" style="display:none;margin-bottom:10px;padding:8px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;font-size:12.5px;font-weight:600;color:#15803d;display:flex;align-items:center;justify-content:space-between;">
+            <span id="selectedCasesLabel">0 cases selected</span>
+            <button onclick="clearCaseSelections()" style="background:none;border:none;color:#15803d;cursor:pointer;font-size:12px;text-decoration:underline;padding:0;">Clear all</button>
+          </div>
           <button class="btn-assign" onclick="assignInvestigator()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-            Assign Investigator to Case
+            Assign Investigator to Selected Cases
           </button>
           <p id="message"></p>
         </div>

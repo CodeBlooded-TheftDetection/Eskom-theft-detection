@@ -253,25 +253,53 @@ async function loadInvestigators() {
     allInvestigators = await res.json();
     sel.innerHTML = `<option value="">— Select investigator —</option>` +
       allInvestigators.map(inv =>
-        `<option value="${inv.id}">${inv.full_name || inv.email} (${inv.badge_number || 'No badge'})</option>`
+        `<option value="${inv.id}">${inv.full_name || inv.email}</option>`
       ).join('');
-    sel.addEventListener('change', () => { if (sel.value) checkExistingEval(sel.value); });
+    sel.addEventListener('change', () => {
+      filterCasesByInvestigator(sel.value);
+      if (sel.value) checkExistingEval(sel.value);
+    });
   } catch(e) {
     sel.innerHTML = `<option value="">Could not load investigators</option>`;
   }
 }
 
-// ── LOAD CASES ────────────────────────────────────────────────
+// ── LOAD CASES (all, stored globally for filtering) ───────────
+let allCasesForEval = [];
+
 async function loadCases() {
   try {
     const res   = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
-    const cases = await res.json();
-    const sel   = document.getElementById('caseSelect');
-    sel.innerHTML = `<option value="">— Link to a case (optional) —</option>` +
-      (Array.isArray(cases) ? cases : []).map(c =>
-        `<option value="${c.id}">${c.case_number || c.id} — ${c.suspect_name || 'Unknown'}</option>`
-      ).join('');
-  } catch(e) {}
+    allCasesForEval = await res.json();
+    if (!Array.isArray(allCasesForEval)) allCasesForEval = [];
+    // Start with empty dropdown — cases populate once an investigator is picked
+    filterCasesByInvestigator('');
+  } catch(e) {
+    allCasesForEval = [];
+  }
+}
+
+// ── FILTER CASES BY SELECTED INVESTIGATOR ─────────────────────
+// Only shows cases assigned to or resolved by this investigator.
+function filterCasesByInvestigator(investigatorId) {
+  const sel = document.getElementById('caseSelect');
+  if (!investigatorId) {
+    sel.innerHTML = `<option value="">— Select an investigator first —</option>`;
+    return;
+  }
+  const filtered = allCasesForEval.filter(c =>
+    String(c.assigned_investigator_id) === String(investigatorId)
+  );
+  if (filtered.length === 0) {
+    sel.innerHTML = `<option value="">— No cases assigned to this investigator —</option>`;
+    return;
+  }
+  sel.innerHTML = `<option value="">— Link to a case (optional) —</option>` +
+    filtered.map(c => {
+      const status = c.outcome || c.status || 'OPEN';
+      const label  = `${c.case_number || c.id} — ${c.suspect_name || 'Unknown'} (${status})`;
+      return `<option value="${c.id}">${label}</option>`;
+    }).join('');
 }
 
 // ── CHECK EXISTING EVAL FOR SELECTED INVESTIGATOR ─────────────
@@ -408,9 +436,13 @@ renderStars('starsCaseHandling',  'ratingCaseHandling');
 renderStars('starsProfessional',  'ratingProfessional');
 renderStars('starsSpeed',         'ratingSpeed');
 
-loadInvestigators();
-loadCases();
-loadEvals();
+// Await investigators first so allInvestigators is populated before
+// renderEvals() tries to look up names — prevents the "Unknown" race condition.
+(async () => {
+  await loadInvestigators();
+  await loadCases();
+  await loadEvals();
+})();
 </script>
 </body>
 </html>

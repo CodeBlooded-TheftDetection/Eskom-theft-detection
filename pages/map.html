@@ -386,7 +386,48 @@
 <!-- Marker manager panel is injected here by JS -->
 <div id="markerManagerPanel"></div>
 
-<script src="../js/sidebar.js"></script>
+<script>
+  // ── SIDEBAR ───────────────────────────────────────────────────
+  (function() {
+    const token    = localStorage.getItem("token");
+    const userRole = (localStorage.getItem("userRole") || "").toLowerCase();
+    if (!token) { window.location.href = "login.html"; return; }
+
+    const menu = document.getElementById("sidebarMenu");
+    if (!menu) return;
+
+    const allItems = [
+      { href: "dashboard.html",  icon: "layout-dashboard", label: "Main Dashboard",      roles: ["admin","investigator"] },
+      { href: "map.html",        icon: "map",              label: "Map View",             roles: ["admin","investigator"] },
+      { href: "report.html",     icon: "bar-chart-3",      label: "Report Screen",        roles: ["admin"] },
+      { href: "record.html",     icon: "edit-3",           label: "Record Outcome",       roles: ["investigator"] },
+      { href: "caseList.html",   icon: "list",             label: "Case List",            roles: ["admin","investigator"] },
+      { href: "resolved.html",   icon: "check-circle",     label: "Resolved Cases",       roles: ["admin","investigator"] },
+      { href: "assign.html",     icon: "user-check",       label: "Assign Investigator",  roles: ["admin"] },
+    ];
+
+    const currentPage = window.location.pathname.split("/").pop();
+    const visible     = allItems.filter(i => i.roles.includes(userRole));
+
+    menu.innerHTML = `<p class="menu-title">NAVIGATION</p>` +
+      visible.map(i =>
+        `<a href="${i.href}" class="${i.href === currentPage ? "active" : ""}"
+            style="display:flex;align-items:center;gap:10px;">
+          <i data-lucide="${i.icon}"></i>${i.label}
+        </a>`
+      ).join("") +
+      `<a href="login.html" style="display:flex;align-items:center;gap:10px;"
+          onclick="localStorage.clear()">
+        <i data-lucide="log-out"></i>Logout
+      </a>`;
+
+    // Also stamp the logged-in role in sidebar footer if it exists
+    const roleEl = document.getElementById("roleName");
+    if (roleEl) roleEl.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+
+    if (typeof lucide !== "undefined") lucide.createIcons();
+  })();
+</script>
 <script src="../js/map.js"></script>
 </body>
 </html>

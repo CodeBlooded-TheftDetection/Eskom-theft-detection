@@ -12,30 +12,20 @@ const authHeaders = {
 };
 
 let selectedInvestigatorId = null;
-let selectedCaseId         = null;
+let selectedCaseIds        = new Set();   // multi-case selection
 let allCases               = [];
 let allInvestigators       = [];
-let activeFilter           = "all";   // "all" | "available" | "occupied"
+let activeSortOrder        = "desc";      // "asc" | "desc" — sort by cases assigned
 
-// ── INVESTIGATOR FILTER TABS ──────────────────────────────────
-// "available" = no open (unresolved) cases currently active
-// "occupied"  = has at least one open case assigned
-function setFilter(filter) {
-  activeFilter = filter;
+// ── SORT ORDER ────────────────────────────────────────────────
+function setSortOrder(order) {
+  activeSortOrder = order;
 
-  // Update tab active states
   document.querySelectorAll(".filter-tab").forEach(tab => {
-    tab.classList.toggle("active", tab.dataset.filter === filter);
+    tab.classList.toggle("active", tab.dataset.sort === order);
   });
 
   renderInvestigators();
-}
-
-function investigatorStatus(inv) {
-  // Active open cases = assigned minus resolved
-  const openCases = (inv.assigned || 0) - (inv.resolved || 0);
-  if (inv.is_active === false) return "inactive";
-  return openCases > 0 ? "occupied" : "available";
 }
 
 // ── LOAD INVESTIGATORS ────────────────────────────────────────
@@ -57,12 +47,11 @@ async function loadInvestigators() {
     if (!Array.isArray(allInvestigators) || allInvestigators.length === 0) {
       listEl.innerHTML = `<p style="color:#9ca3af;font-size:13px;text-align:center;">
         No investigators found.<br>
-        <a href="admin.html" style="color:#16a34a;font-weight:600;">Add via User Management →</a>
+        <a href="admin.html" style="color:#16a34a;font-weight:600;">Add via User Management (role: Investigator) →</a>
       </p>`;
       return;
     }
 
-    updateTabCounts();
     renderInvestigators();
 
   } catch (err) {
@@ -71,40 +60,29 @@ async function loadInvestigators() {
   }
 }
 
-function updateTabCounts() {
-  const counts = { all: 0, available: 0, occupied: 0, inactive: 0 };
-  allInvestigators.forEach(inv => {
-    counts.all++;
-    const s = investigatorStatus(inv);
-    if (s === "available") counts.available++;
-    else if (s === "occupied") counts.occupied++;
-    else counts.inactive++;
-  });
-  document.getElementById("countAll").textContent       = counts.all;
-  document.getElementById("countAvailable").textContent = counts.available;
-  document.getElementById("countOccupied").textContent  = counts.occupied;
+function investigatorStatus(inv) {
+  const openCases = Math.max(0, (inv.assigned || 0) - (inv.resolved || 0));
+  if (inv.is_active === false) return "inactive";
+  return openCases > 0 ? "occupied" : "available";
 }
 
 function renderInvestigators() {
   const listEl = document.getElementById("investigatorList");
   if (!listEl) return;
 
-  let visible = allInvestigators;
-  if (activeFilter === "available") {
-    visible = allInvestigators.filter(inv => investigatorStatus(inv) === "available");
-  } else if (activeFilter === "occupied") {
-    visible = allInvestigators.filter(inv => investigatorStatus(inv) === "occupied");
-  }
+  // Sort by assigned cases
+  const sorted = allInvestigators.slice().sort((a, b) => {
+    const diff = (a.assigned || 0) - (b.assigned || 0);
+    return activeSortOrder === "asc" ? diff : -diff;
+  });
 
-  if (visible.length === 0) {
-    listEl.innerHTML = `<p style="color:#9ca3af;font-size:13px;text-align:center;padding:24px 0;">
-      No investigators match this filter.
-    </p>`;
+  if (sorted.length === 0) {
+    listEl.innerHTML = `<p style="color:#9ca3af;font-size:13px;text-align:center;padding:24px 0;">No investigators found.</p>`;
     return;
   }
 
   listEl.innerHTML = "";
-  visible.forEach(inv => {
+  sorted.forEach(inv => {
     const status   = investigatorStatus(inv);
     const rate     = inv.assigned > 0 ? Math.round((inv.resolved / inv.assigned) * 100) : 0;
     const name     = inv.full_name || inv.email;
@@ -120,6 +98,7 @@ function renderInvestigators() {
 
     const card = document.createElement("div");
     card.className = `inv-card${status === "inactive" ? " inactive" : ""}`;
+    if (String(inv.id) === String(selectedInvestigatorId)) card.classList.add("selected");
     card.id = `inv-${inv.id}`;
 
     card.innerHTML = `
@@ -151,11 +130,10 @@ function renderInvestigators() {
     `;
 
     card.addEventListener("click", () => {
-      // Deselect all
       document.querySelectorAll(".inv-card").forEach(c => c.classList.remove("selected"));
       card.classList.add("selected");
       selectedInvestigatorId = inv.id;
-      showMessage(`Investigator selected: ${name}. Now pick a case and click Assign.`, "info");
+      showMessage(`Investigator selected: ${name}. Now pick one or more cases and click Assign.`, "info");
     });
 
     listEl.appendChild(card);
@@ -210,20 +188,26 @@ function renderCaseResults(query) {
   resultsEl.innerHTML = filtered.map(c => {
     const riskClass  = (c.risk_level || "low").toLowerCase();
     const isAssigned = !!c.assigned_investigator_id;
-    const isSelected = c.id === selectedCaseId;
+    const isSelected = selectedCaseIds.has(c.id);
     return `
       <div class="case-result-item${isSelected ? " selected" : ""}"
-           onclick="selectCase('${c.id}')" data-case-id="${c.id}">
+           onclick="toggleCase('${c.id}')" data-case-id="${c.id}">
         <div class="case-assigned-dot ${isAssigned ? "assigned" : "unassigned"}"
              title="${isAssigned ? "Already assigned" : "Unassigned"}"></div>
         <span class="case-num">${escapeHtml(c.case_number || c.id?.slice(0, 8) || "N/A")}</span>
         <span class="case-suspect">${escapeHtml(c.suspect_name || "Unknown")}</span>
         <span class="case-risk-badge ${riskClass}">${c.risk_level || "N/A"}</span>
+        <span style="margin-left:auto;flex-shrink:0;" title="${isSelected ? 'Deselect' : 'Select'}">
+          ${isSelected
+            ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+            : `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>`
+          }
+        </span>
       </div>`;
   }).join("");
 }
 
-// ── FILTER CASES (search input handler) ──────────────────────
+// ── FILTER CASES ──────────────────────────────────────────────
 function filterCases() {
   const q = document.getElementById("caseSearch")?.value || "";
   renderCaseResults(q);
@@ -236,90 +220,153 @@ function clearCaseSearch() {
   renderCaseResults("");
 }
 
-// ── SELECT A CASE ─────────────────────────────────────────────
-function selectCase(caseId) {
-  selectedCaseId = caseId;
+// ── TOGGLE CASE SELECTION (multi-select) ─────────────────────
+function toggleCase(caseId) {
+  if (selectedCaseIds.has(caseId)) {
+    selectedCaseIds.delete(caseId);
+  } else {
+    selectedCaseIds.add(caseId);
+  }
+  updateSelectionBar();
 
-  // Highlight the clicked row
-  document.querySelectorAll(".case-result-item").forEach(el => {
-    el.classList.toggle("selected", el.dataset.caseId === caseId);
-  });
+  // Re-render to update checkmarks
+  const q = document.getElementById("caseSearch")?.value || "";
+  renderCaseResults(q);
 
   // Update case summary panel
-  const c = allCases.find(x => x.id === caseId);
+  updateCaseSummary();
+}
+
+function clearCaseSelections() {
+  selectedCaseIds.clear();
+  updateSelectionBar();
+  const q = document.getElementById("caseSearch")?.value || "";
+  renderCaseResults(q);
+  updateCaseSummary();
+}
+
+function updateSelectionBar() {
+  const bar   = document.getElementById("selectedCasesBar");
+  const label = document.getElementById("selectedCasesLabel");
+  if (!bar || !label) return;
+  const count = selectedCaseIds.size;
+  if (count === 0) {
+    bar.classList.remove("visible");
+  } else {
+    bar.classList.add("visible");
+    label.textContent = `${count} case${count === 1 ? "" : "s"} selected`;
+  }
+}
+
+// ── CASE SUMMARY PANEL ────────────────────────────────────────
+function updateCaseSummary() {
   const summaryEl = document.getElementById("caseSummary");
   if (!summaryEl) return;
 
-  if (!c) {
+  const ids = [...selectedCaseIds];
+  if (ids.length === 0) {
     summaryEl.className = "";
     summaryEl.innerHTML = `<p style="color:#9ca3af;font-size:13px;margin:0;">
-      Select a case above to see its details.</p>`;
+      Select one or more cases above to see details.</p>`;
     return;
   }
 
-  const inv      = c.investigators;
-  const invName  = inv?.full_name || inv?.email || "Unassigned";
-  const riskClass = (c.risk_level || "low").toLowerCase();
-  const riskColor = { high: "#b91c1c", mid: "#92400e", low: "#15803d" }[riskClass] || "#6b7280";
-  const riskBg    = { high: "#fee2e2", mid: "#fef3c7", low: "#dcfce7" }[riskClass] || "#f3f4f6";
+  if (ids.length === 1) {
+    const c = allCases.find(x => x.id === ids[0]);
+    if (!c) return;
+    const inv     = c.investigators;
+    const invName = inv?.full_name || inv?.email || "Unassigned";
+    const riskClass = (c.risk_level || "low").toLowerCase();
+    summaryEl.className = "has-data";
+    summaryEl.innerHTML = `
+      <div class="summary-header">
+        <span class="summary-case-num">${escapeHtml(c.case_number || "N/A")}</span>
+        <span class="case-risk-badge ${riskClass}">${c.risk_level || "N/A"}</span>
+        <span class="summary-outcome">${c.outcome || "OPEN"}</span>
+      </div>
+      <p class="summary-suspect">${escapeHtml(c.suspect_name || "Unknown")}</p>
+      <p class="summary-desc">${escapeHtml(c.description || "No description provided.")}</p>
+      <div class="summary-inv">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Currently assigned to: <strong>${escapeHtml(invName)}</strong>
+      </div>`;
+    return;
+  }
 
+  // Multiple cases selected
   summaryEl.className = "has-data";
+  const casesList = ids.map(id => {
+    const c = allCases.find(x => x.id === id);
+    return c ? escapeHtml(c.case_number || id) : id;
+  });
   summaryEl.innerHTML = `
-    <div class="summary-header">
-      <span class="summary-case-num">${escapeHtml(c.case_number || "N/A")}</span>
-      <span class="case-risk-badge ${riskClass}">${c.risk_level || "N/A"}</span>
-      <span class="summary-outcome">${c.outcome || "OPEN"}</span>
-    </div>
-    <p class="summary-suspect">${escapeHtml(c.suspect_name || "Unknown")}</p>
-    <p class="summary-desc">${escapeHtml(c.description || "No description provided.")}</p>
-    <div class="summary-inv">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Currently assigned to: <strong>${escapeHtml(invName)}</strong>
-    </div>
-  `;
+    <p style="font-size:13px;font-weight:700;color:#052e16;margin:0 0 6px;">
+      ${ids.length} cases selected
+    </p>
+    <p style="font-size:12px;color:#6b7280;margin:0;line-height:1.6;">
+      ${casesList.join(" &nbsp;·&nbsp; ")}
+    </p>`;
 }
+
+// Legacy — keep selectCase for backwards compatibility but redirect to toggle
+function selectCase(caseId) { toggleCase(caseId); }
 
 // ── ASSIGN ────────────────────────────────────────────────────
 async function assignInvestigator() {
   if (!selectedInvestigatorId) {
     showMessage("Please click an investigator card first.", "error"); return;
   }
-  if (!selectedCaseId) {
-    showMessage("Please search and select a case first.", "error"); return;
+  if (selectedCaseIds.size === 0) {
+    showMessage("Please select at least one case first.", "error"); return;
   }
 
-  showMessage("Assigning…", "info");
+  const ids = [...selectedCaseIds];
+  showMessage(`Assigning ${ids.length} case${ids.length === 1 ? "" : "s"}…`, "info");
 
-  try {
-    const res = await fetch(`${BASE_URL}/api/cases/${selectedCaseId}`, {
-      method:  "PUT",
-      headers: authHeaders,
-      body:    JSON.stringify({ assigned_investigator_id: selectedInvestigatorId })
-    });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message || e.error); }
+  const results = { ok: 0, fail: 0, errors: [] };
 
-    showMessage("✔ Investigator assigned successfully!", "success");
-
-    // Reset selection state
-    selectedCaseId         = null;
-    selectedInvestigatorId = null;
-
-    document.querySelectorAll(".inv-card").forEach(c => c.classList.remove("selected"));
-
-    const summaryEl = document.getElementById("caseSummary");
-    if (summaryEl) {
-      summaryEl.className = "";
-      summaryEl.innerHTML = `<p style="color:#9ca3af;font-size:13px;margin:0;">
-        Search and select a case above to see its details.</p>`;
+  for (const caseId of ids) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/cases/${caseId}`, {
+        method:  "PUT",
+        headers: authHeaders,
+        body:    JSON.stringify({ assigned_investigator_id: selectedInvestigatorId })
+      });
+      if (!res.ok) {
+        const e = await res.json();
+        throw new Error(e.message || e.error || `HTTP ${res.status}`);
+      }
+      results.ok++;
+    } catch (err) {
+      results.fail++;
+      results.errors.push(err.message);
     }
-    const searchEl = document.getElementById("caseSearch");
-    if (searchEl) searchEl.value = "";
-
-    await Promise.all([loadCases(), loadInvestigators()]);
-
-  } catch (err) {
-    showMessage(`Failed: ${err.message}`, "error");
   }
+
+  if (results.fail === 0) {
+    showMessage(`✔ ${results.ok} case${results.ok === 1 ? "" : "s"} assigned successfully!`, "success");
+  } else {
+    showMessage(`${results.ok} assigned, ${results.fail} failed: ${results.errors[0]}`, results.ok > 0 ? "info" : "error");
+  }
+
+  // Reset selections
+  selectedCaseIds.clear();
+  selectedInvestigatorId = null;
+
+  document.querySelectorAll(".inv-card").forEach(c => c.classList.remove("selected"));
+
+  const summaryEl = document.getElementById("caseSummary");
+  if (summaryEl) {
+    summaryEl.className = "";
+    summaryEl.innerHTML = `<p style="color:#9ca3af;font-size:13px;margin:0;">
+      Search and select cases above to see details.</p>`;
+  }
+  const searchEl = document.getElementById("caseSearch");
+  if (searchEl) searchEl.value = "";
+
+  updateSelectionBar();
+
+  await Promise.all([loadCases(), loadInvestigators()]);
 }
 
 // ── STATUS MESSAGE ─────────────────────────────────────────────

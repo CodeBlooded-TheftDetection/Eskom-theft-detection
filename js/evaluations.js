@@ -22,6 +22,7 @@
 // HOW IT FITS IN THE PROJECT:
 //   evaluations.html → evaluations.js
 //     → GET /api/investigators  → populate investigator dropdown
+//                                 (backed by users WHERE role='investigator')
 //     → GET /api/evaluations    → load existing evaluations
 //     → POST /api/evaluations   → save/update an evaluation
 // ============================================================
@@ -110,7 +111,7 @@ async function loadInvestigatorDropdown() {
     investigators.forEach(inv => {
       const opt       = document.createElement("option");
       opt.value       = inv.id;
-      opt.textContent = `${inv.full_name || inv.email} (${inv.badge_number || 'N/A'})`;
+      opt.textContent = inv.full_name || inv.email;
       select.appendChild(opt);
     });
 
