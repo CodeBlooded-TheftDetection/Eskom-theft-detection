@@ -1,9 +1,7 @@
-/* ════════════════════════════════════════════════════════════════════
-   LANDING PAGE - JavaScript
-   Smooth Interactions, Animations, and Scroll Triggers
-   ════════════════════════════════════════════════════════════════════ */
+//LANDING PAGE - JavaScript
+  
 
-// ── HAMBURGER MENU FUNCTIONALITY ───────────────────────────────────
+// HAMBURGER MENU FUNCTIONALITY 
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
 
@@ -13,8 +11,8 @@ if (hamburger) {
         hamburger.classList.toggle('active');
     });
 
-    // Close menu when link is clicked
-    document.querySelectorAll('.nav-links a').forEach(link => {
+    // Close menu when any link is clicked
+    document.querySelectorAll('.nav-links a, .nav-brand').forEach(link => {
         link.addEventListener('click', () => {
             navLinks.style.display = 'none';
             hamburger.classList.remove('active');
@@ -22,7 +20,7 @@ if (hamburger) {
     });
 }
 
-// ── SCROLL ANIMATIONS ───────────────────────────────────────────── 
+// SCROLL ANIMATIONS 
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -100px 0px'
@@ -45,7 +43,7 @@ document.querySelectorAll('.feature-card, .step-card, .stat-card, .benefit-item,
     observer.observe(el);
 });
 
-// ── COUNTER ANIMATION FOR STATISTICS ───────────────────────────────
+// COUNTER ANIMATION FOR STATISTICS 
 const counterObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting && !entry.target.dataset.counted) {
@@ -78,7 +76,7 @@ function animateCounter(element) {
     }, 16);
 }
 
-// ── SMOOTH SCROLL FOR NAVIGATION ────────────────────────────────────
+// SMOOTH SCROLL FOR NAVIGATION 
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
@@ -95,7 +93,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// ── NAVBAR SCROLL EFFECT ───────────────────────────────────────────
+// NAVBAR SCROLL EFFECT 
 const navbar = document.querySelector('.navbar');
 let lastScrollY = 0;
 
@@ -125,10 +123,11 @@ window.addEventListener('scroll', () => {
 // Smooth transition for navbar
 navbar.style.transition = 'transform 0.3s ease-in-out, background 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-bottom-color 0.3s ease-in-out';
 
-// ── ACTIVE NAVIGATION LINK HIGHLIGHTING ────────────────────────────
+// ACTIVE NAVIGATION LINK HIGHLIGHTING 
 function updateActiveNavLink() {
-    const sections = document.querySelectorAll('section[id]');
+    const sections = document.querySelectorAll('section[id], footer[id]');
     const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+    const navBrand = document.querySelector('.nav-brand');
     let currentSection = '';
 
     sections.forEach(section => {
@@ -139,15 +138,25 @@ function updateActiveNavLink() {
         }
     });
 
+    // Update regular nav links
     navLinks.forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('href') === `#${currentSection}`) {
             link.classList.add('active');
         }
     });
+
+    // Highlight brand when on hero section
+    if (navBrand) {
+        if (currentSection === 'hero') {
+            navBrand.style.opacity = '0.7';
+        } else {
+            navBrand.style.opacity = '1';
+        }
+    }
 }
 
-// ── FLOATING ELEMENTS PARALLAX ──────────────────────────────────────
+// FLOATING ELEMENTS PARALLAX 
 const floatingCards = document.querySelectorAll('.floating-card');
 
 window.addEventListener('scroll', () => {
@@ -163,7 +172,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// ── MOUSE HOVER EFFECTS ON CARDS ────────────────────────────────────
+// MOUSE HOVER EFFECTS ON CARDS 
 document.querySelectorAll('.feature-card, .role-card, .benefit-item').forEach(card => {
     card.addEventListener('mouseenter', (e) => {
         card.style.transform = 'translateY(-10px)';
@@ -174,7 +183,7 @@ document.querySelectorAll('.feature-card, .role-card, .benefit-item').forEach(ca
     });
 });
 
-// ── BUTTON RIPPLE EFFECT ────────────────────────────────────────────
+// BUTTON RIPPLE EFFECT 
 document.querySelectorAll('.btn').forEach(button => {
     button.addEventListener('click', function(e) {
         const rect = this.getBoundingClientRect();
@@ -213,7 +222,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// ── LAZY LOADING IMAGES (if added in future) ─────────────────────────
+// LAZY LOADING IMAGES (if added in future) 
 if ('IntersectionObserver' in window) {
     const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
@@ -231,7 +240,7 @@ if ('IntersectionObserver' in window) {
     });
 }
 
-// ── ACTIVE LINK HIGHLIGHTING IN NAVIGATION ──────────────────────────
+// ACTIVE LINK HIGHLIGHTING IN NAVIGATION 
 function updateActiveLink() {
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
@@ -269,7 +278,7 @@ activeStyle.textContent = `
 `;
 document.head.appendChild(activeStyle);
 
-// ── PERFORMANCE OPTIMIZATIONS ──────────────────────────────────────
+// PERFORMANCE OPTIMIZATIONS 
 // Throttle scroll events for better performance
 let scrollTimeout;
 const throttledScroll = () => {
@@ -283,7 +292,7 @@ const throttledScroll = () => {
 
 window.addEventListener('scroll', throttledScroll, { passive: true });
 
-// ── PAGE LOAD ANIMATION ─────────────────────────────────────────────
+// PAGE LOAD ANIMATION 
 document.addEventListener('DOMContentLoaded', () => {
     // Add a small delay for a more polished feel
     document.body.style.opacity = '0';
@@ -293,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-// ── MOBILE MENU AUTO-CLOSE ON RESIZE ────────────────────────────────
+// MOBILE MENU AUTO-CLOSE ON RESIZE 
 window.addEventListener('resize', () => {
     if (window.innerWidth > 768) {
         navLinks.style.display = 'flex';
@@ -303,7 +312,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-// ── KEYBOARD NAVIGATION ────────────────────────────────────────────
+// KEYBOARD NAVIGATION 
 document.addEventListener('keydown', (e) => {
     // Escape key closes mobile menu
     if (e.key === 'Escape' && navLinks.style.display === 'flex' && window.innerWidth <= 768) {
@@ -312,7 +321,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ── FORM VALIDATION (if forms added in future) ──────────────────────
+// FORM VALIDATION (if forms added in future) 
 function validateForm(form) {
     const inputs = form.querySelectorAll('input, textarea');
     let isValid = true;
@@ -329,7 +338,7 @@ function validateForm(form) {
     return isValid;
 }
 
-// ── ACCESSIBILITY IMPROVEMENTS ──────────────────────────────────────
+// ACCESSIBILITY IMPROVEMENTS 
 // Focus visible styles
 const focusStyle = document.createElement('style');
 focusStyle.textContent = `
@@ -345,7 +354,7 @@ focusStyle.textContent = `
 `;
 document.head.appendChild(focusStyle);
 
-// ── PRINT STYLES ────────────────────────────────────────────────────
+// PRINT STYLES 
 const printStyle = document.createElement('style');
 printStyle.media = 'print';
 printStyle.textContent = `
