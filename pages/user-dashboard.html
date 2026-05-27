@@ -5,22 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Dashboard — Eskom Report Portal</title>
 
-  <!--
-  ╔══════════════════════════════════════════════════════════════════════════════╗
-  ║  FILES NEEDED TO CONNECT THIS DASHBOARD TO YOUR LIVE BACKEND                ║
-  ╠══════════════════════════════════════════════════════════════════════════════╣
-  ║  1. Your backend API base URL (replace API_BASE in the CONFIG block below)   ║
-  ║  2. admin-dashboard.html — to wire admin_notifications into the admin UI    ║
-  ║  3. ../js/sidebar.js — keep your existing sidebar logic or replace this     ║
-  ║  4. Your JWT auth middleware endpoint (currently reads localStorage.token)  ║
-  ║  5. A file-upload endpoint (for evidence — currently base64 in localStorage) ║
-  ║  6. The admin "case management" data model so report fields match exactly   ║
-  ║                                                                              ║
-  ║  Until you share those files, this dashboard is FULLY FUNCTIONAL via        ║
-  ║  localStorage as the DB layer with clearly marked API hooks (search TODO:)  ║
-  ╚══════════════════════════════════════════════════════════════════════════════╝
-  -->
-
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -29,1275 +13,310 @@
        DESIGN TOKENS
     ═══════════════════════════════════════ */
     :root {
-      --g900: #064e3b;
-      --g800: #065f46;
-      --g700: #047857;
-      --g600: #059669;
-      --g500: #10b981;
-      --g400: #34d399;
-      --g100: #d1fae5;
-      --g50:  #ecfdf5;
+      --g900: #064e3b; --g800: #065f46; --g700: #047857;
+      --g600: #059669; --g500: #10b981; --g400: #34d399;
+      --g100: #d1fae5; --g50:  #ecfdf5;
 
-      --slate900: #0f172a;
-      --slate800: #1e293b;
-      --slate700: #334155;
-      --slate600: #475569;
-      --slate400: #94a3b8;
-      --slate200: #e2e8f0;
-      --slate100: #f1f5f9;
-      --slate50:  #f8fafc;
+      --slate900: #0f172a; --slate800: #1e293b; --slate700: #334155;
+      --slate600: #475569; --slate400: #94a3b8; --slate200: #e2e8f0;
+      --slate100: #f1f5f9; --slate50:  #f8fafc;
 
-      --amber:  #f59e0b;
-      --amber-bg: #fef3c7;
-      --orange: #f97316;
-      --orange-bg: #ffedd5;
-      --red:    #ef4444;
-      --red-bg: #fee2e2;
-      --blue:   #3b82f6;
-      --blue-bg:#dbeafe;
+      --amber: #f59e0b; --amber-bg: #fef3c7;
+      --orange:#f97316; --orange-bg:#ffedd5;
+      --red:   #ef4444; --red-bg:   #fee2e2;
+      --blue:  #3b82f6; --blue-bg:  #dbeafe;
 
-      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
-      --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.05);
-      --shadow-lg: 0 10px 30px rgba(0,0,0,.1), 0 4px 12px rgba(0,0,0,.06);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.05);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,.10),0 4px 12px rgba(0,0,0,.06);
       --shadow-green: 0 8px 24px rgba(16,185,129,.18);
-
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
-    }
-
-    /* ═══════════════════════════════════════
-       RESET & BASE
-    ═══════════════════════════════════════ */
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: var(--slate50);
-      color: var(--slate900);
-      overflow: hidden;
-    }
-
-    /* ═══════════════════════════════════════
-       LAYOUT
-    ═══════════════════════════════════════ */
-    .layout {
-      display: grid;
-      grid-template-columns: 270px 1fr;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* ═══════════════════════════════════════
-       SIDEBAR
-    ═══════════════════════════════════════ */
-    .sidebar {
-      background: linear-gradient(175deg, var(--g900) 0%, var(--g800) 60%, var(--g700) 100%);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding: 0;
-      overflow-y: auto;
-      position: relative;
-      box-shadow: 4px 0 24px rgba(0,0,0,.12);
-    }
-
-    .sidebar::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
-    }
-
-    .sidebar-header {
-      padding: 28px 22px 20px;
-      border-bottom: 1px solid rgba(255,255,255,.1);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 0;
-    }
-
-    .logo-icon {
-      width: 44px; height: 44px;
-      background: rgba(255,255,255,.15);
-      border: 1.5px solid rgba(255,255,255,.25);
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-
-    .logo h2 { font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
-    .logo p  { font-size: 11px; opacity: .7; margin-top: 1px; }
-
-    .sidebar-nav {
-      flex: 1;
-      padding: 20px 14px;
-    }
-
-    .nav-label {
-      font-size: 9.5px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      opacity: .5;
-      padding: 0 8px;
-      margin: 18px 0 8px;
-    }
-
-    .nav-label:first-child { margin-top: 0; }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      color: rgba(255,255,255,.82);
-      text-decoration: none;
-      font-size: 13.5px;
-      font-weight: 500;
-      transition: all .2s;
-      cursor: pointer;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-      margin-bottom: 2px;
-      position: relative;
-    }
-
-    .nav-item .nav-icon {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.1);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px;
-      flex-shrink: 0;
-      transition: background .2s;
-    }
-
-    .nav-item:hover { color: white; background: rgba(255,255,255,.1); }
-    .nav-item:hover .nav-icon { background: rgba(255,255,255,.2); }
-
-    .nav-item.active {
-      color: white;
-      background: rgba(255,255,255,.18);
-      font-weight: 700;
-    }
-    .nav-item.active .nav-icon { background: rgba(255,255,255,.25); }
-    .nav-item.active::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 50%;
-      transform: translateY(-50%);
-      width: 3px; height: 60%;
-      background: var(--g400);
-      border-radius: 0 3px 3px 0;
-    }
-
-    .notif-dot {
-      margin-left: auto;
-      background: var(--red);
-      color: white;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 99px;
-      min-width: 18px;
-      text-align: center;
-    }
-
-    .sidebar-footer {
-      padding: 16px 14px;
-      border-top: 1px solid rgba(255,255,255,.1);
-    }
-
-    .user-profile-pill {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,.1);
-      border-radius: var(--radius-sm);
-      margin-bottom: 8px;
-    }
-
-    .user-avatar {
-      width: 34px; height: 34px;
-      background: var(--g500);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    .user-info span:first-child {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: white;
-    }
-    .user-info span:last-child {
-      font-size: 10.5px;
-      opacity: .6;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-
-    .logout-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      padding: 9px;
-      border-radius: var(--radius-sm);
-      background: rgba(255,255,255,.08);
-      color: rgba(255,255,255,.75);
-      border: none;
-      font-size: 13px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .logout-btn:hover { background: rgba(255,255,255,.15); color: white; }
-
-    /* ═══════════════════════════════════════
-       MAIN
-    ═══════════════════════════════════════ */
-    .main {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: var(--slate50);
-    }
-
-    /* ── TOPBAR ── */
-    .topbar {
-      background: white;
-      border-bottom: 1px solid var(--slate200);
-      padding: 0 32px;
-      height: 68px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .topbar-left h1 {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--slate900);
-      letter-spacing: -.02em;
-    }
-
-    .topbar-left p {
-      font-size: 12.5px;
-      color: var(--slate400);
-      margin-top: 1px;
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .topbar-btn {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      cursor: pointer;
-      border: none;
-      transition: all .2s;
-    }
-
-    .topbar-btn.outline {
-      background: transparent;
-      border: 1.5px solid var(--slate200);
-      color: var(--slate700);
-    }
-    .topbar-btn.outline:hover { border-color: var(--g500); color: var(--g700); background: var(--g50); }
-
-    .topbar-btn.primary {
-      background: linear-gradient(135deg, var(--g700) 0%, var(--g500) 100%);
-      color: white;
-      box-shadow: var(--shadow-green);
-    }
-    .topbar-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(16,185,129,.25); }
-
-    .notif-btn {
-      position: relative;
-      width: 38px; height: 38px;
-      border-radius: var(--radius-sm);
-      border: 1.5px solid var(--slate200);
-      background: white;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--slate600);
-      font-size: 14px;
-      transition: all .2s;
-    }
-    .notif-btn:hover { border-color: var(--g500); color: var(--g700); }
-    .notif-btn .badge {
-      position: absolute;
-      top: -4px; right: -4px;
-      background: var(--red);
-      color: white;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 1px 4px;
-      border-radius: 99px;
-      min-width: 16px;
-      text-align: center;
-      border: 2px solid white;
-    }
-
-    /* ── CONTENT AREA ── */
-    .content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 28px 32px;
-    }
-
-    /* ── SECTION VIEWS ── */
-    .view { display: none; }
-    .view.active { display: block; }
-
-    /* ═══════════════════════════════════════
-       STATS ROW
-    ═══════════════════════════════════════ */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 28px;
-    }
-
-    .stat-card {
-      background: white;
-      border: 1.5px solid var(--slate200);
-      border-radius: var(--radius-lg);
-      padding: 18px 20px;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      transition: all .25s;
-      cursor: default;
-    }
-
-    .stat-card:hover {
-      border-color: var(--g400);
-      box-shadow: var(--shadow-green);
-      transform: translateY(-2px);
-    }
-
-    .stat-icon {
-      width: 46px; height: 46px;
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    .si-blue   { background: var(--blue-bg); color: var(--blue); }
-    .si-amber  { background: var(--amber-bg); color: #92400e; }
-    .si-orange { background: var(--orange-bg); color: #9a3412; }
-    .si-green  { background: var(--g100); color: var(--g700); }
-
-    .stat-body { flex: 1; min-width: 0; }
-    .stat-body h4 { font-size: 11.5px; color: var(--slate400); font-weight: 600; margin-bottom: 4px; }
-    .stat-body h2 { font-size: 30px; font-weight: 800; letter-spacing: -.04em; color: var(--slate900); line-height: 1; }
-    .stat-body p  { font-size: 11.5px; color: var(--slate400); margin-top: 3px; }
-
-    /* ═══════════════════════════════════════
-       DASHBOARD GRID
-    ═══════════════════════════════════════ */
-    .dash-grid {
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 20px;
-      align-items: start;
-    }
-
-    .dash-col { display: flex; flex-direction: column; gap: 20px; }
-
-    /* ── CARDS ── */
-    .card {
-      background: white;
-      border: 1.5px solid var(--slate200);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 22px 16px;
-      border-bottom: 1px solid var(--slate100);
-    }
-
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card-title-icon {
-      width: 34px; height: 34px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-    }
-
-    .cti-green  { background: var(--g50); color: var(--g700); }
-    .cti-blue   { background: var(--blue-bg); color: var(--blue); }
-    .cti-amber  { background: var(--amber-bg); color: #92400e; }
-    .cti-slate  { background: var(--slate100); color: var(--slate600); }
-
-    .card-title h3 { font-size: 14.5px; font-weight: 700; color: var(--slate900); }
-    .card-title p  { font-size: 11.5px; color: var(--slate400); margin-top: 1px; }
-
-    .card-action {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--g600);
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: color .2s;
-    }
-    .card-action:hover { color: var(--g800); }
-
-    .card-body { padding: 18px 22px; }
-
-    /* ═══════════════════════════════════════
-       PRIORITY BADGES
-    ═══════════════════════════════════════ */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 9px;
-      border-radius: 99px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-
-    .badge-low      { background: var(--blue-bg); color: #1d4ed8; }
-    .badge-medium   { background: var(--amber-bg); color: #92400e; }
-    .badge-high     { background: var(--orange-bg); color: #9a3412; }
-    .badge-critical { background: var(--red-bg); color: #b91c1c; }
-
-    .badge-pending     { background: var(--amber-bg); color: #92400e; }
-    .badge-investigating { background: var(--blue-bg); color: #1d4ed8; }
-    .badge-assigned    { background: var(--orange-bg); color: #9a3412; }
-    .badge-resolved    { background: var(--g100); color: var(--g800); }
-    .badge-closed      { background: var(--slate100); color: var(--slate600); }
-
-    /* ═══════════════════════════════════════
-       REPORT LIST
-    ═══════════════════════════════════════ */
-    .report-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--slate100);
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .report-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .report-item:first-child { padding-top: 0; }
-    .report-item:hover { transform: translateX(3px); }
-
-    .report-item-icon {
-      width: 38px; height: 38px;
-      border-radius: 9px;
-      background: var(--slate100);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      color: var(--slate600);
-      flex-shrink: 0;
-    }
-
-    .report-item-body { flex: 1; min-width: 0; }
-    .report-item-body h4 {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--slate900);
-      margin-bottom: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .report-item-body p {
-      font-size: 12px;
-      color: var(--slate400);
-    }
-
-    .report-item-meta {
-      text-align: right;
-      flex-shrink: 0;
-    }
-    .report-item-meta .date {
-      font-size: 11px;
-      color: var(--slate400);
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    .ref-tag {
-      font-family: 'DM Mono', monospace;
-      font-size: 10.5px;
-      color: var(--g700);
-      font-weight: 500;
-    }
-
-    /* ═══════════════════════════════════════
-       ACTIVITY FEED
-    ═══════════════════════════════════════ */
-    .activity-item {
-      display: flex;
-      gap: 13px;
-      padding: 10px 0;
-      position: relative;
-    }
-
-    .activity-item::after {
-      content: '';
-      position: absolute;
-      left: 15px;
-      top: 38px;
-      bottom: -10px;
-      width: 1px;
-      background: var(--slate100);
-    }
-    .activity-item:last-child::after { display: none; }
-
-    .activity-dot {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .ad-green  { background: var(--g100); color: var(--g700); }
-    .ad-blue   { background: var(--blue-bg); color: var(--blue); }
-    .ad-amber  { background: var(--amber-bg); color: #92400e; }
-    .ad-slate  { background: var(--slate100); color: var(--slate600); }
-
-    .activity-content h5 {
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--slate800);
-      margin-bottom: 2px;
-    }
-    .activity-content p { font-size: 12px; color: var(--slate400); }
-    .activity-content time { font-size: 11px; color: var(--slate400); display: block; margin-top: 2px; }
-
-    /* ═══════════════════════════════════════
-       NOTIFICATIONS
-    ═══════════════════════════════════════ */
-    .notif-item {
-      display: flex;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--slate100);
-    }
-    .notif-item:last-child { border-bottom: none; }
-    .notif-item.unread { background: var(--g50); margin: 0 -22px; padding: 12px 22px; }
-
-    .notif-icon {
-      width: 34px; height: 34px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px;
-      flex-shrink: 0;
-    }
-
-    .notif-body { flex: 1; }
-    .notif-body h5 { font-size: 13px; font-weight: 700; color: var(--slate800); margin-bottom: 3px; }
-    .notif-body p  { font-size: 12px; color: var(--slate500); line-height: 1.5; }
-    .notif-body time { font-size: 11px; color: var(--slate400); display: block; margin-top: 4px; }
-
-    .unread-indicator {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--g500);
-      flex-shrink: 0;
-      margin-top: 5px;
-    }
-
-    /* ═══════════════════════════════════════
-       STATUS TIMELINE
-    ═══════════════════════════════════════ */
-    .timeline {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .timeline-step {
-      display: flex;
-      gap: 14px;
-      position: relative;
-    }
-
-    .timeline-left {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex-shrink: 0;
-      width: 28px;
-    }
-
-    .timeline-circle {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-      z-index: 1;
-      flex-shrink: 0;
-    }
-
-    .tc-done    { background: var(--g600); color: white; }
-    .tc-current { background: var(--g900); color: white; box-shadow: 0 0 0 4px var(--g100); }
-    .tc-pending { background: var(--slate100); color: var(--slate400); border: 2px dashed var(--slate300); }
-
-    .timeline-line {
-      width: 2px;
-      flex: 1;
-      min-height: 28px;
-      margin: 3px 0;
-    }
-    .tl-done    { background: var(--g500); }
-    .tl-pending { background: var(--slate200); }
-
-    .timeline-content {
-      padding: 2px 0 24px;
-      flex: 1;
-    }
-
-    .timeline-content h5 { font-size: 13px; font-weight: 700; color: var(--slate800); }
-    .timeline-content p  { font-size: 12px; color: var(--slate400); margin-top: 2px; line-height: 1.5; }
-    .timeline-content time { font-size: 11px; color: var(--slate400); display: block; margin-top: 4px; }
-
-    /* ═══════════════════════════════════════
-       EMPTY STATE
-    ═══════════════════════════════════════ */
-    .empty-state {
-      text-align: center;
-      padding: 36px 20px;
-    }
-    .empty-state .es-icon {
-      width: 64px; height: 64px;
-      background: var(--slate100);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
-      color: var(--slate400);
-      margin: 0 auto 16px;
-    }
-    .empty-state h3 { font-size: 15px; font-weight: 700; color: var(--slate700); margin-bottom: 6px; }
-    .empty-state p  { font-size: 13px; color: var(--slate400); margin-bottom: 16px; line-height: 1.6; }
-
-    /* ═══════════════════════════════════════
-       SUBMIT REPORT DRAWER
-    ═══════════════════════════════════════ */
-    .drawer-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,.55);
-      backdrop-filter: blur(3px);
-      z-index: 100;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .3s;
-    }
-    .drawer-overlay.open { opacity: 1; pointer-events: all; }
-
-    .drawer {
-      position: fixed;
-      right: 0; top: 0; bottom: 0;
-      width: 580px;
-      background: white;
-      box-shadow: -8px 0 40px rgba(0,0,0,.15);
-      z-index: 101;
-      display: flex;
-      flex-direction: column;
-      transform: translateX(100%);
-      transition: transform .35s cubic-bezier(.32,.72,0,1);
-    }
-    .drawer.open { transform: translateX(0); }
-
-    .drawer-header {
-      padding: 24px 28px;
-      background: linear-gradient(135deg, var(--g900) 0%, var(--g700) 100%);
-      color: white;
-      flex-shrink: 0;
-    }
-
-    .drawer-header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    .drawer-title { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
-    .drawer-subtitle { font-size: 13px; opacity: .75; }
-
-    .drawer-close {
-      width: 34px; height: 34px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.15);
-      border: none;
-      color: white;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .2s;
-    }
-    .drawer-close:hover { background: rgba(255,255,255,.25); }
-
-    .drawer-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 26px 28px;
-    }
-
-    .drawer-footer {
-      padding: 18px 28px;
-      border-top: 1px solid var(--slate200);
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      flex-shrink: 0;
-    }
-
-    /* ── FORM ── */
-    .form-group { margin-bottom: 18px; }
-    .form-group:last-child { margin-bottom: 0; }
-
-    .form-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--slate700);
-      margin-bottom: 7px;
-    }
-    .form-label .req { color: var(--red); }
-
-    .form-hint { font-size: 11.5px; color: var(--slate400); margin-top: 5px; }
-
-    .form-input,
-    .form-textarea,
-    .form-select {
-      width: 100%;
-      padding: 10px 13px;
-      border: 1.5px solid var(--slate200);
-      border-radius: var(--radius-sm);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 13.5px;
-      color: var(--slate900);
-      background: var(--slate50);
-      transition: all .2s;
-      outline: none;
-    }
-
-    .form-input:focus,
-    .form-textarea:focus,
-    .form-select:focus {
-      border-color: var(--g500);
-      background: white;
-      box-shadow: 0 0 0 3px rgba(16,185,129,.12);
-    }
-
-    .form-textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    /* Priority selector */
-    .priority-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .priority-option { position: relative; }
-    .priority-option input { position: absolute; opacity: 0; width: 0; height: 0; }
-
-    .priority-label {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      padding: 10px 6px;
-      border: 2px solid var(--slate200);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all .2s;
-      font-size: 11.5px;
-      font-weight: 700;
-      color: var(--slate600);
-      text-align: center;
-    }
-    .priority-label .pi { font-size: 17px; }
-
-    .priority-option input:checked + .priority-label {
-      border-width: 2px;
-    }
-
-    .priority-low    .priority-label { border-color: transparent; }
-    .priority-medium .priority-label { border-color: transparent; }
-    .priority-high   .priority-label { border-color: transparent; }
-    .priority-critical .priority-label { border-color: transparent; }
-
-    .priority-low    input:checked + .priority-label { background: var(--blue-bg);   border-color: var(--blue);   color: #1d4ed8; }
-    .priority-medium input:checked + .priority-label { background: var(--amber-bg);  border-color: var(--amber);  color: #92400e; }
-    .priority-high   input:checked + .priority-label { background: var(--orange-bg); border-color: var(--orange); color: #9a3412; }
-    .priority-critical input:checked + .priority-label { background: var(--red-bg); border-color: var(--red);  color: #b91c1c; }
-
-    /* File upload */
-    .file-drop-zone {
-      border: 2px dashed var(--slate200);
-      border-radius: var(--radius-sm);
-      padding: 22px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .2s;
-      background: var(--slate50);
-    }
-    .file-drop-zone:hover { border-color: var(--g400); background: var(--g50); }
-    .file-drop-zone.dragover { border-color: var(--g500); background: var(--g50); }
-    .file-drop-zone input { display: none; }
-    .file-drop-zone .fz-icon { font-size: 24px; color: var(--slate300); margin-bottom: 8px; }
-    .file-drop-zone p { font-size: 13px; color: var(--slate500); }
-    .file-drop-zone span { font-size: 11.5px; color: var(--slate400); }
-
-    .file-previews {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .file-chip {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      background: var(--slate100);
-      border-radius: 6px;
-      font-size: 12px;
-      color: var(--slate700);
-    }
-    .file-chip button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--slate400);
-      font-size: 11px;
-      padding: 0;
-      margin-left: 2px;
-      transition: color .15s;
-    }
-    .file-chip button:hover { color: var(--red); }
-
-    /* ── FORM BUTTONS ── */
-    .btn {
-      padding: 10px 20px;
-      border-radius: var(--radius-sm);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 13.5px;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      transition: all .2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-ghost {
-      background: var(--slate100);
-      color: var(--slate700);
-    }
-    .btn-ghost:hover { background: var(--slate200); }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--g800) 0%, var(--g600) 100%);
-      color: white;
-      box-shadow: var(--shadow-green);
-    }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(5,150,105,.25); }
-
-    .btn-primary:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* ── SUBMIT SUCCESS ── */
-    .success-splash {
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .success-checkmark {
-      width: 72px; height: 72px;
-      background: var(--g100);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 30px;
-      color: var(--g700);
-      margin: 0 auto 20px;
-      animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
-    }
-
-    @keyframes popIn {
-      from { transform: scale(0); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
-    }
-
-    .success-splash h2 { font-size: 22px; font-weight: 800; color: var(--g800); margin-bottom: 8px; }
-    .success-splash p  { font-size: 14px; color: var(--slate500); line-height: 1.6; margin-bottom: 24px; }
-
-    .ref-display {
-      background: var(--g50);
-      border: 2px solid var(--g100);
-      border-radius: var(--radius-md);
-      padding: 14px 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-    .ref-display span:first-child { font-size: 12px; color: var(--slate500); }
-    .ref-display span:last-child  { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 700; color: var(--g800); }
-
-    .admin-alert-note {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      background: #eff6ff;
-      border: 1.5px solid #bfdbfe;
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      font-size: 12.5px;
-      color: #1e40af;
-      text-align: left;
-      line-height: 1.5;
-    }
-
-    /* ═══════════════════════════════════════
-       TOAST
-    ═══════════════════════════════════════ */
-    .toast-container {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      z-index: 200;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .toast {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 13px 18px;
-      background: var(--slate900);
-      color: white;
-      border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-lg);
-      font-size: 13.5px;
-      font-weight: 600;
-      transform: translateX(120%);
-      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
-      min-width: 280px;
-      max-width: 360px;
-    }
-    .toast.show { transform: translateX(0); }
-    .toast.success .toast-icon { color: var(--g400); }
-    .toast.error   .toast-icon { color: var(--red); }
-    .toast.info    .toast-icon { color: #60a5fa; }
-    .toast-icon { font-size: 16px; flex-shrink: 0; }
-
-    /* ═══════════════════════════════════════
-       DETAIL VIEW
-    ═══════════════════════════════════════ */
-    .detail-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-
-    .detail-header h2 {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--slate900);
-      letter-spacing: -.02em;
-      margin-bottom: 6px;
-    }
-
-    .detail-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    .detail-field label {
-      font-size: 11.5px;
-      font-weight: 700;
-      color: var(--slate400);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      display: block;
-      margin-bottom: 4px;
-    }
-    .detail-field p {
-      font-size: 13.5px;
-      color: var(--slate800);
-      font-weight: 500;
-      line-height: 1.5;
-    }
-
-    /* ═══════════════════════════════════════
-       SEARCH & FILTER
-    ═══════════════════════════════════════ */
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .search-box {
-      flex: 1;
-      position: relative;
-    }
-    .search-box i {
-      position: absolute;
-      left: 12px; top: 50%;
-      transform: translateY(-50%);
-      color: var(--slate400);
-      font-size: 13px;
-    }
-    .search-box input {
-      width: 100%;
-      padding: 9px 13px 9px 34px;
-      border: 1.5px solid var(--slate200);
-      border-radius: var(--radius-sm);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 13px;
-      background: white;
-      outline: none;
-      transition: all .2s;
-    }
-    .search-box input:focus { border-color: var(--g400); box-shadow: 0 0 0 3px rgba(16,185,129,.1); }
-
-    .filter-select {
-      padding: 9px 13px;
-      border: 1.5px solid var(--slate200);
-      border-radius: var(--radius-sm);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 13px;
-      background: white;
-      outline: none;
-      color: var(--slate700);
-      cursor: pointer;
-    }
-
-    /* ═══════════════════════════════════════
-       FULL REPORTS TABLE
-    ═══════════════════════════════════════ */
-    .reports-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .reports-table th {
-      text-align: left;
-      padding: 10px 14px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--slate400);
-      background: var(--slate50);
-      border-bottom: 1px solid var(--slate200);
-    }
-    .reports-table td {
-      padding: 12px 14px;
-      font-size: 13px;
-      color: var(--slate700);
-      border-bottom: 1px solid var(--slate100);
-      vertical-align: middle;
-    }
-    .reports-table tr:hover td { background: var(--slate50); }
-    .reports-table tr:last-child td { border-bottom: none; }
-
-    .table-title {
-      font-weight: 700;
-      color: var(--slate900);
-      margin-bottom: 2px;
-    }
-    .table-addr {
-      font-size: 12px;
-      color: var(--slate400);
-    }
-
-    /* ═══════════════════════════════════════
-       WELCOME BANNER (first visit)
-    ═══════════════════════════════════════ */
-    .welcome-banner {
-      background: linear-gradient(135deg, var(--g900) 0%, var(--g700) 60%, #065f3c 100%);
-      border-radius: var(--radius-lg);
-      padding: 26px 28px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .welcome-banner::before {
-      content: '⚡';
-      position: absolute;
-      right: 28px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 80px;
-      opacity: .08;
-      pointer-events: none;
-    }
-
-    .wb-text h2 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 6px; }
-    .wb-text p  { font-size: 13.5px; opacity: .8; line-height: 1.5; max-width: 440px; }
-
-    .wb-btn {
-      background: white;
-      color: var(--g800);
-      padding: 12px 22px;
-      border-radius: var(--radius-sm);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 800;
-      border: none;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all .2s;
-      box-shadow: 0 4px 12px rgba(0,0,0,.2);
-    }
-    .wb-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
-
-    /* ═══════════════════════════════════════
-       SCROLLBAR
-    ═══════════════════════════════════════ */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--slate200); border-radius: 99px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--slate300); }
+      --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
+    }
+
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--slate50);color:var(--slate900);overflow:hidden;}
+
+    /* ─── LAYOUT ─── */
+    .layout{display:grid;grid-template-columns:270px 1fr;height:100vh;overflow:hidden;}
+
+    /* ─── SIDEBAR ─── */
+    .sidebar{background:linear-gradient(175deg,var(--g900) 0%,var(--g800) 60%,var(--g700) 100%);color:white;display:flex;flex-direction:column;overflow-y:auto;position:relative;box-shadow:4px 0 24px rgba(0,0,0,.12);}
+    .sidebar::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");pointer-events:none;}
+    .sidebar-header{padding:28px 22px 20px;border-bottom:1px solid rgba(255,255,255,.1);}
+    .logo{display:flex;align-items:center;gap:12px;}
+    .logo-icon{width:44px;height:44px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+    .logo h2{font-size:17px;font-weight:800;letter-spacing:-.02em;}
+    .logo p{font-size:11px;opacity:.7;margin-top:1px;}
+    .sidebar-nav{flex:1;padding:20px 14px;}
+    .nav-label{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.5;padding:0 8px;margin:18px 0 8px;}
+    .nav-label:first-child{margin-top:0;}
+    .nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);color:rgba(255,255,255,.82);text-decoration:none;font-size:13.5px;font-weight:500;transition:all .2s;cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;position:relative;font-family:'Plus Jakarta Sans',sans-serif;}
+    .nav-item .nav-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:background .2s;}
+    .nav-item:hover{color:white;background:rgba(255,255,255,.1);}
+    .nav-item:hover .nav-icon{background:rgba(255,255,255,.2);}
+    .nav-item.active{color:white;background:rgba(255,255,255,.18);font-weight:700;}
+    .nav-item.active .nav-icon{background:rgba(255,255,255,.25);}
+    .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--g400);border-radius:0 3px 3px 0;}
+    .notif-dot{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:800;padding:2px 6px;border-radius:99px;min-width:18px;text-align:center;}
+    .sidebar-footer{padding:16px 14px;border-top:1px solid rgba(255,255,255,.1);}
+    .user-profile-pill{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.1);border-radius:var(--radius-sm);margin-bottom:8px;}
+    .user-avatar{width:34px;height:34px;background:var(--g500);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;}
+    .user-info span:first-child{display:block;font-size:13px;font-weight:700;color:white;}
+    .user-info span:last-child{font-size:10.5px;opacity:.6;text-transform:uppercase;letter-spacing:.05em;}
+    .logout-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:9px;border-radius:var(--radius-sm);background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);border:none;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;cursor:pointer;transition:all .2s;}
+    .logout-btn:hover{background:rgba(255,255,255,.15);color:white;}
+
+    /* ─── MAIN ─── */
+    .main{display:flex;flex-direction:column;overflow:hidden;background:var(--slate50);}
+    .topbar{background:white;border-bottom:1px solid var(--slate200);padding:0 32px;height:68px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--shadow-sm);}
+    .topbar-left h1{font-size:20px;font-weight:800;color:var(--slate900);letter-spacing:-.02em;}
+    .topbar-left p{font-size:12.5px;color:var(--slate400);margin-top:1px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .topbar-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;border:none;transition:all .2s;}
+    .topbar-btn.primary{background:linear-gradient(135deg,var(--g700) 0%,var(--g500) 100%);color:white;box-shadow:var(--shadow-green);}
+    .topbar-btn.primary:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(16,185,129,.25);}
+    .notif-btn{position:relative;width:38px;height:38px;border-radius:var(--radius-sm);border:1.5px solid var(--slate200);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate600);font-size:14px;transition:all .2s;}
+    .notif-btn:hover{border-color:var(--g500);color:var(--g700);}
+    .notif-btn .badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:white;font-size:9px;font-weight:800;padding:1px 4px;border-radius:99px;min-width:16px;text-align:center;border:2px solid white;}
+
+    /* ─── CONTENT ─── */
+    .content{flex:1;overflow-y:auto;padding:28px 32px;}
+    .view{display:none;} .view.active{display:block;}
+
+    /* ─── STATS ─── */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    .stat-card{background:white;border:1.5px solid var(--slate200);border-radius:var(--radius-lg);padding:18px 20px;display:flex;align-items:flex-start;gap:14px;transition:all .25s;}
+    .stat-card:hover{border-color:var(--g400);box-shadow:var(--shadow-green);transform:translateY(-2px);}
+    .stat-icon{width:46px;height:46px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .si-blue{background:var(--blue-bg);color:var(--blue);}
+    .si-amber{background:var(--amber-bg);color:#92400e;}
+    .si-orange{background:var(--orange-bg);color:#9a3412;}
+    .si-green{background:var(--g100);color:var(--g700);}
+    .stat-body{flex:1;min-width:0;}
+    .stat-body h4{font-size:11.5px;color:var(--slate400);font-weight:600;margin-bottom:4px;}
+    .stat-body h2{font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--slate900);line-height:1;}
+    .stat-body p{font-size:11.5px;color:var(--slate400);margin-top:3px;}
+
+    /* ─── DASHBOARD GRID ─── */
+    .dash-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+    .dash-col{display:flex;flex-direction:column;gap:20px;}
+
+    /* ─── CARDS ─── */
+    .card{background:white;border:1.5px solid var(--slate200);border-radius:var(--radius-lg);overflow:hidden;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 16px;border-bottom:1px solid var(--slate100);}
+    .card-title{display:flex;align-items:center;gap:10px;}
+    .card-title-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+    .cti-green{background:var(--g50);color:var(--g700);}
+    .cti-blue{background:var(--blue-bg);color:var(--blue);}
+    .cti-amber{background:var(--amber-bg);color:#92400e;}
+    .cti-slate{background:var(--slate100);color:var(--slate600);}
+    .card-title h3{font-size:14.5px;font-weight:700;color:var(--slate900);}
+    .card-title p{font-size:11.5px;color:var(--slate400);margin-top:1px;}
+    .card-action{font-size:12px;font-weight:700;color:var(--g600);cursor:pointer;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:color .2s;}
+    .card-action:hover{color:var(--g800);}
+    .card-body{padding:18px 22px;}
+
+    /* ─── BADGES ─── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+    .badge-low{background:var(--blue-bg);color:#1d4ed8;}
+    .badge-medium{background:var(--amber-bg);color:#92400e;}
+    .badge-high{background:var(--orange-bg);color:#9a3412;}
+    .badge-critical{background:var(--red-bg);color:#b91c1c;}
+    .badge-pending{background:var(--amber-bg);color:#92400e;}
+    .badge-investigating{background:var(--blue-bg);color:#1d4ed8;}
+    .badge-resolved{background:var(--g100);color:var(--g800);}
+    .badge-closed{background:var(--slate100);color:var(--slate600);}
+
+    /* ─── REPORT ITEM ─── */
+    .report-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--slate100);cursor:pointer;transition:all .2s;}
+    .report-item:last-child{border-bottom:none;padding-bottom:0;}
+    .report-item:first-child{padding-top:0;}
+    .report-item:hover{transform:translateX(3px);}
+    .report-item-icon{width:38px;height:38px;border-radius:9px;background:var(--g50);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--g700);flex-shrink:0;}
+    .report-item-body{flex:1;min-width:0;}
+    .report-item-body h4{font-size:13.5px;font-weight:700;color:var(--slate900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .report-item-body p{font-size:12px;color:var(--slate400);}
+    .report-item-meta{text-align:right;flex-shrink:0;}
+    .report-item-meta .date{font-size:11px;color:var(--slate400);display:block;margin-bottom:5px;}
+    .ref-tag{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--g700);font-weight:500;}
+
+    /* ─── ACTIVITY ─── */
+    .activity-step{display:flex;gap:13px;padding:8px 0;position:relative;}
+    .activity-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+    .ad-green{background:var(--g100);color:var(--g700);}
+    .ad-blue{background:var(--blue-bg);color:var(--blue);}
+    .ad-amber{background:var(--amber-bg);color:#92400e;}
+
+    /* ─── NOTIFICATIONS ─── */
+    .notif-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--slate100);}
+    .notif-item:last-child{border-bottom:none;}
+    .notif-item.unread{background:var(--g50);margin:0 -22px;padding:12px 22px;}
+    .notif-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .notif-body{flex:1;}
+    .notif-body h5{font-size:13px;font-weight:700;color:var(--slate800);margin-bottom:3px;}
+    .notif-body p{font-size:12px;color:var(--slate500);line-height:1.5;}
+    .notif-body time{font-size:11px;color:var(--slate400);display:block;margin-top:4px;}
+    .unread-indicator{width:7px;height:7px;border-radius:50%;background:var(--g500);flex-shrink:0;margin-top:5px;}
+
+    /* ─── TIMELINE ─── */
+    .timeline-step{display:flex;gap:14px;}
+    .timeline-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:28px;}
+    .timeline-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;z-index:1;flex-shrink:0;}
+    .tc-done{background:var(--g600);color:white;}
+    .tc-current{background:var(--g900);color:white;box-shadow:0 0 0 4px var(--g100);}
+    .tc-pending{background:var(--slate100);color:var(--slate400);border:2px dashed var(--slate300);}
+    .timeline-line{width:2px;flex:1;min-height:28px;margin:3px 0;}
+    .tl-done{background:var(--g500);}
+    .tl-pending{background:var(--slate200);}
+    .timeline-content{padding:2px 0 24px;flex:1;}
+    .timeline-content h5{font-size:13px;font-weight:700;color:var(--slate800);}
+    .timeline-content p{font-size:12px;color:var(--slate400);margin-top:2px;line-height:1.5;}
+    .timeline-content time{font-size:11px;color:var(--slate400);display:block;margin-top:4px;}
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state{text-align:center;padding:36px 20px;}
+    .empty-state .es-icon{width:64px;height:64px;background:var(--slate100);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--slate400);margin:0 auto 16px;}
+    .empty-state h3{font-size:15px;font-weight:700;color:var(--slate700);margin-bottom:6px;}
+    .empty-state p{font-size:13px;color:var(--slate400);margin-bottom:16px;line-height:1.6;}
+
+    /* ─── WELCOME BANNER ─── */
+    .welcome-banner{background:linear-gradient(135deg,var(--g900) 0%,var(--g700) 60%,#065f3c 100%);border-radius:var(--radius-lg);padding:26px 28px;color:white;display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;position:relative;overflow:hidden;}
+    .welcome-banner::before{content:'⚡';position:absolute;right:28px;top:50%;transform:translateY(-50%);font-size:80px;opacity:.08;pointer-events:none;}
+    .wb-text h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;}
+    .wb-text p{font-size:13.5px;opacity:.8;line-height:1.5;max-width:440px;}
+    .wb-btn{background:white;color:var(--g800);padding:12px 22px;border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,.2);}
+    .wb-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.25);}
+
+    /* ─── DRAWER ─── */
+    .drawer-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
+    .drawer-overlay.open{opacity:1;pointer-events:all;}
+    .drawer{position:fixed;right:0;top:0;bottom:0;width:580px;background:white;box-shadow:-8px 0 40px rgba(0,0,0,.15);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);}
+    .drawer.open{transform:translateX(0);}
+    .drawer-header{padding:24px 28px;background:linear-gradient(135deg,var(--g900) 0%,var(--g700) 100%);color:white;flex-shrink:0;}
+    .drawer-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+    .drawer-title{font-size:20px;font-weight:800;letter-spacing:-.02em;}
+    .drawer-subtitle{font-size:13px;opacity:.75;}
+    .drawer-close{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.15);border:none;color:white;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+    .drawer-close:hover{background:rgba(255,255,255,.25);}
+    .drawer-body{flex:1;overflow-y:auto;padding:26px 28px;}
+    .drawer-footer{padding:18px 28px;border-top:1px solid var(--slate200);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;}
+
+    /* ─── FORM ─── */
+    .form-group{margin-bottom:18px;}
+    .form-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--slate700);margin-bottom:7px;}
+    .form-label .req{color:var(--red);}
+    .form-hint{font-size:11.5px;color:var(--slate400);margin-top:5px;}
+    .form-input,.form-textarea,.form-select{width:100%;padding:10px 13px;border:1.5px solid var(--slate200);border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:var(--slate900);background:var(--slate50);transition:all .2s;outline:none;}
+    .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--g500);background:white;box-shadow:0 0 0 3px rgba(16,185,129,.12);}
+    .form-textarea{resize:vertical;min-height:90px;line-height:1.5;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .priority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+    .priority-option{position:relative;}
+    .priority-option input{position:absolute;opacity:0;width:0;height:0;}
+    .priority-label{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 6px;border:2px solid var(--slate200);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:11.5px;font-weight:700;color:var(--slate600);text-align:center;}
+    .priority-label .pi{font-size:17px;}
+    .priority-low    input:checked+.priority-label{background:var(--blue-bg);border-color:var(--blue);color:#1d4ed8;}
+    .priority-medium input:checked+.priority-label{background:var(--amber-bg);border-color:var(--amber);color:#92400e;}
+    .priority-high   input:checked+.priority-label{background:var(--orange-bg);border-color:var(--orange);color:#9a3412;}
+    .priority-critical input:checked+.priority-label{background:var(--red-bg);border-color:var(--red);color:#b91c1c;}
+    .file-drop-zone{border:2px dashed var(--slate200);border-radius:var(--radius-sm);padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--slate50);}
+    .file-drop-zone:hover{border-color:var(--g400);background:var(--g50);}
+    .file-drop-zone.dragover{border-color:var(--g500);background:var(--g50);}
+    .file-drop-zone input{display:none;}
+    .file-drop-zone .fz-icon{font-size:24px;color:var(--slate300);margin-bottom:8px;}
+    .file-drop-zone p{font-size:13px;color:var(--slate500);}
+    .file-drop-zone span{font-size:11.5px;color:var(--slate400);}
+    .file-previews{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+    .file-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--slate100);border-radius:6px;font-size:12px;color:var(--slate700);}
+    .file-chip button{background:none;border:none;cursor:pointer;color:var(--slate400);font-size:11px;padding:0;margin-left:2px;transition:color .15s;}
+    .file-chip button:hover{color:var(--red);}
+    .btn{padding:10px 20px;border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+    .btn-ghost{background:var(--slate100);color:var(--slate700);}
+    .btn-ghost:hover{background:var(--slate200);}
+    .btn-primary{background:linear-gradient(135deg,var(--g800) 0%,var(--g600) 100%);color:white;box-shadow:var(--shadow-green);}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(5,150,105,.25);}
+    .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+    /* ─── SUCCESS ─── */
+    .success-splash{text-align:center;padding:40px 20px;}
+    .success-checkmark{width:72px;height:72px;background:var(--g100);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--g700);margin:0 auto 20px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+    .success-splash h2{font-size:22px;font-weight:800;color:var(--g800);margin-bottom:8px;}
+    .success-splash p{font-size:14px;color:var(--slate500);line-height:1.6;margin-bottom:24px;}
+    .ref-display{background:var(--g50);border:2px solid var(--g100);border-radius:var(--radius-md);padding:14px 20px;display:inline-flex;align-items:center;gap:10px;margin-bottom:24px;}
+    .ref-display span:first-child{font-size:12px;color:var(--slate500);}
+    .ref-display span:last-child{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--g800);}
+    .admin-alert-note{display:flex;align-items:flex-start;gap:10px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:var(--radius-sm);padding:12px 14px;font-size:12.5px;color:#1e40af;text-align:left;line-height:1.5;}
+
+    /* ─── TABLE ─── */
+    .toolbar{display:flex;gap:10px;margin-bottom:18px;}
+    .search-box{flex:1;position:relative;}
+    .search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--slate400);font-size:13px;}
+    .search-box input{width:100%;padding:9px 13px 9px 34px;border:1.5px solid var(--slate200);border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:white;outline:none;transition:all .2s;}
+    .search-box input:focus{border-color:var(--g400);box-shadow:0 0 0 3px rgba(16,185,129,.1);}
+    .filter-select{padding:9px 13px;border:1.5px solid var(--slate200);border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:white;outline:none;color:var(--slate700);cursor:pointer;}
+    .reports-table{width:100%;border-collapse:collapse;}
+    .reports-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--slate400);background:var(--slate50);border-bottom:1px solid var(--slate200);}
+    .reports-table td{padding:12px 14px;font-size:13px;color:var(--slate700);border-bottom:1px solid var(--slate100);vertical-align:middle;}
+    .reports-table tr:hover td{background:var(--slate50);}
+    .reports-table tr:last-child td{border-bottom:none;}
+    .table-title{font-weight:700;color:var(--slate900);margin-bottom:2px;}
+    .table-addr{font-size:12px;color:var(--slate400);}
+
+    /* ─── TOAST ─── */
+    .toast-container{position:fixed;bottom:28px;right:28px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+    .toast{display:flex;align-items:center;gap:12px;padding:13px 18px;background:var(--slate900);color:white;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);font-size:13.5px;font-weight:600;transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);min-width:280px;max-width:360px;}
+    .toast.show{transform:translateX(0);}
+    .toast.success .toast-icon{color:var(--g400);}
+    .toast.error   .toast-icon{color:var(--red);}
+    .toast.info    .toast-icon{color:#60a5fa;}
+    .toast-icon{font-size:16px;flex-shrink:0;}
+
+    /* ─── LOADING SKELETON ─── */
+    .skeleton{background:linear-gradient(90deg,var(--slate100) 25%,var(--slate200) 50%,var(--slate100) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    ::-webkit-scrollbar{width:6px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--slate200);border-radius:99px;}
+    ::-webkit-scrollbar-thumb:hover{background:var(--slate300);}
   </style>
 </head>
-
 <body>
 <div class="layout">
 
-  <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo">
         <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
-        <div>
-          <h2>Eskom</h2>
-          <p>Theft Reporting Portal</p>
-        </div>
+        <div><h2>Eskom</h2><p>Theft Reporting Portal</p></div>
       </div>
     </div>
 
-    <nav class="sidebar-nav" id="sidebarNav">
+    <nav class="sidebar-nav">
       <p class="nav-label">Main</p>
-
-      <button class="nav-item active" onclick="showView('dashboard', this)">
-        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
-        Overview
+      <button class="nav-item active" onclick="showView('dashboard',this)">
+        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>Overview
       </button>
-
       <button class="nav-item" onclick="openDrawer()">
-        <span class="nav-icon"><i class="fa-solid fa-circle-plus"></i></span>
-        Submit Report
+        <span class="nav-icon"><i class="fa-solid fa-circle-plus"></i></span>Submit Report
       </button>
-
-      <button class="nav-item" onclick="showView('my-reports', this)">
-        <span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span>
-        My Reports
-        <span class="notif-dot" id="sidebarReportCount" style="display:none"></span>
+      <button class="nav-item" onclick="showView('my-reports',this)">
+        <span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span>My Reports
+        <span class="notif-dot" id="sidebarCount" style="display:none">0</span>
       </button>
-
-      <button class="nav-item" onclick="showView('track', this)">
-        <span class="nav-icon"><i class="fa-solid fa-route"></i></span>
-        Track Status
+      <button class="nav-item" onclick="showView('track',this)">
+        <span class="nav-icon"><i class="fa-solid fa-route"></i></span>Track Status
       </button>
-
       <p class="nav-label">Account</p>
-
-      <button class="nav-item" onclick="showView('notifications', this)">
-        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
-        Notifications
-        <span class="notif-dot" id="sidebarNotifCount" style="display:none"></span>
+      <button class="nav-item" onclick="showView('notifications',this)">
+        <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>Notifications
+        <span class="notif-dot" id="sidebarNotifDot" style="display:none">0</span>
       </button>
-
       <a href="map.html" class="nav-item">
-        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>
-        Map View
+        <span class="nav-icon"><i class="fa-solid fa-map-location-dot"></i></span>Map View
       </a>
     </nav>
 
@@ -1315,17 +334,15 @@
     </div>
   </aside>
 
-  <!-- ═══════════════════════ MAIN ═══════════════════════ -->
+  <!-- ═══════════════ MAIN ═══════════════ -->
   <main class="main">
-
-    <!-- TOPBAR -->
     <header class="topbar">
       <div class="topbar-left">
         <h1 id="topbarTitle">Dashboard</h1>
         <p id="topbarSub">Welcome back — here's an overview of your reports</p>
       </div>
       <div class="topbar-right">
-        <button class="notif-btn" onclick="showView('notifications', null)" title="Notifications">
+        <button class="notif-btn" onclick="showView('notifications',null)" title="Notifications">
           <i class="fa-solid fa-bell"></i>
           <span class="badge" id="topbarNotifBadge" style="display:none">0</span>
         </button>
@@ -1335,228 +352,128 @@
       </div>
     </header>
 
-    <!-- CONTENT -->
     <div class="content" id="mainContent">
 
-      <!-- ════════════════════════════════
-           VIEW: DASHBOARD
-      ════════════════════════════════ -->
+      <!-- ── VIEW: DASHBOARD ── -->
       <div class="view active" id="view-dashboard">
-
-        <!-- Welcome Banner -->
-        <div class="welcome-banner" id="welcomeBanner">
+        <div class="welcome-banner">
           <div class="wb-text">
             <h2>Hello, <span id="welcomeName">Reporter</span> 👋</h2>
-            <p>Help protect South Africa's power grid. Submit a report if you suspect illegal electricity connections or meter tampering — all reports are confidential.</p>
+            <p>Help protect South Africa's power grid. Submit a confidential report if you witness electricity theft or meter tampering.</p>
           </div>
           <button class="wb-btn" onclick="openDrawer()">
             <i class="fa-solid fa-circle-plus"></i> Submit New Report
           </button>
         </div>
 
-        <!-- Stats -->
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon si-blue"><i class="fa-solid fa-folder"></i></div>
-            <div class="stat-body">
-              <h4>Total Reports</h4>
-              <h2 id="statTotal">0</h2>
-              <p>Submitted by you</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon si-amber"><i class="fa-solid fa-hourglass-half"></i></div>
-            <div class="stat-body">
-              <h4>Awaiting Review</h4>
-              <h2 id="statPending">0</h2>
-              <p>Pending assignment</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon si-orange"><i class="fa-solid fa-magnifying-glass"></i></div>
-            <div class="stat-body">
-              <h4>Under Investigation</h4>
-              <h2 id="statInProgress">0</h2>
-              <p>Actively being checked</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon si-green"><i class="fa-solid fa-circle-check"></i></div>
-            <div class="stat-body">
-              <h4>Resolved</h4>
-              <h2 id="statResolved">0</h2>
-              <p>Cases closed</p>
-            </div>
-          </div>
+          <div class="stat-card"><div class="stat-icon si-blue"><i class="fa-solid fa-folder"></i></div><div class="stat-body"><h4>Total Reports</h4><h2 id="statTotal">—</h2><p>Submitted by you</p></div></div>
+          <div class="stat-card"><div class="stat-icon si-amber"><i class="fa-solid fa-hourglass-half"></i></div><div class="stat-body"><h4>Awaiting Review</h4><h2 id="statPending">—</h2><p>Pending assignment</p></div></div>
+          <div class="stat-card"><div class="stat-icon si-orange"><i class="fa-solid fa-magnifying-glass"></i></div><div class="stat-body"><h4>Under Investigation</h4><h2 id="statInProgress">—</h2><p>Actively being checked</p></div></div>
+          <div class="stat-card"><div class="stat-icon si-green"><i class="fa-solid fa-circle-check"></i></div><div class="stat-body"><h4>Resolved</h4><h2 id="statResolved">—</h2><p>Cases closed</p></div></div>
         </div>
 
         <div class="dash-grid">
           <div class="dash-col">
-
-            <!-- Recent Reports -->
             <div class="card">
               <div class="card-header">
                 <div class="card-title">
                   <div class="card-title-icon cti-green"><i class="fa-solid fa-clipboard-list"></i></div>
-                  <div>
-                    <h3>My Recent Reports</h3>
-                    <p>Latest 4 submissions</p>
-                  </div>
+                  <div><h3>My Recent Reports</h3><p>Latest 4 submissions</p></div>
                 </div>
-                <button class="card-action" onclick="showView('my-reports', null)">View all →</button>
+                <button class="card-action" onclick="showView('my-reports',null)">View all →</button>
               </div>
-              <div class="card-body" id="recentReportsBody">
-                <!-- Populated by JS -->
-              </div>
+              <div class="card-body" id="recentReportsBody"><div class="skeleton" style="height:80px"></div></div>
             </div>
-
-            <!-- Activity Feed -->
             <div class="card">
               <div class="card-header">
                 <div class="card-title">
                   <div class="card-title-icon cti-slate"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                  <div>
-                    <h3>Recent Activity</h3>
-                    <p>Updates across your reports</p>
-                  </div>
+                  <div><h3>Recent Activity</h3><p>Updates across your reports</p></div>
                 </div>
               </div>
-              <div class="card-body" id="activityFeedBody">
-                <!-- Populated by JS -->
-              </div>
+              <div class="card-body" id="activityFeedBody"><div class="skeleton" style="height:80px"></div></div>
             </div>
-
           </div>
 
           <div class="dash-col">
-
-            <!-- Quick Status -->
             <div class="card">
               <div class="card-header">
                 <div class="card-title">
                   <div class="card-title-icon cti-blue"><i class="fa-solid fa-route"></i></div>
-                  <div>
-                    <h3>Status Overview</h3>
-                    <p>Latest report timeline</p>
-                  </div>
+                  <div><h3>Status Overview</h3><p>Latest report timeline</p></div>
                 </div>
-                <button class="card-action" onclick="showView('track', null)">All reports →</button>
+                <button class="card-action" onclick="showView('track',null)">All →</button>
               </div>
-              <div class="card-body" id="quickTimelineBody">
-                <!-- Populated by JS -->
-              </div>
+              <div class="card-body" id="quickTimelineBody"><div class="skeleton" style="height:120px"></div></div>
             </div>
-
-            <!-- Notifications -->
             <div class="card">
               <div class="card-header">
                 <div class="card-title">
                   <div class="card-title-icon cti-amber"><i class="fa-solid fa-bell"></i></div>
-                  <div>
-                    <h3>Notifications</h3>
-                    <p>Admin responses &amp; updates</p>
-                  </div>
+                  <div><h3>Notifications</h3><p>Admin responses &amp; updates</p></div>
                 </div>
-                <button class="card-action" onclick="showView('notifications', null)">See all →</button>
+                <button class="card-action" onclick="showView('notifications',null)">See all →</button>
               </div>
-              <div class="card-body" id="sideNotifBody">
-                <!-- Populated by JS -->
-              </div>
+              <div class="card-body" id="sideNotifBody"><div class="skeleton" style="height:80px"></div></div>
             </div>
-
           </div>
         </div>
-      </div><!-- /view-dashboard -->
+      </div>
 
-      <!-- ════════════════════════════════
-           VIEW: MY REPORTS
-      ════════════════════════════════ -->
+      <!-- ── VIEW: MY REPORTS ── -->
       <div class="view" id="view-my-reports">
         <div class="toolbar">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="reportSearch" placeholder="Search by title or address…" oninput="renderMyReports()">
-          </div>
+          <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="reportSearch" placeholder="Search by title or address…" oninput="renderMyReports()"></div>
           <select class="filter-select" id="statusFilter" onchange="renderMyReports()">
             <option value="">All Statuses</option>
             <option value="pending">Pending Review</option>
-            <option value="investigating">Under Investigation</option>
-            <option value="assigned">Assigned</option>
+            <option value="investigating">Investigating</option>
             <option value="resolved">Resolved</option>
           </select>
           <select class="filter-select" id="priorityFilter" onchange="renderMyReports()">
             <option value="">All Priorities</option>
             <option value="low">Low</option>
             <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
+            <option value="high">High / Critical</option>
           </select>
-          <button class="btn btn-primary" onclick="openDrawer()" style="white-space:nowrap;">
-            <i class="fa-solid fa-plus"></i> New Report
-          </button>
+          <button class="btn btn-primary" onclick="openDrawer()" style="white-space:nowrap;"><i class="fa-solid fa-plus"></i> New Report</button>
         </div>
+        <div class="card"><div id="reportsTableBody"><div style="padding:22px"><div class="skeleton" style="height:120px"></div></div></div></div>
+      </div>
 
-        <div class="card">
-          <div id="reportsTableBody"><!-- Populated by JS --></div>
-        </div>
-      </div><!-- /view-my-reports -->
-
-      <!-- ════════════════════════════════
-           VIEW: TRACK STATUS
-      ════════════════════════════════ -->
+      <!-- ── VIEW: TRACK ── -->
       <div class="view" id="view-track">
-        <div style="display:grid; grid-template-columns:280px 1fr; gap:20px; align-items:start;">
-
-          <!-- Report Picker -->
+        <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start;">
           <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <div class="card-title-icon cti-green"><i class="fa-solid fa-list-check"></i></div>
-                <div><h3>Your Reports</h3><p>Select to track</p></div>
-              </div>
-            </div>
-            <div class="card-body" id="trackPickerBody"><!-- Populated by JS --></div>
+            <div class="card-header"><div class="card-title"><div class="card-title-icon cti-green"><i class="fa-solid fa-list-check"></i></div><div><h3>Your Reports</h3><p>Select to track</p></div></div></div>
+            <div class="card-body" id="trackPickerBody"><div class="skeleton" style="height:80px"></div></div>
           </div>
-
-          <!-- Timeline -->
           <div class="card" id="trackDetailCard">
             <div class="card-body">
-              <div class="empty-state">
-                <div class="es-icon"><i class="fa-solid fa-route"></i></div>
-                <h3>Select a report</h3>
-                <p>Choose a report from the left panel to see its full investigation timeline and current status.</p>
-              </div>
+              <div class="empty-state"><div class="es-icon"><i class="fa-solid fa-route"></i></div><h3>Select a report</h3><p>Choose a report from the left panel to see its full investigation timeline.</p></div>
             </div>
           </div>
-
         </div>
-      </div><!-- /view-track -->
+      </div>
 
-      <!-- ════════════════════════════════
-           VIEW: NOTIFICATIONS
-      ════════════════════════════════ -->
+      <!-- ── VIEW: NOTIFICATIONS ── -->
       <div class="view" id="view-notifications">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">
-              <div class="card-title-icon cti-amber"><i class="fa-solid fa-bell"></i></div>
-              <div><h3>All Notifications</h3><p>Admin responses and system alerts</p></div>
-            </div>
+            <div class="card-title"><div class="card-title-icon cti-amber"><i class="fa-solid fa-bell"></i></div><div><h3>All Notifications</h3><p>Admin responses and system alerts</p></div></div>
             <button class="card-action" onclick="markAllRead()">Mark all read</button>
           </div>
-          <div class="card-body" id="allNotifsBody"><!-- Populated by JS --></div>
+          <div class="card-body" id="allNotifsBody"><div class="skeleton" style="height:120px"></div></div>
         </div>
-      </div><!-- /view-notifications -->
+      </div>
 
     </div><!-- /content -->
   </main>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     REPORT SUBMISSION DRAWER
-═══════════════════════════════════════════ -->
+<!-- ═══════════════ REPORT DRAWER ═══════════════ -->
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-
 <div class="drawer" id="reportDrawer">
   <div class="drawer-header">
     <div class="drawer-header-top">
@@ -1567,125 +484,58 @@
   </div>
 
   <div class="drawer-body" id="drawerBody">
-    <!-- FORM STATE -->
     <div id="formState">
       <div class="form-group">
-        <label class="form-label">
-          <i class="fa-solid fa-heading" style="color:var(--g600)"></i>
-          Report Title <span class="req">*</span>
-        </label>
-        <input type="text" class="form-input" id="fTitle" placeholder="e.g. Illegal bypass meter at 45 Oak St" maxlength="100">
-        <p class="form-hint">A brief, descriptive title for your report (max 100 characters)</p>
+        <label class="form-label"><i class="fa-solid fa-heading" style="color:var(--g600)"></i>Report Title <span class="req">*</span></label>
+        <input type="text" class="form-input" id="fTitle" placeholder="e.g. Bypass device at 45 Oak Street" maxlength="120">
       </div>
-
       <div class="form-group">
-        <label class="form-label">
-          <i class="fa-solid fa-align-left" style="color:var(--g600)"></i>
-          Description <span class="req">*</span>
-        </label>
-        <textarea class="form-textarea" id="fDesc" placeholder="Describe what you observed — meter tampering, illegal connections, unusual cables, bypass equipment, etc. Include any identifying details." rows="5"></textarea>
+        <label class="form-label"><i class="fa-solid fa-align-left" style="color:var(--g600)"></i>Description <span class="req">*</span></label>
+        <textarea class="form-textarea" id="fDesc" rows="5" placeholder="Describe what you observed — meter tampering, illegal connections, bypass equipment, unusual cables, etc."></textarea>
       </div>
-
       <div class="form-group">
-        <label class="form-label">
-          <i class="fa-solid fa-map-pin" style="color:var(--g600)"></i>
-          Property / Location Address <span class="req">*</span>
-        </label>
+        <label class="form-label"><i class="fa-solid fa-map-pin" style="color:var(--g600)"></i>Property / Location Address <span class="req">*</span></label>
         <input type="text" class="form-input" id="fAddress" placeholder="Full street address, township, and city">
         <p class="form-hint">Include stand/erf number if known. Be as specific as possible.</p>
       </div>
-
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">
-            <i class="fa-solid fa-city" style="color:var(--g600)"></i>
-            Province
-          </label>
+          <label class="form-label"><i class="fa-solid fa-city" style="color:var(--g600)"></i>Province</label>
           <select class="form-select" id="fProvince">
             <option value="">Select province…</option>
-            <option>Gauteng</option>
-            <option>Western Cape</option>
-            <option>KwaZulu-Natal</option>
-            <option>Eastern Cape</option>
-            <option>Limpopo</option>
-            <option>Mpumalanga</option>
-            <option>North West</option>
-            <option>Free State</option>
-            <option>Northern Cape</option>
+            <option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option>
+            <option>Eastern Cape</option><option>Limpopo</option><option>Mpumalanga</option>
+            <option>North West</option><option>Free State</option><option>Northern Cape</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">
-            <i class="fa-solid fa-calendar" style="color:var(--g600)"></i>
-            Date First Observed
-          </label>
+          <label class="form-label"><i class="fa-solid fa-calendar" style="color:var(--g600)"></i>Date First Observed</label>
           <input type="date" class="form-input" id="fObservedDate">
         </div>
       </div>
-
       <div class="form-group">
-        <label class="form-label">
-          <i class="fa-solid fa-triangle-exclamation" style="color:var(--g600)"></i>
-          Priority / Risk Level <span class="req">*</span>
-        </label>
+        <label class="form-label"><i class="fa-solid fa-triangle-exclamation" style="color:var(--g600)"></i>Priority / Risk Level <span class="req">*</span></label>
         <div class="priority-grid">
-          <div class="priority-option priority-low">
-            <input type="radio" name="priority" id="pLow" value="low">
-            <label class="priority-label" for="pLow">
-              <span class="pi">🔵</span>
-              Low
-            </label>
-          </div>
-          <div class="priority-option priority-medium">
-            <input type="radio" name="priority" id="pMedium" value="medium" checked>
-            <label class="priority-label" for="pMedium">
-              <span class="pi">🟡</span>
-              Medium
-            </label>
-          </div>
-          <div class="priority-option priority-high">
-            <input type="radio" name="priority" id="pHigh" value="high">
-            <label class="priority-label" for="pHigh">
-              <span class="pi">🟠</span>
-              High
-            </label>
-          </div>
-          <div class="priority-option priority-critical">
-            <input type="radio" name="priority" id="pCritical" value="critical">
-            <label class="priority-label" for="pCritical">
-              <span class="pi">🔴</span>
-              Critical
-            </label>
-          </div>
+          <div class="priority-option priority-low"><input type="radio" name="priority" id="pLow" value="low"><label class="priority-label" for="pLow"><span class="pi">🔵</span>Low</label></div>
+          <div class="priority-option priority-medium"><input type="radio" name="priority" id="pMedium" value="medium" checked><label class="priority-label" for="pMedium"><span class="pi">🟡</span>Medium</label></div>
+          <div class="priority-option priority-high"><input type="radio" name="priority" id="pHigh" value="high"><label class="priority-label" for="pHigh"><span class="pi">🟠</span>High</label></div>
+          <div class="priority-option priority-critical"><input type="radio" name="priority" id="pCritical" value="critical"><label class="priority-label" for="pCritical"><span class="pi">🔴</span>Critical</label></div>
         </div>
-        <p class="form-hint" style="margin-top:8px">
-          <strong>Low</strong>: Minor irregularity — 
-          <strong>Medium</strong>: Suspected tampering — 
-          <strong>High</strong>: Active bypass — 
-          <strong>Critical</strong>: Large-scale/organised theft
-        </p>
+        <p class="form-hint" style="margin-top:8px"><strong>Low</strong>: Minor irregularity · <strong>Medium</strong>: Suspected tampering · <strong>High</strong>: Active bypass · <strong>Critical</strong>: Large-scale / organised theft</p>
       </div>
-
       <div class="form-group">
-        <label class="form-label">
-          <i class="fa-solid fa-paperclip" style="color:var(--g600)"></i>
-          Evidence (Photos / Documents)
-        </label>
+        <label class="form-label"><i class="fa-solid fa-paperclip" style="color:var(--g600)"></i>Evidence (Photos / Documents)</label>
         <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('fFiles').click()">
           <input type="file" id="fFiles" multiple accept="image/*,.pdf,.doc,.docx" onchange="handleFiles(this.files)">
           <div class="fz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-          <p>Click to upload or drag &amp; drop files</p>
-          <span>JPG, PNG, PDF, DOC — max 10 MB each</span>
+          <p>Click to attach or drag &amp; drop files</p>
+          <span>JPG, PNG, PDF, DOC — file names are recorded with the report</span>
         </div>
         <div class="file-previews" id="filePreviews"></div>
-        <p class="form-hint">Adding photos or documents significantly speeds up the investigation process.</p>
+        <p class="form-hint" style="color:var(--blue);"><i class="fa-solid fa-circle-info"></i> File names are logged with your report. Physical evidence should be retained and can be requested by investigators.</p>
       </div>
-
       <div class="form-group">
-        <label class="form-label">
-          <i class="fa-solid fa-shield-halved" style="color:var(--g600)"></i>
-          Anonymity Preference
-        </label>
+        <label class="form-label"><i class="fa-solid fa-shield-halved" style="color:var(--g600)"></i>Anonymity Preference</label>
         <select class="form-select" id="fAnonymity">
           <option value="named">Use my name — I consent to being contacted</option>
           <option value="anonymous">Report anonymously — do not share my identity</option>
@@ -1693,28 +543,19 @@
       </div>
     </div>
 
-    <!-- SUCCESS STATE (hidden) -->
     <div id="successState" style="display:none">
       <div class="success-splash">
         <div class="success-checkmark"><i class="fa-solid fa-check"></i></div>
         <h2>Report Submitted!</h2>
-        <p>Your report has been received and logged. Our team will review it within 24–48 hours. You can track its progress from your dashboard.</p>
-
-        <div class="ref-display">
-          <span>Reference Number</span>
-          <span id="successRef">ETD-000000</span>
-        </div>
-
+        <p>Your report has been received and logged. Admins have been notified and will review it within 24–48 hours.</p>
+        <div class="ref-display"><span>Case Number</span><span id="successRef">—</span></div>
         <div class="admin-alert-note">
-          <i class="fa-solid fa-circle-info" style="margin-top:2px; flex-shrink:0"></i>
-          <span>Admins have been automatically notified of your submission and it has been added to the case management queue for review and assignment.</span>
+          <i class="fa-solid fa-circle-info" style="margin-top:2px;flex-shrink:0"></i>
+          <span>Your report is now in the admin case management queue as a <strong>PENDING</strong> case. An investigator will be assigned shortly.</span>
         </div>
-
-        <div style="display:flex; gap:10px; justify-content:center; margin-top:22px;">
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:22px;">
           <button class="btn btn-ghost" onclick="closeDrawer()">Back to Dashboard</button>
-          <button class="btn btn-primary" onclick="submitAnother()">
-            <i class="fa-solid fa-plus"></i> Submit Another
-          </button>
+          <button class="btn btn-primary" onclick="resetForm()"><i class="fa-solid fa-plus"></i> Submit Another</button>
         </div>
       </div>
     </div>
@@ -1728,356 +569,271 @@
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ═══════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════ -->
+<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
 <script>
-/* ═══════════════════════════════════════
-   CONFIG — Replace with your real API
-═══════════════════════════════════════ */
-const CONFIG = {
-  // TODO: Replace with your actual API base URL
-  // API_BASE: 'https://your-api.example.com/api',
-  API_BASE: null, // null = use localStorage only
+'use strict';
 
-  // TODO: Replace with your actual user endpoint
-  // USER_ENDPOINT: '/users/me',
-};
+/* ─── CONFIG ─── */
+const API_BASE = 'http://localhost:3000';
 
-/* ═══════════════════════════════════════
-   AUTH GUARD
-═══════════════════════════════════════ */
+/* ─── AUTH ─── */
 const token = localStorage.getItem('token');
 if (!token) window.location.href = 'login.html';
 
-/* ═══════════════════════════════════════
-   USER STATE
-═══════════════════════════════════════ */
 const currentUser = {
-  id: localStorage.getItem('userId') || 'user_' + Date.now(),
-  name: localStorage.getItem('userName') || localStorage.getItem('userEmail') || 'Community Reporter',
-  role: localStorage.getItem('userRole') || 'user',
+  id:   localStorage.getItem('userId')    || '',
+  name: localStorage.getItem('userName')  || localStorage.getItem('userEmail') || 'Community Reporter',
+  role: localStorage.getItem('userRole')  || 'user',
 };
 
-/* ═══════════════════════════════════════
-   DATABASE LAYER
-   TODO: Replace localStorage calls with
-   fetch() calls to CONFIG.API_BASE once
-   backend endpoints are shared.
-═══════════════════════════════════════ */
-const DB = {
-  getReports() {
-    try { return JSON.parse(localStorage.getItem('userReports_' + currentUser.id) || '[]'); }
-    catch { return []; }
-  },
-  saveReports(reports) {
-    localStorage.setItem('userReports_' + currentUser.id, JSON.stringify(reports));
-  },
-  addReport(report) {
-    const reports = this.getReports();
-    reports.unshift(report);
-    this.saveReports(reports);
-    // Also write to shared admin queue
-    this._pushAdminNotification(report);
-    this._pushAdminCase(report);
-  },
-  getNotifications() {
-    try { return JSON.parse(localStorage.getItem('userNotifs_' + currentUser.id) || '[]'); }
-    catch { return []; }
-  },
-  saveNotifications(notifs) {
-    localStorage.setItem('userNotifs_' + currentUser.id, JSON.stringify(notifs));
-  },
-  // Push to shared admin key — admin dashboard reads this
-  _pushAdminNotification(report) {
-    try {
-      const key = 'admin_notifications';
-      const notifs = JSON.parse(localStorage.getItem(key) || '[]');
-      notifs.unshift({
-        id: 'notif_' + Date.now(),
-        type: 'new_report',
-        read: false,
-        timestamp: new Date().toISOString(),
-        reportRef: report.ref,
-        reportId: report.id,
-        title: `New Report: ${report.title}`,
-        message: `${currentUser.name} submitted a ${report.priority.toUpperCase()} priority report at ${report.address}.`,
-        submittedBy: currentUser.name,
-        priority: report.priority,
-      });
-      localStorage.setItem(key, JSON.stringify(notifs));
-    } catch(e) { console.warn('Admin notification write failed:', e); }
-  },
-  // Push to admin case management queue
-  _pushAdminCase(report) {
-    try {
-      const key = 'admin_case_queue';
-      const cases = JSON.parse(localStorage.getItem(key) || '[]');
-      cases.unshift({
-        ...report,
-        submittedBy: currentUser.name,
-        userId: currentUser.id,
-        assignedTo: null,
-        adminNotes: '',
-        workflowStatus: 'new', // new → reviewed → assigned → investigating → resolved
-      });
-      localStorage.setItem(key, JSON.stringify(cases));
-    } catch(e) { console.warn('Admin case queue write failed:', e); }
-  },
-  markNotifRead(id) {
-    const notifs = this.getNotifications();
-    const n = notifs.find(x => x.id === id);
-    if (n) { n.read = true; this.saveNotifications(notifs); }
-  },
-  markAllNotifsRead() {
-    const notifs = this.getNotifications().map(n => ({ ...n, read: true }));
-    this.saveNotifications(notifs);
-  },
-};
-
-/* ═══════════════════════════════════════
-   SEED DEMO DATA (first visit only)
-═══════════════════════════════════════ */
-function seedDemoData() {
-  if (DB.getReports().length > 0) return;
-
-  const demoReports = [
-    {
-      id: 'rpt_demo1',
-      ref: 'ETD-2025-0001',
-      title: 'Bypass device on meter at 23 Vilakazi Street',
-      description: 'Observed what appears to be a bypass device installed behind the electricity meter. Cables running outside the meter box.',
-      address: '23 Vilakazi Street, Orlando West, Soweto',
-      province: 'Gauteng',
-      priority: 'high',
-      status: 'investigating',
-      observedDate: '2025-05-10',
-      submittedAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-      updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-      anonymity: 'named',
-      files: [],
-      adminResponse: 'A field investigator has been assigned. Site visit scheduled for next week.',
-      adminResponseAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    },
-    {
-      id: 'rpt_demo2',
-      ref: 'ETD-2025-0002',
-      title: 'Illegal connection at vacant lot — Khumalo Road',
-      description: 'Thick copper cables running from a pole directly into an unlicensed structure. No meter visible.',
-      address: 'Erf 445, Khumalo Road, Alexandra, Johannesburg',
-      province: 'Gauteng',
-      priority: 'critical',
-      status: 'assigned',
-      observedDate: '2025-05-18',
-      submittedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-      updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-      anonymity: 'anonymous',
-      files: [],
-      adminResponse: null,
-    },
-    {
-      id: 'rpt_demo3',
-      ref: 'ETD-2025-0003',
-      title: 'Meter reading always zero — suspected tampering',
-      description: 'Neighbour's meter has read 0 kWh for over 3 months despite high usage visible from outside.',
-      address: '7 Nkosi Street, Katlehong, Ekurhuleni',
-      province: 'Gauteng',
-      priority: 'medium',
-      status: 'resolved',
-      observedDate: '2025-04-20',
-      submittedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-      updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-      anonymity: 'named',
-      files: [],
-      adminResponse: 'Investigation confirmed meter tampering. Device removed, account disconnected and referred to legal.',
-      adminResponseAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-      resolution: 'Meter tampering confirmed and resolved. Legal proceedings initiated.',
-    },
-  ];
-
-  DB.saveReports(demoReports);
-
-  const demoNotifs = [
-    {
-      id: 'notif_demo1',
-      read: false,
-      type: 'status_update',
-      timestamp: new Date(Date.now() - 2 * 86400000).toISOString(),
-      title: 'Report ETD-2025-0001 Updated',
-      message: 'Your report "Bypass device on meter at 23 Vilakazi Street" has been assigned to an investigator and a site visit has been scheduled.',
-      reportRef: 'ETD-2025-0001',
-    },
-    {
-      id: 'notif_demo2',
-      read: false,
-      type: 'admin_response',
-      timestamp: new Date(Date.now() - 3 * 86400000).toISOString(),
-      title: 'Admin Response on ETD-2025-0001',
-      message: 'A field investigator has been assigned. Site visit scheduled for next week.',
-      reportRef: 'ETD-2025-0001',
-    },
-    {
-      id: 'notif_demo3',
-      read: true,
-      type: 'resolved',
-      timestamp: new Date(Date.now() - 5 * 86400000).toISOString(),
-      title: 'Report ETD-2025-0003 Resolved',
-      message: 'Your report has been resolved. Investigation confirmed meter tampering and action has been taken.',
-      reportRef: 'ETD-2025-0003',
-    },
-  ];
-  DB.saveNotifications(demoNotifs);
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
 }
 
-/* ═══════════════════════════════════════
-   INIT
-═══════════════════════════════════════ */
-function init() {
-  seedDemoData();
+/* ─── STATE ─── */
+let userReports  = [];   // fetched from API
+let notifications = [];  // derived from reports
+let uploadedFiles = [];  // local file-name tracking
 
-  // Personalise UI
-  const displayName = currentUser.name.split('@')[0].split(' ')[0];
-  const initial = displayName[0]?.toUpperCase() || 'U';
-  document.getElementById('welcomeName').textContent = displayName;
-  document.getElementById('sidebarUserName').textContent = currentUser.name.length > 22 ? currentUser.name.slice(0,20)+'…' : currentUser.name;
-  document.getElementById('avatarInitial').textContent = initial;
+/* ─── CASE → UI MAPPING ─── */
+// Server stores: risk_level (LOW/MID/HIGH), outcome (PENDING/OPEN/RESOLVED)
+// UI uses:       priority (low/medium/high),  status (pending/investigating/resolved)
+function mapCase(c) {
+  const riskToP = { HIGH:'high', MID:'medium', LOW:'low' };
+  const outcomeToS = { PENDING:'pending', OPEN:'investigating', RESOLVED:'resolved' };
 
-  renderDashboard();
-  updateNotifBadge();
-  updateSidebarCounts();
+  // Title is stored as first line: "[Community Report] {title}"
+  const titleMatch = (c.description || '').match(/^\[Community Report\] (.+?)(?:\n|$)/);
+  const title = titleMatch ? titleMatch[1] : (c.suspect_name || c.case_number || 'Untitled Report');
+
+  // Remaining description after stripping the title line
+  const cleanDesc = (c.description || '')
+    .replace(/^\[Community Report\] .+?\n+/, '')
+    .replace(/\nDate first observed:.+/, '')
+    .replace(/\nProvince:.+/, '')
+    .replace(/\nEvidence files.+/, '')
+    .trim();
+
+  return {
+    id:           c.id,
+    ref:          c.case_number || c.id,
+    title,
+    description:  cleanDesc,
+    address:      c.location  || c.suburb || '',
+    province:     c.suburb    || '',
+    priority:     riskToP[(c.risk_level || 'LOW').toUpperCase()] || 'low',
+    status:       outcomeToS[(c.outcome  || 'PENDING').toUpperCase()] || 'pending',
+    submittedAt:  c.created_at,
+    updatedAt:    c.updated_at  || c.created_at,
+    adminResponse:c.notes       || null,
+    raw:          c,
+  };
 }
 
-/* ═══════════════════════════════════════
-   VIEW ROUTER
-═══════════════════════════════════════ */
-const viewMeta = {
-  'dashboard':      { title: 'Dashboard',       sub: 'Welcome back — here\'s an overview of your reports' },
-  'my-reports':     { title: 'My Reports',       sub: 'All reports you have submitted' },
-  'track':          { title: 'Track Status',     sub: 'Follow the investigation timeline for each report' },
-  'notifications':  { title: 'Notifications',    sub: 'Admin responses and system updates' },
-};
+/* ─── API CALLS ─── */
+async function apiGetReports() {
+  const res = await fetch(API_BASE + '/api/user-reports', { headers: authHeaders() });
+  if (res.status === 401 || res.status === 403) { doLogout(); return []; }
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return (await res.json()).map(mapCase);
+}
 
-function showView(viewId, triggerEl) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + viewId)?.classList.add('active');
-
-  // Topbar
-  const meta = viewMeta[viewId] || {};
-  document.getElementById('topbarTitle').textContent = meta.title || '';
-  document.getElementById('topbarSub').textContent = meta.sub || '';
-
-  // Sidebar active
-  if (triggerEl) {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    triggerEl.classList.add('active');
+async function apiPostReport(payload) {
+  const res = await fetch(API_BASE + '/api/user-reports', {
+    method:  'POST',
+    headers: authHeaders(),
+    body:    JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.message || 'Submission failed');
   }
-
-  // Render view
-  if (viewId === 'dashboard')     renderDashboard();
-  if (viewId === 'my-reports')    renderMyReports();
-  if (viewId === 'track')         renderTrackPicker();
-  if (viewId === 'notifications') renderAllNotifications();
+  return mapCase(await res.json());
 }
 
-/* ═══════════════════════════════════════
-   RENDER HELPERS
-═══════════════════════════════════════ */
+/* ─── NOTIFICATIONS (derived from case data) ─── */
+function buildNotifications(reports) {
+  const notifs = [];
+  reports.forEach(r => {
+    // Submission confirmation (always)
+    notifs.push({
+      id:      'sub_' + r.id,
+      type:    'submitted',
+      read:    true,
+      ts:      r.submittedAt,
+      title:   'Report Submitted',
+      message: `Your report "${r.title.slice(0,60)}" (${r.ref}) was successfully logged and is awaiting admin review.`,
+      ref:     r.ref,
+    });
+    // Admin added notes
+    if (r.adminResponse) {
+      notifs.push({
+        id:      'resp_' + r.id,
+        type:    'admin_response',
+        read:    false,
+        ts:      r.updatedAt,
+        title:   'Admin Response — ' + r.ref,
+        message: r.adminResponse,
+        ref:     r.ref,
+      });
+    }
+    // Status progressed past PENDING
+    if (r.status === 'investigating') {
+      notifs.push({
+        id:      'inv_' + r.id,
+        type:    'status_update',
+        read:    false,
+        ts:      r.updatedAt,
+        title:   r.ref + ' — Now Under Investigation',
+        message: 'An investigator has been assigned to your report and a site visit is being scheduled.',
+        ref:     r.ref,
+      });
+    }
+    if (r.status === 'resolved') {
+      notifs.push({
+        id:      'res_' + r.id,
+        type:    'resolved',
+        read:    false,
+        ts:      r.updatedAt,
+        title:   r.ref + ' — Case Resolved',
+        message: 'Your report has been investigated and the case has been closed with findings.',
+        ref:     r.ref,
+      });
+    }
+  });
+  return notifs.sort((a,b) => new Date(b.ts) - new Date(a.ts));
+}
+
+/* ─── INIT ─── */
+async function init() {
+  // Personalise
+  const name    = currentUser.name.split('@')[0].split(' ')[0];
+  const initial = name[0]?.toUpperCase() || 'U';
+  document.getElementById('welcomeName').textContent  = name;
+  document.getElementById('avatarInitial').textContent = initial;
+  document.getElementById('sidebarUserName').textContent =
+    currentUser.name.length > 22 ? currentUser.name.slice(0,20) + '…' : currentUser.name;
+
+  await loadData();
+}
+
+async function loadData() {
+  try {
+    userReports   = await apiGetReports();
+    notifications = buildNotifications(userReports);
+    renderDashboard();
+    updateBadges();
+  } catch (err) {
+    showToast('Could not load reports: ' + err.message, 'error');
+  }
+}
+
+/* ─── VIEW ROUTER ─── */
+const viewMeta = {
+  'dashboard':     { title:'Dashboard',      sub:'Welcome back — here\'s an overview of your reports' },
+  'my-reports':    { title:'My Reports',     sub:'All reports you have submitted' },
+  'track':         { title:'Track Status',   sub:'Follow the investigation timeline for each report' },
+  'notifications': { title:'Notifications',  sub:'Admin responses and system updates' },
+};
+
+function showView(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id)?.classList.add('active');
+  const m = viewMeta[id] || {};
+  document.getElementById('topbarTitle').textContent = m.title || '';
+  document.getElementById('topbarSub').textContent   = m.sub   || '';
+  if (el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+  if (id === 'dashboard')     renderDashboard();
+  if (id === 'my-reports')    renderMyReports();
+  if (id === 'track')         renderTrackPicker();
+  if (id === 'notifications') renderAllNotifications();
+}
+
+/* ─── HELPERS ─── */
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function timeAgo(iso) {
+  if (!iso) return '';
+  const m = Math.floor((Date.now() - new Date(iso)) / 60000);
+  if (m < 1)  return 'Just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  const d = Math.floor(h / 24);
+  if (d < 7)  return d + 'd ago';
+  return new Date(iso).toLocaleDateString('en-ZA');
+}
+function fmtDate(iso) {
+  if (!iso) return 'N/A';
+  return new Date(iso).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
+}
 function statusLabel(s) {
-  const map = { pending:'Pending Review', investigating:'Investigating', assigned:'Assigned', resolved:'Resolved', closed:'Closed' };
-  return map[s] || s;
+  return { pending:'Pending Review', investigating:'Investigating', resolved:'Resolved', closed:'Closed' }[s] || s;
 }
-
 function priorityIcon(p) {
   return { low:'🔵', medium:'🟡', high:'🟠', critical:'🔴' }[p] || '⚪';
 }
 
-function timeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1)  return 'Just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  if (d < 7)  return `${d}d ago`;
-  return new Date(iso).toLocaleDateString('en-ZA');
-}
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
-}
-
-/* ── Dashboard ── */
+/* ─── RENDER DASHBOARD ─── */
 function renderDashboard() {
-  const reports = DB.getReports();
+  const r = userReports;
+  document.getElementById('statTotal').textContent     = r.length;
+  document.getElementById('statPending').textContent   = r.filter(x => x.status === 'pending').length;
+  document.getElementById('statInProgress').textContent= r.filter(x => x.status === 'investigating').length;
+  document.getElementById('statResolved').textContent  = r.filter(x => x.status === 'resolved').length;
 
-  // Stats
-  document.getElementById('statTotal').textContent    = reports.length;
-  document.getElementById('statPending').textContent   = reports.filter(r => r.status === 'pending').length;
-  document.getElementById('statInProgress').textContent = reports.filter(r => r.status === 'investigating' || r.status === 'assigned').length;
-  document.getElementById('statResolved').textContent  = reports.filter(r => r.status === 'resolved' || r.status === 'closed').length;
-
-  // Recent reports (latest 4)
-  const recent = reports.slice(0, 4);
+  // Recent reports
   const rrb = document.getElementById('recentReportsBody');
-  if (!recent.length) {
-    rrb.innerHTML = `
-      <div class="empty-state">
-        <div class="es-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-        <h3>No reports yet</h3>
-        <p>You haven't submitted any reports. Be the first to report suspected electricity theft.</p>
-        <button class="btn btn-primary" onclick="openDrawer()"><i class="fa-solid fa-plus"></i> Submit Your First Report</button>
-      </div>`;
+  if (!r.length) {
+    rrb.innerHTML = emptyStateHTML('fa-clipboard-list','No reports yet',
+      'You haven\'t submitted any reports yet.',
+      '<button class="btn btn-primary" onclick="openDrawer()"><i class="fa-solid fa-plus"></i> Submit First Report</button>');
   } else {
-    rrb.innerHTML = recent.map(r => `
-      <div class="report-item" onclick="openTrackDetail('${r.id}')">
-        <div class="report-item-icon" style="background:var(--g50); color:var(--g700);">
-          <i class="fa-solid fa-bolt"></i>
-        </div>
+    rrb.innerHTML = r.slice(0,4).map(x => `
+      <div class="report-item" onclick="openTrackDetail('${x.id}')">
+        <div class="report-item-icon"><i class="fa-solid fa-bolt"></i></div>
         <div class="report-item-body">
-          <h4>${escHtml(r.title)}</h4>
-          <p><i class="fa-solid fa-map-pin" style="color:var(--slate300);font-size:10px"></i> ${escHtml(r.address)}</p>
+          <h4>${escHtml(x.title)}</h4>
+          <p><i class="fa-solid fa-map-pin" style="font-size:10px;color:var(--slate300)"></i> ${escHtml(x.address)}</p>
         </div>
         <div class="report-item-meta">
-          <span class="date">${timeAgo(r.submittedAt)}</span>
-          <span class="badge badge-${r.status}">${statusLabel(r.status)}</span>
+          <span class="date">${timeAgo(x.submittedAt)}</span>
+          <span class="badge badge-${x.status}">${statusLabel(x.status)}</span>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
-  // Activity feed
-  const activities = buildActivityFeed(reports);
-  const afb = document.getElementById('activityFeedBody');
-  if (!activities.length) {
-    afb.innerHTML = `<p style="font-size:13px; color:var(--slate400); text-align:center; padding:16px 0;">No activity yet</p>`;
+  // Activity
+  const feed = buildActivityFeed(r);
+  const afb  = document.getElementById('activityFeedBody');
+  if (!feed.length) {
+    afb.innerHTML = '<p style="font-size:13px;color:var(--slate400);text-align:center;padding:16px 0;">No activity yet</p>';
   } else {
-    afb.innerHTML = `<div class="timeline">` +
-      activities.slice(0, 6).map(a => `
-        <div class="activity-step" style="display:flex; gap:13px; padding:8px 0; position:relative;">
-          <div class="activity-dot ${a.dotClass}" style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">
-            <i class="${a.icon}"></i>
-          </div>
-          <div style="flex:1; padding-bottom:14px; border-bottom:1px solid var(--slate100);">
-            <div style="font-size:12.5px; font-weight:700; color:var(--slate800); margin-bottom:2px;">${escHtml(a.title)}</div>
-            <div style="font-size:12px; color:var(--slate400);">${escHtml(a.desc)}</div>
-            <time style="font-size:11px; color:var(--slate400); display:block; margin-top:3px;">${timeAgo(a.time)}</time>
-          </div>
+    afb.innerHTML = feed.slice(0,5).map(a => `
+      <div class="activity-step">
+        <div class="activity-dot ${a.cls}"><i class="${a.icon}"></i></div>
+        <div style="flex:1;padding-bottom:14px;border-bottom:1px solid var(--slate100);">
+          <div style="font-size:12.5px;font-weight:700;color:var(--slate800);margin-bottom:2px;">${escHtml(a.title)}</div>
+          <div style="font-size:12px;color:var(--slate400);">${escHtml(a.desc)}</div>
+          <time style="font-size:11px;color:var(--slate400);display:block;margin-top:3px;">${timeAgo(a.time)}</time>
         </div>
-      `).join('') + `</div>`;
+      </div>`).join('');
   }
 
   // Quick timeline (latest report)
-  renderQuickTimeline(reports[0] || null);
+  renderQuickTimeline(r[0] || null);
 
-  // Side notifications
-  const notifs = DB.getNotifications().slice(0, 3);
-  const snb = document.getElementById('sideNotifBody');
+  // Side notifications (latest 3)
+  const snb   = document.getElementById('sideNotifBody');
+  const notifs = notifications.slice(0,3);
   if (!notifs.length) {
-    snb.innerHTML = `<p style="font-size:13px; color:var(--slate400); text-align:center; padding:16px 0;">No notifications yet</p>`;
+    snb.innerHTML = '<p style="font-size:13px;color:var(--slate400);text-align:center;padding:16px 0;">No notifications yet</p>';
   } else {
     snb.innerHTML = notifs.map(n => notifHTML(n, true)).join('');
   }
@@ -2086,28 +842,18 @@ function renderDashboard() {
 function buildActivityFeed(reports) {
   const feed = [];
   reports.forEach(r => {
-    feed.push({ time: r.submittedAt, title: 'Report submitted', desc: `"${r.title.slice(0,50)}…" — Ref: ${r.ref}`, dotClass: 'ad-green', icon: 'fa-solid fa-paper-plane' });
-    if (r.adminResponseAt) {
-      feed.push({ time: r.adminResponseAt, title: 'Admin responded', desc: r.adminResponse?.slice(0,80) + '…', dotClass: 'ad-blue', icon: 'fa-solid fa-message' });
-    }
-    if (r.status === 'resolved') {
-      feed.push({ time: r.updatedAt, title: 'Case resolved', desc: `${r.ref} has been closed`, dotClass: 'ad-green', icon: 'fa-solid fa-circle-check' });
-    }
-    if (r.status === 'investigating') {
-      feed.push({ time: r.updatedAt, title: 'Investigation started', desc: `${r.ref} assigned to field team`, dotClass: 'ad-amber', icon: 'fa-solid fa-magnifying-glass' });
-    }
+    feed.push({ time:r.submittedAt, title:'Report submitted', desc:'"'+r.title.slice(0,48)+'…" — '+r.ref, cls:'ad-green', icon:'fa-solid fa-paper-plane' });
+    if (r.adminResponse)    feed.push({ time:r.updatedAt, title:'Admin responded', desc:r.adminResponse.slice(0,72)+'…', cls:'ad-blue', icon:'fa-solid fa-message' });
+    if (r.status==='investigating') feed.push({ time:r.updatedAt, title:'Investigation started', desc:r.ref+' assigned to field team', cls:'ad-amber', icon:'fa-solid fa-magnifying-glass' });
+    if (r.status==='resolved')      feed.push({ time:r.updatedAt, title:'Case resolved', desc:r.ref+' has been closed', cls:'ad-green', icon:'fa-solid fa-circle-check' });
   });
-  return feed.sort((a,b) => new Date(b.time) - new Date(a.time));
+  return feed.sort((a,b) => new Date(b.time)-new Date(a.time));
 }
 
 function renderQuickTimeline(report) {
   const el = document.getElementById('quickTimelineBody');
   if (!report) {
-    el.innerHTML = `<div class="empty-state" style="padding:20px 0;">
-      <div class="es-icon"><i class="fa-solid fa-route"></i></div>
-      <h3>No reports yet</h3>
-      <p>Submit a report to see its status timeline here.</p>
-    </div>`;
+    el.innerHTML = emptyStateHTML('fa-route','No reports yet','Submit a report to see its status timeline here.');
     return;
   }
   el.innerHTML = `
@@ -2115,287 +861,207 @@ function renderQuickTimeline(report) {
       <div style="font-size:12px;font-weight:700;color:var(--g700);font-family:'DM Mono',monospace;margin-bottom:4px;">${escHtml(report.ref)}</div>
       <div style="font-size:13px;font-weight:700;color:var(--slate900);">${escHtml(report.title)}</div>
     </div>
-    ${buildTimeline(report)}
-  `;
+    ${buildTimeline(report)}`;
 }
 
+/* ─── TIMELINE BUILDER ─── */
 function buildTimeline(report) {
   const steps = [
-    { key: 'submitted',    label: 'Submitted',           desc: 'Report logged in the system', date: report.submittedAt },
-    { key: 'pending',      label: 'Awaiting Review',      desc: 'Pending admin assignment' },
-    { key: 'assigned',     label: 'Assigned',             desc: 'Investigator allocated' },
-    { key: 'investigating',label: 'Under Investigation',  desc: 'Field visit in progress' },
-    { key: 'resolved',     label: 'Resolved',             desc: 'Case closed with findings' },
+    { key:'pending',       label:'Submitted & Pending',       desc:'Report logged in the system', date:report.submittedAt },
+    { key:'assigned',      label:'Admin Assigned',            desc:'A case officer has reviewed and assigned the report' },
+    { key:'investigating', label:'Under Investigation',       desc:'Field visit or site inspection in progress' },
+    { key:'resolved',      label:'Case Resolved',            desc:'Investigation complete, findings recorded' },
   ];
+  const order = ['pending','assigned','investigating','resolved'];
+  const curIdx = order.indexOf(
+    report.status === 'pending' ? 'pending' :
+    report.status === 'investigating' ? 'investigating' :
+    report.status === 'resolved' ? 'resolved' : 'pending'
+  );
 
-  const order = ['submitted', 'pending', 'assigned', 'investigating', 'resolved'];
-  const currentIdx = order.indexOf(report.status === 'pending' ? 'pending' : report.status === 'assigned' ? 'assigned' : report.status === 'investigating' ? 'investigating' : report.status === 'resolved' ? 'resolved' : 'pending');
-
-  let html = '<div class="timeline">';
+  let html = '<div>';
   steps.forEach((step, i) => {
-    const isDone    = i <= currentIdx;
-    const isCurrent = i === currentIdx + (report.status === 'resolved' ? 0 : 1) || (i === 0);
-    const actualIdx = report.status === 'submitted' ? 0 : currentIdx;
-    const realDone  = i <= actualIdx;
-    const realCurrent = i === actualIdx + 1;
-
-    let circleClass = 'tc-pending';
-    if (i === 0) circleClass = 'tc-done'; // always done
-    else if (realDone && i > 0) circleClass = 'tc-done';
-    else if (realCurrent) circleClass = 'tc-current';
-
-    const isLast = i === steps.length - 1;
-
-    html += `
-      <div class="timeline-step">
-        <div class="timeline-left">
-          <div class="timeline-circle ${circleClass}">
-            ${(i === 0 || realDone) ? '<i class="fa-solid fa-check" style="font-size:9px"></i>' : (i+1)}
-          </div>
-          ${!isLast ? `<div class="timeline-line ${(i < actualIdx || i === 0) ? 'tl-done' : 'tl-pending'}"></div>` : ''}
-        </div>
-        <div class="timeline-content">
-          <h5 style="color:${(i === 0 || realDone) ? 'var(--g800)' : realCurrent ? 'var(--slate900)' : 'var(--slate400)'}">${step.label}</h5>
-          <p>${step.desc}</p>
-          ${step.date ? `<time>${formatDate(step.date)}</time>` : ''}
-        </div>
+    const done    = i <= curIdx;
+    const current = i === curIdx;
+    const isLast  = i === steps.length - 1;
+    const cc = done ? (current ? 'tc-current' : 'tc-done') : 'tc-pending';
+    const inner = done ? '<i class="fa-solid fa-check" style="font-size:9px"></i>' : (i + 1);
+    html += `<div class="timeline-step">
+      <div class="timeline-left">
+        <div class="timeline-circle ${cc}">${inner}</div>
+        ${!isLast ? `<div class="timeline-line ${done && !current ? 'tl-done' : 'tl-pending'}"></div>` : ''}
       </div>
-    `;
-  });
-  html += '</div>';
-  return html;
-}
-
-/* ── My Reports ── */
-function renderMyReports() {
-  const search   = document.getElementById('reportSearch')?.value.toLowerCase() || '';
-  const statusF  = document.getElementById('statusFilter')?.value || '';
-  const priorityF = document.getElementById('priorityFilter')?.value || '';
-
-  let reports = DB.getReports().filter(r => {
-    const matchText = !search || r.title.toLowerCase().includes(search) || r.address.toLowerCase().includes(search);
-    const matchStatus = !statusF || r.status === statusF;
-    const matchPriority = !priorityF || r.priority === priorityF;
-    return matchText && matchStatus && matchPriority;
-  });
-
-  const tbody = document.getElementById('reportsTableBody');
-
-  if (!DB.getReports().length) {
-    tbody.innerHTML = `<div style="padding:22px">
-      <div class="empty-state">
-        <div class="es-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-        <h3>No reports submitted yet</h3>
-        <p>Start by submitting your first electricity theft report. All information is handled confidentially.</p>
-        <button class="btn btn-primary" onclick="openDrawer()"><i class="fa-solid fa-plus"></i> Submit First Report</button>
-      </div></div>`;
-    return;
-  }
-
-  if (!reports.length) {
-    tbody.innerHTML = `<div style="padding:22px"><p style="font-size:13px;color:var(--slate400);text-align:center">No reports match your filters.</p></div>`;
-    return;
-  }
-
-  tbody.innerHTML = `
-    <table class="reports-table">
-      <thead>
-        <tr>
-          <th>Reference</th>
-          <th>Report</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Submitted</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${reports.map(r => `
-          <tr>
-            <td><span class="ref-tag">${escHtml(r.ref)}</span></td>
-            <td>
-              <div class="table-title">${escHtml(r.title.slice(0,55))}${r.title.length>55?'…':''}</div>
-              <div class="table-addr"><i class="fa-solid fa-map-pin" style="font-size:9px;color:var(--slate300)"></i> ${escHtml(r.address.slice(0,50))}${r.address.length>50?'…':''}</div>
-            </td>
-            <td><span class="badge badge-${r.priority}">${priorityIcon(r.priority)} ${r.priority}</span></td>
-            <td><span class="badge badge-${r.status}">${statusLabel(r.status)}</span></td>
-            <td style="color:var(--slate500); font-size:12px;">${formatDate(r.submittedAt)}</td>
-            <td>
-              <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="openTrackDetail('${r.id}')">
-                <i class="fa-solid fa-eye"></i> Track
-              </button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-/* ── Track ── */
-function renderTrackPicker() {
-  const reports = DB.getReports();
-  const el = document.getElementById('trackPickerBody');
-  if (!reports.length) {
-    el.innerHTML = `<div class="empty-state" style="padding:20px 0">
-      <div class="es-icon"><i class="fa-solid fa-folder-open"></i></div>
-      <h3>No reports</h3>
-      <p>Submit a report to track its status.</p>
+      <div class="timeline-content">
+        <h5 style="color:${done ? 'var(--g800)' : 'var(--slate400)'}">${step.label}</h5>
+        <p>${step.desc}</p>
+        ${step.date && done ? `<time>${fmtDate(step.date)}</time>` : ''}
+      </div>
     </div>`;
+  });
+  return html + '</div>';
+}
+
+/* ─── RENDER MY REPORTS ─── */
+function renderMyReports() {
+  const search  = (document.getElementById('reportSearch')?.value || '').toLowerCase();
+  const statF   = document.getElementById('statusFilter')?.value || '';
+  const priF    = document.getElementById('priorityFilter')?.value || '';
+
+  let list = userReports.filter(r => {
+    const t  = !search || r.title.toLowerCase().includes(search) || r.address.toLowerCase().includes(search);
+    const s  = !statF  || r.status === statF;
+    const p  = !priF   || r.priority === priF || (priF === 'high' && r.priority === 'critical');
+    return t && s && p;
+  });
+
+  const el = document.getElementById('reportsTableBody');
+  if (!userReports.length) {
+    el.innerHTML = '<div style="padding:22px">' + emptyStateHTML('fa-clipboard-list','No reports yet',
+      'Start by submitting your first electricity theft report.',
+      '<button class="btn btn-primary" onclick="openDrawer()"><i class="fa-solid fa-plus"></i> Submit First Report</button>') + '</div>';
     return;
   }
-  el.innerHTML = reports.map(r => `
-    <div class="report-item" onclick="openTrackDetail('${r.id}')" style="cursor:pointer; border-radius:8px; padding:10px 8px;">
-      <div class="report-item-icon" style="background:var(--g50);color:var(--g700)"><i class="fa-solid fa-bolt"></i></div>
+  if (!list.length) {
+    el.innerHTML = '<div style="padding:22px"><p style="font-size:13px;color:var(--slate400);text-align:center">No reports match your filters.</p></div>';
+    return;
+  }
+
+  el.innerHTML = `<table class="reports-table">
+    <thead><tr><th>Reference</th><th>Report</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead>
+    <tbody>${list.map(r => `
+      <tr>
+        <td><span class="ref-tag">${escHtml(r.ref)}</span></td>
+        <td>
+          <div class="table-title">${escHtml(r.title.slice(0,55))}${r.title.length>55?'…':''}</div>
+          <div class="table-addr"><i class="fa-solid fa-map-pin" style="font-size:9px;color:var(--slate300)"></i> ${escHtml(r.address.slice(0,50))}${r.address.length>50?'…':''}</div>
+        </td>
+        <td><span class="badge badge-${r.priority}">${priorityIcon(r.priority)} ${r.priority}</span></td>
+        <td><span class="badge badge-${r.status}">${statusLabel(r.status)}</span></td>
+        <td style="color:var(--slate500);font-size:12px;">${fmtDate(r.submittedAt)}</td>
+        <td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="openTrackDetail('${r.id}')"><i class="fa-solid fa-eye"></i> Track</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+/* ─── RENDER TRACK PICKER ─── */
+function renderTrackPicker() {
+  const el = document.getElementById('trackPickerBody');
+  if (!userReports.length) {
+    el.innerHTML = emptyStateHTML('fa-folder-open','No reports','Submit a report to track its status.');
+    return;
+  }
+  el.innerHTML = userReports.map(r => `
+    <div class="report-item" onclick="openTrackDetail('${r.id}')">
+      <div class="report-item-icon"><i class="fa-solid fa-bolt"></i></div>
       <div class="report-item-body">
-        <h4 style="font-size:13px;">${escHtml(r.title.slice(0,40))}${r.title.length>40?'…':''}</h4>
+        <h4 style="font-size:13px;">${escHtml(r.title.slice(0,38))}${r.title.length>38?'…':''}</h4>
         <p><span class="ref-tag">${escHtml(r.ref)}</span></p>
       </div>
-      <span class="badge badge-${r.status}" style="font-size:10px">${statusLabel(r.status)}</span>
-    </div>
-  `).join('');
+      <span class="badge badge-${r.status}" style="font-size:10px;flex-shrink:0;">${statusLabel(r.status)}</span>
+    </div>`).join('');
 }
 
 function openTrackDetail(reportId) {
-  // Make sure we're on the track view
-  showView('track', document.querySelector('[onclick*="track"]'));
-
-  const report = DB.getReports().find(r => r.id === reportId);
-  if (!report) return;
+  showView('track', document.querySelector('button[onclick*="track"]'));
+  const r = userReports.find(x => x.id === reportId);
+  if (!r) return;
 
   const el = document.getElementById('trackDetailCard');
   el.innerHTML = `
     <div class="card-header">
       <div class="card-title">
         <div class="card-title-icon cti-green"><i class="fa-solid fa-bolt"></i></div>
-        <div>
-          <h3>${escHtml(report.title)}</h3>
-          <p class="ref-tag">${escHtml(report.ref)}</p>
-        </div>
+        <div><h3>${escHtml(r.title)}</h3><p class="ref-tag">${escHtml(r.ref)}</p></div>
       </div>
-      <span class="badge badge-${report.priority}">${priorityIcon(report.priority)} ${report.priority}</span>
+      <span class="badge badge-${r.priority}">${priorityIcon(r.priority)} ${r.priority}</span>
     </div>
     <div class="card-body">
-      <div class="detail-grid" style="margin-bottom:20px">
-        <div class="detail-field">
-          <label>Location</label>
-          <p>${escHtml(report.address)}</p>
-        </div>
-        <div class="detail-field">
-          <label>Province</label>
-          <p>${escHtml(report.province || '—')}</p>
-        </div>
-        <div class="detail-field">
-          <label>Submitted</label>
-          <p>${formatDate(report.submittedAt)}</p>
-        </div>
-        <div class="detail-field">
-          <label>Anonymity</label>
-          <p>${report.anonymity === 'anonymous' ? 'Anonymous' : 'Named'}</p>
-        </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
+        <div><label style="font-size:11px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Location</label><p style="font-size:13.5px;font-weight:500;">${escHtml(r.address)||'—'}</p></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Province</label><p style="font-size:13.5px;font-weight:500;">${escHtml(r.province)||'—'}</p></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Submitted</label><p style="font-size:13.5px;font-weight:500;">${fmtDate(r.submittedAt)}</p></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Current Status</label><span class="badge badge-${r.status}">${statusLabel(r.status)}</span></div>
       </div>
 
-      <div style="background:var(--slate50);border-radius:10px;padding:14px;margin-bottom:20px;">
-        <div style="font-size:11.5px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Description</div>
-        <p style="font-size:13.5px;color:var(--slate700);line-height:1.6;">${escHtml(report.description)}</p>
+      <div style="background:var(--slate50);border-radius:10px;padding:14px;margin-bottom:18px;">
+        <div style="font-size:11px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Description</div>
+        <p style="font-size:13.5px;color:var(--slate700);line-height:1.6;">${escHtml(r.description)}</p>
       </div>
 
-      ${report.adminResponse ? `
-        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;">
+      ${r.adminResponse ? `
+        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:18px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <i class="fa-solid fa-message" style="color:var(--blue);font-size:13px;"></i>
-            <span style="font-size:12px;font-weight:700;color:#1e40af;">Admin Response</span>
-            <span style="font-size:11px;color:var(--slate400);margin-left:auto;">${report.adminResponseAt ? timeAgo(report.adminResponseAt) : ''}</span>
+            <span style="font-size:12px;font-weight:700;color:#1e40af;">Admin Response / Investigator Notes</span>
           </div>
-          <p style="font-size:13px;color:#1e3a5f;line-height:1.6;">${escHtml(report.adminResponse)}</p>
-        </div>
-      ` : ''}
+          <p style="font-size:13px;color:#1e3a5f;line-height:1.6;">${escHtml(r.adminResponse)}</p>
+        </div>` : ''}
 
-      <div style="margin-bottom:8px;font-size:12px;font-weight:700;color:var(--slate500);text-transform:uppercase;letter-spacing:.06em;">Investigation Timeline</div>
-      ${buildTimeline(report)}
-    </div>
-  `;
+      <div style="margin-bottom:8px;font-size:11px;font-weight:700;color:var(--slate500);text-transform:uppercase;letter-spacing:.06em;">Investigation Timeline</div>
+      ${buildTimeline(r)}
+    </div>`;
 }
 
-/* ── Notifications ── */
+/* ─── NOTIFICATIONS ─── */
+const notifIcons = { submitted:'fa-paper-plane', admin_response:'fa-message', status_update:'fa-arrows-rotate', resolved:'fa-circle-check' };
+const notifColors = { submitted:'ad-green', admin_response:'ad-blue', status_update:'ad-amber', resolved:'ad-green' };
+
 function notifHTML(n, compact) {
-  const icons = { new_report:'fa-circle-plus', status_update:'fa-arrows-rotate', admin_response:'fa-message', resolved:'fa-circle-check' };
-  const colors = { new_report:'ad-green', status_update:'ad-blue', admin_response:'ad-blue', resolved:'ad-green' };
-  const bgColors = { ad_green: 'var(--g100)', ad_blue: 'var(--blue-bg)', ad_amber: 'var(--amber-bg)' };
-  return `
-    <div class="notif-item ${n.read ? '' : 'unread'}" id="notif_${n.id}" onclick="markNotifRead('${n.id}')">
-      <div class="notif-icon ${colors[n.type] || 'ad-slate'}" style="background:${n.type==='resolved' || n.type==='new_report' ? 'var(--g100)' : 'var(--blue-bg)'}; color:${n.type==='resolved' || n.type==='new_report' ? 'var(--g700)' : 'var(--blue)'}">
-        <i class="fa-solid ${icons[n.type] || 'fa-bell'}"></i>
-      </div>
-      <div class="notif-body">
-        <h5>${escHtml(n.title)}</h5>
-        <p>${escHtml(compact ? n.message.slice(0,80)+'…' : n.message)}</p>
-        <time>${timeAgo(n.timestamp)}</time>
-      </div>
-      ${!n.read ? '<div class="unread-indicator"></div>' : ''}
+  const icon  = notifIcons[n.type]  || 'fa-bell';
+  const cls   = notifColors[n.type] || 'ad-slate';
+  const bg    = (n.type === 'resolved' || n.type === 'submitted') ? 'var(--g100)' : 'var(--blue-bg)';
+  const color = (n.type === 'resolved' || n.type === 'submitted') ? 'var(--g700)'  : 'var(--blue)';
+  const msg   = compact ? (n.message.slice(0,90) + (n.message.length > 90 ? '…' : '')) : n.message;
+  return `<div class="notif-item ${n.read?'':'unread'}" id="ni_${n.id}">
+    <div class="notif-icon" style="background:${bg};color:${color};"><i class="fa-solid ${icon}"></i></div>
+    <div class="notif-body">
+      <h5>${escHtml(n.title)}</h5>
+      <p>${escHtml(msg)}</p>
+      <time>${timeAgo(n.ts)}</time>
     </div>
-  `;
+    ${!n.read ? '<div class="unread-indicator"></div>' : ''}
+  </div>`;
 }
 
 function renderAllNotifications() {
-  const notifs = DB.getNotifications();
   const el = document.getElementById('allNotifsBody');
-  if (!notifs.length) {
-    el.innerHTML = `<div class="empty-state">
-      <div class="es-icon"><i class="fa-solid fa-bell-slash"></i></div>
-      <h3>No notifications yet</h3>
-      <p>You'll receive updates here when admins respond to or update your reports.</p>
-    </div>`;
+  if (!notifications.length) {
+    el.innerHTML = emptyStateHTML('fa-bell-slash','No notifications yet','You\'ll receive updates here when admins respond to or update your reports.');
     return;
   }
-  el.innerHTML = notifs.map(n => notifHTML(n, false)).join('');
-}
-
-function markNotifRead(id) {
-  DB.markNotifRead(id);
-  document.getElementById('notif_' + id)?.classList.remove('unread');
-  updateNotifBadge();
+  el.innerHTML = notifications.map(n => notifHTML(n, false)).join('');
 }
 
 function markAllRead() {
-  DB.markAllNotifsRead();
+  notifications.forEach(n => n.read = true);
   renderAllNotifications();
-  updateNotifBadge();
-  showToast('All notifications marked as read', 'info');
+  updateBadges();
+  showToast('All notifications marked as read','info');
 }
 
-function updateNotifBadge() {
-  const unread = DB.getNotifications().filter(n => !n.read).length;
-  const badge = document.getElementById('topbarNotifBadge');
-  const sidebar = document.getElementById('sidebarNotifCount');
-  if (unread > 0) {
-    badge.textContent = unread;
-    badge.style.display = 'block';
-    sidebar.textContent = unread;
-    sidebar.style.display = 'inline-block';
-  } else {
-    badge.style.display = 'none';
-    sidebar.style.display = 'none';
-  }
+function updateBadges() {
+  const unread = notifications.filter(n => !n.read).length;
+  const count  = userReports.length;
+
+  const tb = document.getElementById('topbarNotifBadge');
+  tb.textContent = unread;
+  tb.style.display = unread > 0 ? 'block' : 'none';
+
+  const nd = document.getElementById('sidebarNotifDot');
+  nd.textContent = unread;
+  nd.style.display = unread > 0 ? 'inline-block' : 'none';
+
+  const sc = document.getElementById('sidebarCount');
+  sc.textContent = count;
+  sc.style.display = count > 0 ? 'inline-block' : 'none';
 }
 
-function updateSidebarCounts() {
-  const count = DB.getReports().length;
-  const el = document.getElementById('sidebarReportCount');
-  if (count > 0) {
-    el.textContent = count;
-    el.style.display = 'inline-block';
-  }
-}
-
-/* ═══════════════════════════════════════
-   DRAWER
-═══════════════════════════════════════ */
+/* ─── DRAWER ─── */
 function openDrawer() {
   document.getElementById('drawerOverlay').classList.add('open');
   document.getElementById('reportDrawer').classList.add('open');
   document.body.style.overflow = 'hidden';
-  resetForm();
 }
 
 function closeDrawer() {
@@ -2408,9 +1074,7 @@ function resetForm() {
   document.getElementById('formState').style.display = 'block';
   document.getElementById('successState').style.display = 'none';
   document.getElementById('drawerFooter').style.display = 'flex';
-  document.getElementById('fTitle').value = '';
-  document.getElementById('fDesc').value = '';
-  document.getElementById('fAddress').value = '';
+  ['fTitle','fDesc','fAddress'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fProvince').value = '';
   document.getElementById('fObservedDate').value = '';
   document.getElementById('fAnonymity').value = 'named';
@@ -2418,194 +1082,113 @@ function resetForm() {
   uploadedFiles = [];
   document.getElementById('filePreviews').innerHTML = '';
   document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Report';
 }
 
-function submitAnother() {
-  resetForm();
-}
-
-/* ═══════════════════════════════════════
-   FILE UPLOAD
-═══════════════════════════════════════ */
-let uploadedFiles = [];
-
+/* ─── FILE HANDLING ─── */
 function handleFiles(fileList) {
-  Array.from(fileList).forEach(file => {
-    if (file.size > 10 * 1024 * 1024) {
-      showToast(`${file.name} exceeds 10 MB limit`, 'error');
-      return;
-    }
-    // TODO: Replace with real upload to CONFIG.API_BASE + '/uploads'
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      uploadedFiles.push({ name: file.name, size: file.size, type: file.type, data: e.target.result });
-      renderFilePreviews();
-    };
-    reader.readAsDataURL(file);
+  Array.from(fileList).forEach(f => {
+    if (f.size > 10 * 1024 * 1024) { showToast(f.name + ' exceeds 10 MB','error'); return; }
+    uploadedFiles.push({ name: f.name, size: f.size, type: f.type });
+    renderFilePreviews();
   });
 }
 
 function renderFilePreviews() {
-  document.getElementById('filePreviews').innerHTML = uploadedFiles.map((f, i) => `
+  document.getElementById('filePreviews').innerHTML = uploadedFiles.map((f,i) => `
     <div class="file-chip">
       <i class="fa-solid ${f.type.startsWith('image') ? 'fa-image' : 'fa-file'}" style="color:var(--g600)"></i>
-      ${escHtml(f.name.slice(0, 24))}${f.name.length>24?'…':''}
+      ${escHtml(f.name.slice(0,24))}${f.name.length>24?'…':''}
       <button onclick="removeFile(${i})" title="Remove"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function removeFile(i) {
-  uploadedFiles.splice(i, 1);
-  renderFilePreviews();
-}
+function removeFile(i) { uploadedFiles.splice(i,1); renderFilePreviews(); }
 
 // Drag & drop
 const dropZone = document.getElementById('dropZone');
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  handleFiles(e.dataTransfer.files);
-});
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
 
-/* ═══════════════════════════════════════
-   SUBMIT REPORT
-═══════════════════════════════════════ */
-function generateRef() {
-  const year = new Date().getFullYear();
-  const num  = String(Date.now()).slice(-5);
-  return `ETD-${year}-${num}`;
-}
-
+/* ─── SUBMIT ─── */
 async function submitReport() {
-  const title    = document.getElementById('fTitle').value.trim();
-  const desc     = document.getElementById('fDesc').value.trim();
-  const address  = document.getElementById('fAddress').value.trim();
-  const priority = document.querySelector('input[name="priority"]:checked')?.value || 'medium';
+  const title   = document.getElementById('fTitle').value.trim();
+  const desc    = document.getElementById('fDesc').value.trim();
+  const address = document.getElementById('fAddress').value.trim();
+  const priority= document.querySelector('input[name="priority"]:checked')?.value || 'medium';
 
-  if (!title)   { showToast('Please enter a report title', 'error'); document.getElementById('fTitle').focus(); return; }
-  if (!desc)    { showToast('Please describe what you observed', 'error'); document.getElementById('fDesc').focus(); return; }
-  if (!address) { showToast('Please enter the location / property address', 'error'); document.getElementById('fAddress').focus(); return; }
+  if (!title)   { showToast('Please enter a report title','error');            document.getElementById('fTitle').focus();   return; }
+  if (!desc)    { showToast('Please describe what you observed','error');       document.getElementById('fDesc').focus();    return; }
+  if (!address) { showToast('Please enter the property address','error');       document.getElementById('fAddress').focus(); return; }
 
-  const submitBtn = document.getElementById('submitBtn');
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting…';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting…';
 
-  // Build report object
-  const report = {
-    id:           'rpt_' + Date.now(),
-    ref:          generateRef(),
+  const payload = {
     title,
-    description:  desc,
+    description:   desc,
     address,
-    province:     document.getElementById('fProvince').value,
+    province:      document.getElementById('fProvince').value,
     priority,
-    status:       'pending',
-    anonymity:    document.getElementById('fAnonymity').value,
-    observedDate: document.getElementById('fObservedDate').value || null,
-    files:        uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })),
-    // Note: file data (f.data) is in uploadedFiles but not persisted to localStorage
-    // TODO: Upload files to CONFIG.API_BASE + '/reports/:id/evidence' and store URLs instead
-    submittedAt:  new Date().toISOString(),
-    updatedAt:    new Date().toISOString(),
-    adminResponse: null,
-    resolution:   null,
+    observed_date: document.getElementById('fObservedDate').value || null,
+    anonymity:     document.getElementById('fAnonymity').value,
+    file_names:    uploadedFiles.map(f => f.name),
   };
 
-  // Simulate network delay
-  await new Promise(r => setTimeout(r, 900));
+  try {
+    const newReport = await apiPostReport(payload);
 
-  /*
-  ── TODO: Replace simulation with real API call ──
-  if (CONFIG.API_BASE) {
-    const res = await fetch(CONFIG.API_BASE + '/reports', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify(report),
-    });
-    if (!res.ok) { showToast('Submission failed. Please try again.', 'error'); submitBtn.disabled = false; return; }
-    const saved = await res.json();
-    report.id = saved.id;
-    report.ref = saved.ref;
+    // Refresh local state
+    userReports.unshift(newReport);
+    notifications = buildNotifications(userReports);
+    updateBadges();
+    renderDashboard();
+
+    // Show success screen
+    document.getElementById('successRef').textContent = newReport.ref;
+    document.getElementById('formState').style.display   = 'none';
+    document.getElementById('successState').style.display = 'block';
+    document.getElementById('drawerFooter').style.display = 'none';
+
+    showToast('Report submitted — admins have been alerted','success');
+  } catch (err) {
+    showToast('Submission failed: ' + err.message,'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Report';
   }
-  */
-
-  // Save to localStorage + push admin notifications
-  DB.addReport(report);
-
-  // Add a user notification about their own submission
-  const notifs = DB.getNotifications();
-  notifs.unshift({
-    id: 'notif_' + Date.now(),
-    read: false,
-    type: 'new_report',
-    timestamp: new Date().toISOString(),
-    title: 'Report Submitted Successfully',
-    message: `Your report "${report.title}" (Ref: ${report.ref}) has been submitted and is now awaiting admin review.`,
-    reportRef: report.ref,
-  });
-  DB.saveNotifications(notifs);
-
-  // Show success
-  document.getElementById('successRef').textContent = report.ref;
-  document.getElementById('formState').style.display = 'none';
-  document.getElementById('successState').style.display = 'block';
-  document.getElementById('drawerFooter').style.display = 'none';
-
-  // Refresh dashboard data
-  renderDashboard();
-  updateNotifBadge();
-  updateSidebarCounts();
-  showToast('Report submitted — admins have been alerted', 'success');
 }
 
-/* ═══════════════════════════════════════
-   TOAST
-═══════════════════════════════════════ */
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<i class="fa-solid ${icons[type] || 'fa-bell'} toast-icon"></i> ${escHtml(message)}`;
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('show'));
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
+/* ─── TOAST ─── */
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info' };
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fa-solid ${icons[type]||'fa-bell'} toast-icon"></i> ${escHtml(msg)}`;
+  c.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3800);
 }
 
-/* ═══════════════════════════════════════
-   UTILS
-═══════════════════════════════════════ */
-function escHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+/* ─── EMPTY STATE ─── */
+function emptyStateHTML(icon, h, p, extra='') {
+  return `<div class="empty-state">
+    <div class="es-icon"><i class="fa-solid ${icon}"></i></div>
+    <h3>${h}</h3><p>${p}</p>${extra}</div>`;
 }
 
+/* ─── LOGOUT ─── */
 function doLogout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userRole');
+  ['token','userRole','userId','userName','userEmail'].forEach(k => localStorage.removeItem(k));
   window.location.href = 'login.html';
 }
 
-/* ═══════════════════════════════════════
-   KEYBOARD
-═══════════════════════════════════════ */
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeDrawer();
-});
+/* ─── KEYBOARD ─── */
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
-/* ═══════════════════════════════════════
-   START
-═══════════════════════════════════════ */
+/* ─── START ─── */
 init();
 </script>
 </body>

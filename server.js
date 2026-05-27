@@ -432,7 +432,7 @@ app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, re
     const { email, password, role, full_name } = req.body;
     if (!email || !password || !role) return res.status(400).json({ error: 'email, password and role required' });
     if (!full_name || !full_name.trim()) return res.status(400).json({ error: 'full_name is required' });
-    const validRoles = ['admin', 'commander', 'investigator'];
+    const validRoles = ['admin', 'commander', 'investigator', 'user'];
     if (!validRoles.includes(role.toLowerCase())) return res.status(400).json({ error: 'Invalid role' });
     const password_hash = await bcrypt.hash(password, 10);
     const { data, error } = await supabase.from('users').insert([{
@@ -462,7 +462,7 @@ app.put('/api/users/:id/status', authenticateToken, requireRole(['admin']), asyn
 // ─────────────────────────────────────────────────────────────
 app.put('/api/users/:id/role', authenticateToken, requireRole(['admin']), async (req, res) => {
     const { role, full_name } = req.body;
-    const validRoles = ['admin', 'commander', 'investigator'];
+    const validRoles = ['admin', 'commander', 'investigator', 'user'];
     if (!validRoles.includes(role?.toLowerCase())) return res.status(400).json({ error: 'Invalid role' });
     const updates = { role: role.toLowerCase() };
     if (full_name && full_name.trim()) updates.full_name = full_name.trim();
@@ -824,6 +824,151 @@ app.delete('/api/map-markers/:id', authenticateToken, async (req, res) => {
 app.post('/api/average', (req, res) => res.json({ average: calculateAverage(req.body.data) }));
 app.post('/api/detect',  (req, res) => res.json({ anomalies: detectAnomalies(req.body.data) }));
 app.post('/api/test',    (req, res) => res.send('POST WORKING'));
+
+// ─────────────────────────────────────────────────────────────
+// USER SELF-REGISTRATION  (PUBLIC — no token required)
+// Creates an account with role='user' so community members can
+// log in and access the user-dashboard.html reporting portal.
+// ─────────────────────────────────────────────────────────────
+app.post('/api/auth/register', async (req, res) => {
+    const { email, password, full_name } = req.body;
+    if (!email || !password || !full_name)
+        return res.status(400).json({ error: 'email, password, and full_name are required' });
+    try {
+        const password_hash = await bcrypt.hash(password, 10);
+        const { data, error } = await supabase
+            .from('users')
+            .insert([{
+                email:        email.trim().toLowerCase(),
+                full_name:    full_name.trim(),
+                password_hash,
+                role:         'user',
+                is_active:    true,
+                created_at:   new Date().toISOString(),
+            }])
+            .select('id, email, full_name, role, created_at');
+        if (error) {
+            if (error.code === '23505')
+                return res.status(409).json({ error: 'An account with this email already exists.' });
+            return res.status(500).json({ message: error.message });
+        }
+        res.status(201).json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// COMMUNITY USER REPORTS — SUBMIT
+// POST /api/user-reports
+//
+// Any authenticated user (any role) may call this.
+// The report is written directly to the `cases` table as
+// outcome='PENDING' so it immediately appears in the admin
+// case management workflow (caseList.html shows PENDING cases).
+//
+// Field mapping to the cases table:
+//   title + description → description  (prefixed [Community Report])
+//   address             → location + geocoded lat/lon
+//   province            → suburb
+//   priority            → risk_level  (low→LOW, medium→MID, high/critical→HIGH)
+//   file_names[]        → appended to description (no binary upload yet)
+//   observed_date       → appended to description
+//   anonymity           → controls suspect_name label
+// ─────────────────────────────────────────────────────────────
+app.post('/api/user-reports', authenticateToken, async (req, res) => {
+    const {
+        title, description, address, province,
+        priority, observed_date, anonymity, file_names,
+    } = req.body;
+
+    if (!title || !description || !address)
+        return res.status(400).json({ error: 'title, description, and address are required' });
+
+    const priorityToRisk = { low: 'LOW', medium: 'MID', high: 'HIGH', critical: 'HIGH' };
+    const risk_level = priorityToRisk[(priority || 'medium').toLowerCase()] || 'MID';
+
+    // Generate a proper case number (same sequence as admin cases)
+    const caseNumber = await generateCaseNumber();
+    if (!caseNumber) return res.status(500).json({ error: 'Failed to generate case number. Please retry.' });
+
+    // Geocode the address server-side (same as admin case creation)
+    const coords = await geocodeAddress(address);
+
+    // Build the full description stored in the cases table
+    const lines = [
+        `[Community Report] ${title}`,
+        '',
+        description,
+    ];
+    if (observed_date)                    lines.push('', `Date first observed: ${observed_date}`);
+    if (province)                         lines.push(`Province: ${province}`);
+    if (file_names && file_names.length)  lines.push('', `Evidence files noted by reporter: ${file_names.join(', ')}`);
+
+    const fullDescription = lines.join('\n');
+
+    // suspect_name is used in the admin UI — label it clearly
+    const suspectName = anonymity === 'anonymous'
+        ? 'Anonymous — Community Report'
+        : 'Community Report (Named Reporter)';
+
+    const insertPayload = {
+        case_number:  caseNumber,
+        suspect_name: suspectName,
+        description:  fullDescription,
+        risk_level,
+        outcome:      'PENDING',
+        location:     address,
+        created_by:   req.user.id,
+        created_at:   new Date().toISOString(),
+        ...(coords   ? { latitude: coords.lat.toString(), longitude: coords.lon.toString() } : {}),
+        ...(province ? { suburb: province } : {}),
+    };
+
+    const { data, error } = await supabase.from('cases').insert([insertPayload]).select();
+    if (error) {
+        if (error.code === '23505')
+            return res.status(409).json({ error: 'Case number conflict — please try again.' });
+        return res.status(500).json({ error: error.message });
+    }
+
+    res.status(201).json(data[0]);
+});
+
+// ─────────────────────────────────────────────────────────────
+// COMMUNITY USER REPORTS — GET OWN
+// GET /api/user-reports
+// Returns all cases submitted by the currently logged-in user.
+// Scoped strictly to created_by = req.user.id so users can
+// never see each other's reports.
+// ─────────────────────────────────────────────────────────────
+app.get('/api/user-reports', authenticateToken, async (req, res) => {
+    const { data, error } = await supabase
+        .from('cases')
+        .select('*')
+        .eq('created_by', req.user.id)
+        .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ message: error.message });
+    res.json(data || []);
+});
+
+// ─────────────────────────────────────────────────────────────
+// ADMIN: COMMUNITY REPORTS INBOX
+// GET /api/admin/community-reports
+// Returns all PENDING cases for admin/commander review.
+// These are the community-submitted reports waiting for
+// assignment. Shown as a notification inbox in dashboard.html.
+// ─────────────────────────────────────────────────────────────
+app.get('/api/admin/community-reports', authenticateToken, requireRole(['admin', 'commander']), async (req, res) => {
+    const { data, error } = await supabase
+        .from('cases')
+        .select('*')
+        .eq('outcome', 'PENDING')
+        .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ message: error.message });
+    const enriched = await enrichCasesWithInvestigators(data || []);
+    res.json(enriched);
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✔ Server on http://localhost:${PORT}`));
