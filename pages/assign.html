@@ -5,20 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assign Investigator — Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="../css/shared-navbar.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html, body, .layout, .main { height: 100%; }
-    body { font-family: 'DM Sans', sans-serif; background: #f0f4f0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f8fafc; }
     .main { display: flex; flex-direction: column; overflow: hidden; }
 
     /* ── Header ──────────────────────────────────────────────── */
     .topbar {
-      background: linear-gradient(135deg, #052e16 0%, #064e3b 60%, #065f46 100%) !important;
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #2563eb 100%) !important;
       padding: 22px 28px !important;
       border-bottom: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 4px 24px rgba(5,46,22,0.25);
+      box-shadow: 0 4px 24px rgba(30,58,138,0.2);
       position: relative;
       overflow: hidden;
       flex-shrink: 0;
@@ -29,7 +30,7 @@
       top: -60px; right: -60px;
       width: 200px; height: 200px;
       border-radius: 50%;
-      background: rgba(134,239,172,0.06);
+      background: rgba(147,197,253,0.08);
       pointer-events: none;
     }
     .topbar-inner {
@@ -47,16 +48,16 @@
     }
     .topbar-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(134,239,172,0.12);
-      border: 1px solid rgba(134,239,172,0.25);
+      background: rgba(147,197,253,0.15);
+      border: 1px solid rgba(147,197,253,0.35);
       border-radius: 20px; padding: 6px 14px;
-      font-size: 12px; font-weight: 600; color: #86efac;
+      font-size: 12px; font-weight: 600; color: #bfdbfe;
       letter-spacing: 0.04em; text-transform: uppercase;
     }
     .topbar-badge::before {
       content: ''; width: 7px; height: 7px;
-      border-radius: 50%; background: #4ade80;
-      box-shadow: 0 0 6px #4ade80;
+      border-radius: 50%; background: #60a5fa;
+      box-shadow: 0 0 6px #60a5fa;
     }
 
     /* ── Page body ───────────────────────────────────────────── */
@@ -72,7 +73,7 @@
     .panel {
       background: #fff;
       border-radius: 16px;
-      border: 1px solid #e2ebe2;
+      border: 1px solid #e2e8f0;
       box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 20px rgba(0,0,0,0.05);
       display: flex;
       flex-direction: column;
@@ -87,7 +88,7 @@
     }
     .panel-header h2 {
       font-size: 15px; font-weight: 700;
-      color: #052e16; margin: 0 0 4px;
+      color: #1e3a8a; margin: 0 0 4px;
       letter-spacing: -0.2px;
     }
     .panel-header p {
@@ -104,7 +105,7 @@
 
     .panel-footer {
       padding: 16px 22px;
-      border-top: 1px solid #f0f4f0;
+      border-top: 1px solid #f1f5f9;
       flex-shrink: 0;
     }
 
@@ -120,7 +121,7 @@
       padding: 8px 10px;
       border-radius: 9px;
       border: 1.5px solid #e5e9ee;
-      background: #f8faf8;
+      background: #f8fafc;
       font-family: 'DM Sans', sans-serif;
       font-size: 12px; font-weight: 600;
       color: #6b7280;
@@ -139,17 +140,17 @@
       font-weight: 700;
       transition: all 0.15s;
     }
-    .filter-tab:hover { border-color: #16a34a; color: #15803d; }
+    .filter-tab:hover { border-color: #3b82f6; color: #1d4ed8; }
     .filter-tab.active {
-      background: #052e16;
-      border-color: #052e16;
+      background: #1e3a8a;
+      border-color: #1e3a8a;
       color: #fff;
     }
     .filter-tab.active .tab-count {
       background: rgba(255,255,255,0.2);
       color: #fff;
     }
-    .filter-tab.tab-available.active { background: #16a34a; border-color: #16a34a; }
+    .filter-tab.tab-available.active { background: #2563eb; border-color: #2563eb; }
     .filter-tab.tab-occupied.active  { background: #d97706; border-color: #d97706; }
 
     /* ── Investigator cards ──────────────────────────────────── */
@@ -164,11 +165,11 @@
       position: relative;
     }
     .inv-card:last-child { margin-bottom: 0; }
-    .inv-card:hover { border-color: #16a34a; box-shadow: 0 2px 12px rgba(22,163,74,0.10); }
+    .inv-card:hover { border-color: #3b82f6; box-shadow: 0 2px 12px rgba(59,130,246,0.10); }
     .inv-card.selected {
-      border-color: #16a34a;
-      box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
-      background: #f0fdf4;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+      background: #eff6ff;
     }
     .inv-card.inactive {
       background: #fffbeb;
@@ -188,12 +189,12 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
     }
-    .inv-avatar.available { background: linear-gradient(135deg, #064e3b, #16a34a); }
+    .inv-avatar.available { background: linear-gradient(135deg, #1e40af, #2563eb); }
     .inv-avatar.occupied  { background: linear-gradient(135deg, #92400e, #d97706); }
     .inv-avatar.inactive  { background: linear-gradient(135deg, #4b5563, #9ca3af); }
 
     .inv-info-name {
-      font-size: 13.5px; font-weight: 700; color: #052e16; margin: 0 0 2px;
+      font-size: 13.5px; font-weight: 700; color: #1e3a8a; margin: 0 0 2px;
     }
     .inv-info-sub {
       font-size: 11.5px; color: #9ca3af; margin: 0;
@@ -224,7 +225,7 @@
     }
     .progress-fill {
       height: 100%; border-radius: 10px;
-      background: linear-gradient(90deg, #16a34a, #4ade80);
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
       transition: width 0.4s ease;
     }
     .progress-fill.occupied { background: linear-gradient(90deg, #d97706, #fbbf24); }
@@ -247,14 +248,14 @@
       border: 1.5px solid #e5e9ee;
       font-family: 'DM Sans', sans-serif;
       font-size: 13.5px;
-      background: #f8faf8;
-      color: #1a2e1a;
+      background: #f8fafc;
+      color: #1e3a8a;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     .search-wrap input:focus {
       outline: none;
-      border-color: #16a34a;
-      box-shadow: 0 0 0 3px rgba(22,163,74,0.10);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
       background: #fff;
     }
     .search-wrap input::placeholder { color: #b0bec5; }
@@ -280,7 +281,7 @@
 
     .case-result-item {
       padding: 11px 14px;
-      border-bottom: 1px solid #f3f7f3;
+      border-bottom: 1px solid #f1f5f9;
       cursor: pointer;
       transition: background 0.15s;
       display: flex;
@@ -288,13 +289,13 @@
       gap: 10px;
     }
     .case-result-item:last-child { border-bottom: none; }
-    .case-result-item:hover { background: #f0fdf4; }
-    .case-result-item.selected { background: #f0fdf4; border-left: 3px solid #16a34a; }
+    .case-result-item:hover { background: #eff6ff; }
+    .case-result-item.selected { background: #eff6ff; border-left: 3px solid #2563eb; }
 
     .case-num {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11.5px; font-weight: 700;
-      color: #052e16; white-space: nowrap; flex-shrink: 0;
+      color: #1e3a8a; white-space: nowrap; flex-shrink: 0;
     }
     .case-suspect { font-size: 13px; font-weight: 500; color: #374151; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .case-risk-badge {
@@ -319,7 +320,7 @@
 
     /* ── Case summary ────────────────────────────────────────── */
     #caseSummary {
-      background: #f8faf8;
+      background: #f8fafc;
       border: 1px solid #e5e9ee;
       border-radius: 12px;
       padding: 14px 16px;
@@ -329,7 +330,7 @@
       margin-bottom: 16px;
       transition: all 0.2s;
     }
-    #caseSummary.has-data { background: #f0fdf4; border-color: #bbf7d0; }
+    #caseSummary.has-data { background: #eff6ff; border-color: #bfdbfe; }
 
     .summary-header {
       display: flex; gap: 8px; align-items: center;
@@ -337,13 +338,13 @@
     }
     .summary-case-num {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px; font-weight: 700; color: #052e16;
+      font-size: 12px; font-weight: 700; color: #1e3a8a;
     }
     .summary-outcome {
       font-size: 11px; color: #9ca3af; font-weight: 500;
     }
     .summary-suspect {
-      font-size: 14px; font-weight: 700; color: #052e16; margin: 0 0 4px;
+      font-size: 14px; font-weight: 700; color: #1e3a8a; margin: 0 0 4px;
     }
     .summary-desc {
       font-size: 12.5px; color: #6b7280; margin: 0 0 8px; line-height: 1.5;
@@ -360,7 +361,7 @@
       padding: 13px;
       border-radius: 11px;
       border: none;
-      background: linear-gradient(135deg, #052e16, #16a34a);
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
       color: #fff;
       font-family: 'DM Sans', sans-serif;
       font-size: 14px; font-weight: 700;
@@ -368,11 +369,11 @@
       letter-spacing: 0.01em;
       transition: all 0.2s;
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 2px 12px rgba(22,163,74,0.25);
+      box-shadow: 0 2px 12px rgba(37,99,235,0.25);
     }
     .btn-assign:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(22,163,74,0.35);
+      box-shadow: 0 4px 20px rgba(37,99,235,0.35);
     }
     .btn-assign:active { transform: translateY(0); }
     .btn-assign svg { width: 16px; height: 16px; }
@@ -385,7 +386,7 @@
       padding: 10px 14px;
     }
     #message.show { display: block; }
-    #message.success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    #message.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
     #message.error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     #message.info    { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
@@ -461,7 +462,7 @@
 
         <div class="panel-body">
           <div class="legend" style="margin-bottom:12px;">
-            <div class="legend-item"><div class="legend-dot" style="background:#16a34a;"></div> Active investigator</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#2563eb;"></div> Active investigator</div>
             <div class="legend-item"><div class="legend-dot" style="background:#9ca3af;"></div> Inactive</div>
           </div>
 
@@ -508,9 +509,9 @@
         </div>
 
         <div class="panel-footer">
-          <div id="selectedCasesBar" style="display:none;margin-bottom:10px;padding:8px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;font-size:12.5px;font-weight:600;color:#15803d;display:flex;align-items:center;justify-content:space-between;">
+          <div id="selectedCasesBar" style="display:none;margin-bottom:10px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;font-size:12.5px;font-weight:600;color:#1d4ed8;display:flex;align-items:center;justify-content:space-between;">
             <span id="selectedCasesLabel">0 cases selected</span>
-            <button onclick="clearCaseSelections()" style="background:none;border:none;color:#15803d;cursor:pointer;font-size:12px;text-decoration:underline;padding:0;">Clear all</button>
+            <button onclick="clearCaseSelections()" style="background:none;border:none;color:#1d4ed8;cursor:pointer;font-size:12px;text-decoration:underline;padding:0;">Clear all</button>
           </div>
           <button class="btn-assign" onclick="assignInvestigator()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
@@ -527,5 +528,6 @@
 <script>lucide.createIcons();</script>
 <script src="../js/sidebar.js"></script>
 <script src="../js/assign.js"></script>
+  <script src="../js/shared-navbar.js"></script>
 </body>
 </html>

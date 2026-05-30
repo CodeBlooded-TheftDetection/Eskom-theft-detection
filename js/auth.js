@@ -1,75 +1,82 @@
 // ============================================================
-// auth.js — Login Form Handler
+// auth.js — Shared Authentication Utility
 // ============================================================
-// UPDATED: After a successful login the server now returns
-// { token, role } instead of just { token }.
-// We store BOTH in localStorage so every other page can:
-//   1. Include the token in API headers (authentication)
-//   2. Read the role to render the correct dashboard (authorisation)
+// This module provides helper functions for all protected pages.
 //
-// RBAC frontend flow:
-//   login → store token + role → redirect to dashboard.html
-//   dashboard.html → reads role → renders role-specific layout
+// localStorage keys used across the app:
+//   token     → JWT bearer token  (sent as Authorization header)
+//   userRole  → 'admin' | 'commander' | 'investigator' | 'user'
+//   userId    → UUID of the logged-in user
+//   full_name → Display name of the logged-in user
+//
+// Login / signup logic lives inline in pages/login.html.
 // ============================================================
 
-const form = document.getElementById("loginForm");
+const BASE_URL = 'http://localhost:3000';
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// ── HELPERS ───────────────────────────────────────────────────
 
-  const email    = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const role     = document.getElementById("role").value;
+/** Returns the stored JWT token (or null). */
+function getToken() {
+  return localStorage.getItem('token');
+}
 
-  // Show an error immediately if no role was selected.
-  // The role dropdown has a blank default option so the user
-  // must actively choose Admin, Commander, or Investigator.
-  const errorMsg = document.getElementById("errorMsg");
-  errorMsg.classList.remove("show");
+/** Returns Authorization + Content-Type headers for fetch calls. */
+function getAuthHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`
+  };
+}
 
-  if (!role) {
-    errorMsg.textContent = "Please select a role before logging in.";
-    errorMsg.classList.add("show");
-    return;
+/** Returns the stored role (lowercase), defaulting to 'user'. */
+function getUserRole() {
+  return (localStorage.getItem('userRole') || 'user').toLowerCase();
+}
+
+/** Returns the stored user ID. */
+function getUserId() {
+  return localStorage.getItem('userId');
+}
+
+/** Returns the stored display name. */
+function getFullName() {
+  return localStorage.getItem('full_name') || '';
+}
+
+/**
+ * Guards a page: if the user is not logged in, or their role is not in
+ * allowedRoles, redirect them to the login page.
+ *
+ * @param {string[]} [allowedRoles]  If omitted, any logged-in role is accepted.
+ */
+function requireAuth(allowedRoles) {
+  const token = getToken();
+  if (!token) {
+    window.location.href = '../pages/login.html';
+    return false;
   }
-
-  try {
-    const res = await fetch("http://localhost:3000/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, role })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      // Server returned an error (wrong password, wrong role, etc.)
-      errorMsg.textContent = data.message || "Login failed. Please try again.";
-      errorMsg.classList.add("show");
-      return;
+  if (allowedRoles && allowedRoles.length > 0) {
+    const role = getUserRole();
+    if (!allowedRoles.includes(role)) {
+      alert(`Access denied. This page requires: ${allowedRoles.join(', ')}.`);
+      window.location.href = '../pages/login.html';
+      return false;
     }
-
-    // ── STORE AUTH DATA ────────────────────────────────────
-    // token → sent as "Authorization: Bearer <token>" on every API call
-    // role  → read by each page to render the correct UI layout
-    // Both are stored in localStorage so they survive page navigation.
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("userRole", data.role); // 'admin', 'commander', or 'investigator'
-
-    // ── ROLE-BASED REDIRECT ────────────────────────────────
-    // Redirect based on user role to appropriate dashboard
-    const roleRedirects = {
-      admin: "../pages/dashboard.html",
-      commander: "../pages/dashboard.html",
-      investigator: "../pages/dashboard.html",
-      user: "../pages/user-dashboard.html"
-    };
-
-    const redirectUrl = roleRedirects[data.role] || "../pages/dashboard.html";
-    window.location.href = redirectUrl;
-
-  } catch (err) {
-    errorMsg.textContent = "Server error. Make sure the backend is running.";
-    errorMsg.classList.add("show");
   }
-});
+  return true;
+}
+
+/** Clears all auth data and redirects to the login page. */
+function logout() {
+  localStorage.clear();
+  window.location.href = '../pages/login.html';
+}
+
+// ── ROLE-BASED REDIRECT (used after login) ────────────────────
+const ROLE_REDIRECTS = {
+  admin:       '../pages/dashboard.html',
+  commander:   '../pages/dashboard.html',
+  investigator:'../pages/dashboard.html',
+  user:        '../pages/user-dashboard.html',
+};

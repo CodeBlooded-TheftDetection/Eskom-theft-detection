@@ -200,21 +200,21 @@ app.get('/', (req, res) => res.send('Eskom Theft Detection API ✔'));
 // Returns { token, role, userId } so frontend stores all three
 // ─────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
+    if (!email || !password)
+        return res.status(400).json({ message: 'Email and password are required' });
     const cleanEmail = email.trim().toLowerCase();
     const { data: user, error } = await supabase
         .from('users')
-        .select('id, email, password_hash, role, is_active')
+        .select('id, email, full_name, password_hash, role, is_active')
         .eq('email', cleanEmail)
         .single();
-    if (error || !user) return res.status(404).json({ message: 'Email not found' });
+    if (error || !user) return res.status(404).json({ message: 'No account found with that email address.' });
     if (user.is_active === false) return res.status(403).json({ message: 'Account deactivated. Contact your administrator.' });
     const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return res.status(401).json({ message: 'Wrong password' });
-    if (user.role.toLowerCase() !== role.toLowerCase())
-        return res.status(403).json({ message: 'Incorrect role selected' });
+    if (!match) return res.status(401).json({ message: 'Incorrect password. Please try again.' });
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '8h' });
-    res.json({ token, role: user.role.toLowerCase(), userId: user.id });
+    res.json({ token, role: user.role.toLowerCase(), userId: user.id, full_name: user.full_name });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -831,9 +831,19 @@ app.post('/api/test',    (req, res) => res.send('POST WORKING'));
 // log in and access the user-dashboard.html reporting portal.
 // ─────────────────────────────────────────────────────────────
 app.post('/api/auth/register', async (req, res) => {
-    const { email, password, full_name } = req.body;
+    const { email, password, full_name, role } = req.body;
     if (!email || !password || !full_name)
         return res.status(400).json({ error: 'email, password, and full_name are required' });
+
+    // Only allow self-registration for these roles; admin accounts are created by admins.
+    const ALLOWED_SELF_REG_ROLES = ['user', 'investigator', 'commander'];
+    const assignedRole = (role || 'user').toLowerCase().trim();
+    if (!ALLOWED_SELF_REG_ROLES.includes(assignedRole))
+        return res.status(400).json({ error: 'Invalid role. Choose: Community Reporter, Investigator, or Commander.' });
+
+    if (password.length < 8)
+        return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+
     try {
         const password_hash = await bcrypt.hash(password, 10);
         const { data, error } = await supabase
@@ -842,7 +852,7 @@ app.post('/api/auth/register', async (req, res) => {
                 email:        email.trim().toLowerCase(),
                 full_name:    full_name.trim(),
                 password_hash,
-                role:         'user',
+                role:         assignedRole,
                 is_active:    true,
                 created_at:   new Date().toISOString(),
             }])

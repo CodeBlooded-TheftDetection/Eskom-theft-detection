@@ -1,47 +1,72 @@
-// Unified sidebar builder for all admin pages
-(function(){
-  const BASE_ITEMS = [
-    { href: 'dashboard.html',   icon: 'layout-dashboard', label: 'Main Dashboard',      roles: ['admin','investigator'] },
-    { href: 'map.html',         icon: 'map',              label: 'Map View',             roles: ['admin','investigator'] },
-    { href: 'assign.html',      icon: 'user-check',       label: 'Assign Investigator',  roles: ['admin'] },
-    { href: 'resolved.html',    icon: 'check-circle',     label: 'Resolved Cases',       roles: ['admin'] },
-    { href: 'caseList.html',    icon: 'list',             label: 'Case List',            roles: ['admin','investigator'] },
-    { href: 'report.html',      icon: 'bar-chart-3',      label: 'Report Screen',        roles: ['admin'] }
-  ];
+// js/sidebar.js — Single source of truth for role-aware navigation
+(function () {
+  // Each role gets its own ordered menu — no shared base array to confuse things
+  const MENUS = {
+    admin: [
+      { href: 'dashboard.html',   icon: 'layout-dashboard', label: 'Dashboard' },
+      { href: 'map.html',         icon: 'map',              label: 'Map View' },
+      { href: 'caseList.html',    icon: 'list',             label: 'Case List' },
+      { href: 'assign.html',      icon: 'user-check',       label: 'Assign Cases' },
+      { href: 'resolved.html',    icon: 'check-circle',     label: 'Resolved Cases' },
+      { href: 'report.html',      icon: 'bar-chart-3',      label: 'Reports' },
+      { href: 'evaluations.html', icon: 'star',             label: 'Evaluations' },
+      { href: 'admin.html',       icon: 'settings',         label: 'User Management' },
+    ],
+    commander: [
+      { href: 'dashboard.html',   icon: 'layout-dashboard', label: 'Dashboard' },
+      { href: 'map.html',         icon: 'map',              label: 'Map View' },
+      { href: 'caseList.html',    icon: 'list',             label: 'Case List' },
+      { href: 'assign.html',      icon: 'user-check',       label: 'Assign Cases' },
+      { href: 'resolved.html',    icon: 'check-circle',     label: 'Resolved Cases' },
+      { href: 'report.html',      icon: 'bar-chart-3',      label: 'Reports' },
+      { href: 'evaluations.html', icon: 'star',             label: 'Evaluations' },
+    ],
+    investigator: [
+      { href: 'dashboard.html',   icon: 'layout-dashboard', label: 'Dashboard' },
+      { href: 'map.html',         icon: 'map',              label: 'Map View' },
+      { href: 'caseList.html',    icon: 'list',             label: 'Case List' },
+      { href: 'record.html',      icon: 'edit-3',           label: 'Record Outcome' },
+      { href: 'resolved.html',    icon: 'check-circle',     label: 'Resolved Cases' },
+    ],
+  };
 
   function buildSidebar() {
+    const token = localStorage.getItem('token');
+    const role  = (localStorage.getItem('userRole') || '').toLowerCase();
+
+    if (!token)        { window.location.href = 'login.html';        return; }
+    if (role === 'user') { window.location.href = 'user-dashboard.html'; return; }
+
     const menuEl = document.getElementById('sidebarMenu') || document.querySelector('.menu');
     if (!menuEl) return;
 
-    const userRole = (localStorage.getItem('userRole') || 'investigator').toLowerCase();
-    const currentPage = window.location.pathname.split('/').pop();
+    const items   = MENUS[role] || MENUS.investigator;
+    const current = window.location.pathname.split('/').pop();
 
-    const visible = BASE_ITEMS.filter(i => i.roles.includes(userRole));
-
-    menuEl.innerHTML = `<p class="menu-title">NAVIGATION</p>` +
-      visible.map(i => `
-        <a href="${i.href}" class="${i.href === currentPage ? 'active' : ''}" style="display:flex;align-items:center;gap:10px;">
+    menuEl.innerHTML =
+      `<p class="menu-title">NAVIGATION</p>` +
+      items.map(i =>
+        `<a href="${i.href}" class="${i.href === current ? 'active' : ''}" style="display:flex;align-items:center;gap:10px;">
           <i data-lucide="${i.icon}"></i>
           <span class="menu-label">${i.label}</span>
-        </a>
-      `).join('') +
-      `
-      <a href="login.html" id="logoutBtn" style="display:flex;align-items:center;gap:10px;">
+        </a>`
+      ).join('') +
+      `<a href="login.html" id="logoutBtn" style="display:flex;align-items:center;gap:10px;margin-top:8px;opacity:0.8;">
         <i data-lucide="log-out"></i>
         <span class="menu-label">Logout</span>
       </a>`;
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    const logout = document.getElementById('logoutBtn');
-    if (logout) logout.addEventListener('click', (e) => { localStorage.clear(); });
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', () => localStorage.clear());
   }
 
-  // Build on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', buildSidebar);
-  } else buildSidebar();
+  } else {
+    buildSidebar();
+  }
 
-  // Expose for manual rebuild if needed
   window.buildUnifiedSidebar = buildSidebar;
 })();
