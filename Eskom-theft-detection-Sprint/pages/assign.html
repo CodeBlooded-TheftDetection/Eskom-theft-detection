@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assign Investigator — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+      <link rel="stylesheet" href="../css/shared-navbar.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body, .layout, .main { height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; background: #f8fafc; }
+    .main { display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Header ──────────────────────────────────────────────── */
+    .topbar {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #2563eb 100%) !important;
+      padding: 22px 28px !important;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 4px 24px rgba(30,58,138,0.2);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .topbar::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(147,197,253,0.08);
+      pointer-events: none;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative; z-index: 1;
+    }
+    .topbar h1 {
+      font-size: 22px; font-weight: 700;
+      color: #fff; letter-spacing: -0.3px; margin: 0 0 4px;
+    }
+    .topbar p {
+      font-size: 13px; color: rgba(255,255,255,0.55); margin: 0;
+    }
+    .topbar-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(147,197,253,0.15);
+      border: 1px solid rgba(147,197,253,0.35);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600; color: #bfdbfe;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .topbar-badge::before {
+      content: ''; width: 7px; height: 7px;
+      border-radius: 50%; background: #60a5fa;
+      box-shadow: 0 0 6px #60a5fa;
+    }
+
+    /* ── Page body ───────────────────────────────────────────── */
+    .page-body {
+      flex: 1; overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 24px 28px;
+    }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .panel {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 20px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+    .panel:last-child { animation-delay: 0.08s; }
+
+    .panel-header {
+      padding: 20px 22px 0;
+      flex-shrink: 0;
+    }
+    .panel-header h2 {
+      font-size: 15px; font-weight: 700;
+      color: #1e3a8a; margin: 0 0 4px;
+      letter-spacing: -0.2px;
+    }
+    .panel-header p {
+      font-size: 12.5px; color: #9ca3af; margin: 0;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 22px 22px;
+    }
+    .panel-body::-webkit-scrollbar { width: 5px; }
+    .panel-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+    .panel-footer {
+      padding: 16px 22px;
+      border-top: 1px solid #f1f5f9;
+      flex-shrink: 0;
+    }
+
+    /* ── Filter tabs ─────────────────────────────────────────── */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin: 16px 22px 0;
+      flex-shrink: 0;
+    }
+    .filter-tab {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 9px;
+      border: 1.5px solid #e5e9ee;
+      background: #f8fafc;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      display: flex; align-items: center;
+      justify-content: center; gap: 5px;
+    }
+    .filter-tab .tab-count {
+      background: #e5e9ee;
+      color: #6b7280;
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .filter-tab:hover { border-color: #3b82f6; color: #1d4ed8; }
+    .filter-tab.active {
+      background: #1e3a8a;
+      border-color: #1e3a8a;
+      color: #fff;
+    }
+    .filter-tab.active .tab-count {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+    .filter-tab.tab-available.active { background: #2563eb; border-color: #2563eb; }
+    .filter-tab.tab-occupied.active  { background: #d97706; border-color: #d97706; }
+
+    /* ── Investigator cards ──────────────────────────────────── */
+    .inv-card {
+      padding: 14px 16px;
+      border: 1.5px solid #e5e9ee;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background: #fff;
+      transition: all 0.18s;
+      position: relative;
+    }
+    .inv-card:last-child { margin-bottom: 0; }
+    .inv-card:hover { border-color: #3b82f6; box-shadow: 0 2px 12px rgba(59,130,246,0.10); }
+    .inv-card.selected {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+      background: #eff6ff;
+    }
+    .inv-card.inactive {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+    .inv-card.inactive:hover { border-color: #f59e0b; }
+
+    .inv-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .inv-avatar-wrap { display: flex; align-items: center; gap: 10px; }
+    .inv-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .inv-avatar.available { background: linear-gradient(135deg, #1e40af, #2563eb); }
+    .inv-avatar.occupied  { background: linear-gradient(135deg, #92400e, #d97706); }
+    .inv-avatar.inactive  { background: linear-gradient(135deg, #4b5563, #9ca3af); }
+
+    .inv-info-name {
+      font-size: 13.5px; font-weight: 700; color: #1e3a8a; margin: 0 0 2px;
+    }
+    .inv-info-sub {
+      font-size: 11.5px; color: #9ca3af; margin: 0;
+    }
+    .inv-status-badge {
+      font-size: 10.5px; font-weight: 700;
+      padding: 3px 9px; border-radius: 20px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .inv-status-badge.available { background: #dcfce7; color: #15803d; }
+    .inv-status-badge.occupied  { background: #fef3c7; color: #92400e; }
+    .inv-status-badge.inactive  { background: #f3f4f6; color: #6b7280; }
+
+    .inv-stats {
+      display: flex; gap: 12px;
+      font-size: 11.5px; color: #6b7280; margin-bottom: 10px;
+    }
+    .inv-stats span { display: flex; align-items: center; gap: 4px; }
+    .inv-stats strong { color: #374151; }
+
+    .progress-wrap { }
+    .progress-meta {
+      display: flex; justify-content: space-between;
+      font-size: 10.5px; color: #9ca3af; margin-bottom: 4px;
+    }
+    .progress-bar {
+      height: 5px; background: #f1f5f9; border-radius: 10px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 10px;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      transition: width 0.4s ease;
+    }
+    .progress-fill.occupied { background: linear-gradient(90deg, #d97706, #fbbf24); }
+
+    /* ── Case search ─────────────────────────────────────────── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .search-wrap svg.search-icon {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af; width: 15px; height: 15px;
+      pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 11px 14px 11px 36px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e9ee;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      background: #f8fafc;
+      color: #1e3a8a;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+      background: #fff;
+    }
+    .search-wrap input::placeholder { color: #b0bec5; }
+    .search-wrap svg.clear-icon {
+      position: absolute; right: 11px; top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af; width: 15px; height: 15px;
+      cursor: pointer; display: none;
+    }
+    .search-wrap input:not(:placeholder-shown) ~ svg.clear-icon { display: block; }
+
+    /* Case results list */
+    .case-results {
+      border: 1.5px solid #e5e9ee;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .case-results::-webkit-scrollbar { width: 5px; }
+    .case-results::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+    .case-result-item {
+      padding: 11px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .case-result-item:last-child { border-bottom: none; }
+    .case-result-item:hover { background: #eff6ff; }
+    .case-result-item.selected { background: #eff6ff; border-left: 3px solid #2563eb; }
+
+    .case-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px; font-weight: 700;
+      color: #1e3a8a; white-space: nowrap; flex-shrink: 0;
+    }
+    .case-suspect { font-size: 13px; font-weight: 500; color: #374151; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .case-risk-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 20px;
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .case-risk-badge.high   { background: #fee2e2; color: #b91c1c; }
+    .case-risk-badge.mid    { background: #fef3c7; color: #92400e; }
+    .case-risk-badge.low    { background: #dcfce7; color: #15803d; }
+    .case-assigned-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .case-assigned-dot.assigned   { background: #f59e0b; }
+    .case-assigned-dot.unassigned { background: #d1d5db; }
+
+    .case-empty {
+      padding: 28px 20px; text-align: center;
+      color: #9ca3af; font-size: 13px;
+    }
+
+    /* ── Case summary ────────────────────────────────────────── */
+    #caseSummary {
+      background: #f8fafc;
+      border: 1px solid #e5e9ee;
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-height: 80px;
+      font-size: 13px;
+      color: #374151;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+    #caseSummary.has-data { background: #eff6ff; border-color: #bfdbfe; }
+
+    .summary-header {
+      display: flex; gap: 8px; align-items: center;
+      flex-wrap: wrap; margin-bottom: 8px;
+    }
+    .summary-case-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 700; color: #1e3a8a;
+    }
+    .summary-outcome {
+      font-size: 11px; color: #9ca3af; font-weight: 500;
+    }
+    .summary-suspect {
+      font-size: 14px; font-weight: 700; color: #1e3a8a; margin: 0 0 4px;
+    }
+    .summary-desc {
+      font-size: 12.5px; color: #6b7280; margin: 0 0 8px; line-height: 1.5;
+    }
+    .summary-inv {
+      font-size: 11.5px; color: #9ca3af;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .summary-inv strong { color: #374151; }
+
+    /* ── Assign button + message ─────────────────────────────── */
+    .btn-assign {
+      width: 100%;
+      padding: 13px;
+      border-radius: 11px;
+      border: none;
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 2px 12px rgba(37,99,235,0.25);
+    }
+    .btn-assign:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+    }
+    .btn-assign:active { transform: translateY(0); }
+    .btn-assign svg { width: 16px; height: 16px; }
+
+    #message {
+      margin-top: 10px;
+      border-radius: 9px;
+      font-size: 13px; font-weight: 600;
+      display: none;
+      padding: 10px 14px;
+    }
+    #message.show { display: block; }
+    #message.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    #message.error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    #message.info    { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+    /* ── Selected cases bar ─────────────────────────────────── */
+    #selectedCasesBar { display: none !important; }
+    #selectedCasesBar.visible { display: flex !important; }
+
+    /* ── Animations ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Legend ─────────────────────────────────────────────── */
+    .legend {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      font-size: 11px; color: #9ca3af;
+      margin-bottom: 4px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu" id="sidebarMenu"></nav>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- Header -->
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div>
+          <h1>Assign Investigator</h1>
+          <p>Case Assignment Panel — select an investigator and search for a case</p>
+        </div>
+        <div class="topbar-badge">Admin Panel</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- ══════════════════════════════════════════════════════
+           LEFT PANEL — Investigators
+      ══════════════════════════════════════════════════════ -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Investigators</h2>
+          <p>Click a card to select an investigator, then assign one or more cases</p>
+        </div>
+
+        <!-- Sort controls -->
+        <div class="filter-tabs">
+          <span style="font-size:11.5px;color:#6b7280;font-weight:600;align-self:center;white-space:nowrap;">Sort by cases:</span>
+          <button class="filter-tab active" data-sort="desc" onclick="setSortOrder('desc')">
+            Most assigned <span class="tab-count" id="sortDescIcon">↓</span>
+          </button>
+          <button class="filter-tab" data-sort="asc" onclick="setSortOrder('asc')">
+            Least assigned <span class="tab-count" id="sortAscIcon">↑</span>
+          </button>
+        </div>
+
+        <div class="panel-body">
+          <div class="legend" style="margin-bottom:12px;">
+            <div class="legend-item"><div class="legend-dot" style="background:#2563eb;"></div> Active investigator</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#9ca3af;"></div> Inactive</div>
+          </div>
+
+          <div id="investigatorList">
+            <p style="color:#9ca3af; font-size:13px;">Loading investigators…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           RIGHT PANEL — Case Search & Assignment
+      ══════════════════════════════════════════════════════ -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Select Cases</h2>
+          <p>Search and click cases to select them — multiple selections allowed</p>
+        </div>
+
+        <div class="panel-body">
+
+          <!-- Case search -->
+          <div class="search-wrap" style="margin-bottom:10px;">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="caseSearch" placeholder="Search by case number or suspect name…" oninput="filterCases()"/>
+            <svg class="clear-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" onclick="clearCaseSearch()"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+
+          <!-- Legend for case dots -->
+          <div class="legend" style="margin-bottom:8px;">
+            <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div> Already assigned</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d1d5db;"></div> Unassigned</div>
+          </div>
+
+          <!-- Results list -->
+          <div class="case-results" id="caseResults">
+            <div class="case-empty">Loading cases…</div>
+          </div>
+
+          <!-- Case summary -->
+          <div id="caseSummary">
+            <p style="color:#9ca3af; font-size:13px; margin:0;">Search and select a case above to see its details.</p>
+          </div>
+
+        </div>
+
+        <div class="panel-footer">
+          <div id="selectedCasesBar" style="display:none;margin-bottom:10px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;font-size:12.5px;font-weight:600;color:#1d4ed8;display:flex;align-items:center;justify-content:space-between;">
+            <span id="selectedCasesLabel">0 cases selected</span>
+            <button onclick="clearCaseSelections()" style="background:none;border:none;color:#1d4ed8;cursor:pointer;font-size:12px;text-decoration:underline;padding:0;">Clear all</button>
+          </div>
+          <button class="btn-assign" onclick="assignInvestigator()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Assign Investigator to Selected Cases
+          </button>
+          <p id="message"></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>lucide.createIcons();</script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/assign.js"></script>
+  <script src="../js/shared-navbar.js"></script>
+</body>
+</html>
