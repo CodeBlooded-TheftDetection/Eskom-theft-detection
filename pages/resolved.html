@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resolved Cases — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+      <link rel="stylesheet" href="../css/shared-navbar.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body, .layout, .main { height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; background: #f1f5f9; }
+
+    .main { display: flex; flex-direction: column; overflow: hidden; }
+
+    .page-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0 28px 24px;
+      gap: 0;
+    }
+
+    /* ── Header ────────────────────────────────────────────── */
+    .topbar { flex-shrink: 0; }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar-title h1 { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 4px; }
+    .topbar-title p  { font-size: 13px; color: rgba(255,255,255,0.7); margin: 0; }
+    .topbar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .topbar-badge::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #93c5fd;
+    }
+
+    /* ── Section label ────────────────────────────────────────── */
+    .section-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6b7280;
+      margin: 20px 0 10px;
+    }
+
+    /* ── Stats Ribbon ─────────────────────────────────────────── */
+    .resolution-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 6px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .res-stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 20px 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .res-stat-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      transform: translateY(-1px);
+    }
+    .res-stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .res-stat-card.green::after  { background: linear-gradient(90deg,#16a34a,#4ade80); }
+    .res-stat-card.blue::after   { background: linear-gradient(90deg,#2563eb,#60a5fa); }
+    .res-stat-card.purple::after { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
+    .res-stat-card.orange::after { background: linear-gradient(90deg,#d97706,#fbbf24); }
+
+    .stat-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .stat-icon {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .res-stat-card.green  .stat-icon { background: #dcfce7; color: #16a34a; }
+    .res-stat-card.blue   .stat-icon { background: #dbeafe; color: #2563eb; }
+    .res-stat-card.purple .stat-icon { background: #ede9fe; color: #7c3aed; }
+    .res-stat-card.orange .stat-icon { background: #fef3c7; color: #d97706; }
+    .stat-icon svg { width: 17px; height: 17px; }
+
+    .res-stat-card h4 {
+      font-size: 10.5px;
+      color: #9ca3af;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0;
+    }
+    .res-stat-card p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 2px 0 0;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+    .res-stat-card.green  p { color: #15803d; }
+    .res-stat-card.blue   p { color: #1d4ed8; }
+    .res-stat-card.purple p { color: #6d28d9; }
+    .res-stat-card.orange p { color: #b45309; }
+    .res-stat-card span {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* ── Toolbar ─────────────────────────────────────────────── */
+    .list-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 16px 0 10px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.4s 0.1s ease both;
+    }
+    .search-wrap {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      width: 15px; height: 15px;
+      pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 10px 14px 10px 36px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e9ee;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      background: #fff;
+      color: #1a2e1a;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
+    }
+    .search-wrap input::placeholder { color: #b0bec5; }
+
+    .toolbar-select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e9ee;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: #fff;
+      color: #374151;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .toolbar-select:focus { outline: none; border-color: #2563eb; }
+
+    .toolbar-count {
+      font-size: 12.5px;
+      color: #6b7280;
+      white-space: nowrap;
+      padding: 0 4px;
+      font-weight: 500;
+    }
+
+    /* ── Table ───────────────────────────────────────────────── */
+    .table-wrap {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 20px rgba(0,0,0,0.05);
+      animation: fadeUp 0.4s 0.15s ease both;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    thead { position: sticky; top: 0; z-index: 10; }
+    thead th {
+      background: #052e16;
+      color: rgba(255,255,255,0.75);
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 14px 18px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 13px 0 0 0; }
+    thead th:last-child  { border-radius: 0 13px 0 0; }
+    thead th.sort-col { color: #86efac; }
+
+    tbody tr {
+      border-bottom: 1px solid #f3f7f3;
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f0fdf4; }
+    tbody td {
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #374151;
+      vertical-align: middle;
+    }
+
+    .case-num-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+
+    /* Risk badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+    }
+    .badge.high  { background: #fee2e2; color: #b91c1c; }
+    .badge.high::before { background: #ef4444; }
+    .badge.mid, .badge.medium { background: #fef3c7; color: #92400e; }
+    .badge.mid::before, .badge.medium::before { background: #f59e0b; }
+    .badge.low   { background: #dcfce7; color: #15803d; }
+    .badge.low::before { background: #22c55e; }
+
+    /* Days-to-close badge */
+    .days-badge {
+      display: inline-flex;
+      align-items: center;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 7px;
+      gap: 4px;
+    }
+
+    /* Investigator cell */
+    .inv-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .inv-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#1e3a8a,#2563eb);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .inv-name { font-size: 13px; color: #374151; font-weight: 500; }
+
+    /* Date cell */
+    .date-cell { font-size: 12.5px; color: #6b7280; white-space: nowrap; }
+
+    /* Action buttons */
+    .tbl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 13px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 4px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tbl-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+    .tbl-btn svg { width: 13px; height: 13px; }
+
+    .tbl-btn-teal   { background: #0d9488; color: #fff; }
+    .tbl-btn-teal:hover { background: #0f766e; }
+    .tbl-btn-purple { background: #7c3aed; color: #fff; }
+    .tbl-btn-purple:hover { background: #6d28d9; }
+    .tbl-btn-outline {
+      background: #fff;
+      color: #374151;
+      border: 1.5px solid #e5e9ee;
+    }
+    .tbl-btn-outline:hover { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+
+    /* Empty / loading state */
+    .state-row td {
+      text-align: center;
+      padding: 72px 20px;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+    .state-row .state-icon {
+      width: 48px; height: 48px;
+      background: #eff6ff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      color: #2563eb;
+    }
+    .state-row .state-icon svg { width: 22px; height: 22px; }
+
+    /* ── Pagination ──────────────────────────────────────────── */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0 0;
+      flex-wrap: wrap;
+      gap: 10px;
+      animation: fadeUp 0.4s 0.2s ease both;
+    }
+    .page-info {
+      font-size: 12.5px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+    .page-btns  { display: flex; gap: 5px; }
+    .page-btn {
+      padding: 7px 13px;
+      border-radius: 8px;
+      border: 1.5px solid #e5e9ee;
+      background: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #374151;
+      transition: all 0.15s;
+    }
+    .page-btn:hover:not(:disabled) {
+      border-color: #16a34a;
+      color: #16a34a;
+    }
+    .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .page-btn.active {
+      background: #16a34a;
+      color: #fff;
+      border-color: #16a34a;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.30);
+    }
+
+    /* ── Animations ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────────── */
+    .table-wrap::-webkit-scrollbar { width: 6px; }
+    .table-wrap::-webkit-scrollbar-track { background: transparent; }
+    .table-wrap::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+    .table-wrap::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+    <nav class="menu" id="sidebarMenu"></nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Header -->
+    <header class="topbar" style="flex-shrink:0;">
+      <div class="topbar-inner">
+        <div class="topbar-title">
+          <h1>Resolved Cases</h1>
+          <p>Closed investigations — resolution history, time-to-close &amp; final reports</p>
+        </div>
+        <div class="topbar-badge">Archive Active</div>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- ── Performance Stats ─────────────────────────────── -->
+      <div class="section-label">Resolution Performance</div>
+      <div class="resolution-stats">
+
+        <div class="res-stat-card green">
+          <div class="stat-card-top">
+            <div>
+              <h4>Total Resolved</h4>
+              <p id="statResTotal">—</p>
+            </div>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+          </div>
+          <span>All-time closed cases</span>
+        </div>
+
+        <div class="res-stat-card blue">
+          <div class="stat-card-top">
+            <div>
+              <h4>Avg. Days to Close</h4>
+              <p id="statAvgDays">—</p>
+            </div>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+          <span>From report to resolution</span>
+        </div>
+
+        <div class="res-stat-card purple">
+          <div class="stat-card-top">
+            <div>
+              <h4>Resolved This Month</h4>
+              <p id="statThisMonth">—</p>
+            </div>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+          </div>
+          <span id="statMonthLabel">—</span>
+        </div>
+
+        <div class="res-stat-card orange">
+          <div class="stat-card-top">
+            <div>
+              <h4>Fastest Resolution</h4>
+              <p id="statFastest">—</p>
+            </div>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+          </div>
+          <span>Days — personal best</span>
+        </div>
+
+      </div>
+
+      <!-- ── Toolbar ─────────────────────────────────────────── -->
+      <div class="list-toolbar">
+        <div class="search-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Search by case number, suspect, or investigator…"/>
+        </div>
+        <select class="toolbar-select" id="filterRisk">
+          <option value="">All Risk Levels</option>
+          <option value="HIGH">HIGH Risk</option>
+          <option value="MID">MID Risk</option>
+          <option value="LOW">LOW Risk</option>
+        </select>
+        <span class="toolbar-count" id="countLabel">Loading…</span>
+      </div>
+
+      <!-- ── Resolved Cases Table ───────────────────────────── -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Case #</th>
+              <th>Suspect</th>
+              <th>Risk Level</th>
+              <th>Investigator</th>
+              <th>Reported</th>
+              <th class="sort-col">Resolved On</th>
+              <th class="sort-col">Days to Close</th>
+              <th id="actionsHeaderResolved">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr class="state-row">
+              <td colspan="8">
+                <div class="state-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                Loading resolved cases…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Pagination ─────────────────────────────────────── -->
+      <div class="pagination">
+        <span class="page-info" id="pageInfo">—</span>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ── AUTH ──────────────────────────────────────────────────────
+const token    = localStorage.getItem("token");
+const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
+if (!token) window.location.href = "login.html";
+if (userRole === "user") window.location.href = "user-dashboard.html";
+
+const BASE_URL    = "http://localhost:3000";
+const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+
+// Hide the Actions column header for investigators
+if (userRole === "investigator") {
+  const actionsHeader = document.getElementById("actionsHeaderResolved");
+  if (actionsHeader) actionsHeader.style.display = "none";
+}
+
+document.getElementById("logoutLink")?.addEventListener("click", e => {
+  e.preventDefault(); localStorage.clear(); window.location.href = "login.html";
+});
+
+const PAGE_SIZE   = 15;
+let   currentPage = 1;
+let   allResolved = [];
+let   filtered    = [];
+
+// ── LOAD RESOLVED CASES ───────────────────────────────────────
+async function loadResolvedCases() {
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = `<tr class="state-row"><td colspan="8">
+    <div class="state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    Loading resolved cases…
+  </td></tr>`;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear(); window.location.href = "login.html"; return;
+    }
+    const raw = await res.json();
+    allResolved = (Array.isArray(raw) ? raw : [])
+      .filter(c => (c.outcome || "").toUpperCase() === "RESOLVED");
+
+    computeStats();
+    applyFilters();
+  } catch (err) {
+    tbody.innerHTML = `<tr class="state-row"><td colspan="8">
+      <div class="state-icon" style="background:#fef2f2;color:#ef4444;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      Could not load cases: ${err.message}
+    </td></tr>`;
+  }
+}
+
+// ── COMPUTE RESOLUTION STATS ──────────────────────────────────
+function computeStats() {
+  const total = allResolved.length;
+  document.getElementById("statResTotal").textContent = total;
+
+  const daysArr = allResolved
+    .filter(c => c.created_at && c.resolved_at)
+    .map(c => {
+      const created  = new Date(c.created_at);
+      const resolved = new Date(c.resolved_at);
+      return Math.max(0, Math.round((resolved - created) / (1000 * 60 * 60 * 24)));
+    });
+
+  if (daysArr.length) {
+    const avg     = Math.round(daysArr.reduce((s, d) => s + d, 0) / daysArr.length);
+    const fastest = Math.min(...daysArr);
+    document.getElementById("statAvgDays").textContent = avg;
+    document.getElementById("statFastest").textContent = fastest;
+  } else {
+    document.getElementById("statAvgDays").textContent = "N/A";
+    document.getElementById("statFastest").textContent = "N/A";
+  }
+
+  const now       = new Date();
+  const thisMonth = allResolved.filter(c => {
+    if (!c.resolved_at) return false;
+    const d = new Date(c.resolved_at);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  document.getElementById("statThisMonth").textContent = thisMonth.length;
+  document.getElementById("statMonthLabel").textContent =
+    now.toLocaleString("en-ZA", { month: "long", year: "numeric" });
+}
+
+// ── FILTER + SEARCH ───────────────────────────────────────────
+function applyFilters() {
+  const search     = document.getElementById("searchInput").value.toLowerCase();
+  const riskFilter = document.getElementById("filterRisk").value;
+
+  filtered = allResolved.filter(c => {
+    const invName  = c.investigators ? (c.investigators.full_name || c.investigators.email) : "";
+    const matchSrc = !search ||
+      (c.case_number  || "").toLowerCase().includes(search) ||
+      (c.suspect_name || "").toLowerCase().includes(search) ||
+      invName.toLowerCase().includes(search);
+    const matchRisk = !riskFilter || (c.risk_level || "").toUpperCase() === riskFilter;
+    return matchSrc && matchRisk;
+  });
+
+  currentPage = 1;
+  renderTable();
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────
+function renderTable() {
+  const tbody      = document.getElementById("tableBody");
+  const total      = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  currentPage      = Math.min(currentPage, totalPages);
+
+  const start     = (currentPage - 1) * PAGE_SIZE;
+  const pageCases = filtered.slice(start, start + PAGE_SIZE);
+
+  document.getElementById("countLabel").textContent =
+    `${total} resolved case${total !== 1 ? "s" : ""}`;
+
+  if (!pageCases.length) {
+    tbody.innerHTML = `<tr class="state-row"><td colspan="8">
+      <div class="state-icon" style="background:#f3f4f6;color:#9ca3af;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      No resolved cases match your search.
+    </td></tr>`;
+    renderPagination(0, 0);
+    return;
+  }
+
+  const isAdmin = userRole === "admin";
+
+  tbody.innerHTML = pageCases.map(c => {
+    const displayId  = c.case_number || c.id;
+    const riskClass  = (c.risk_level || "low").toLowerCase();
+    const riskLabel  = (c.risk_level || "LOW").toUpperCase();
+    const invName    = c.investigators
+      ? (c.investigators.full_name || c.investigators.email)
+      : "Unassigned";
+    const invInitial = invName === "Unassigned" ? "?" : invName.charAt(0).toUpperCase();
+    const reported   = c.created_at  ? new Date(c.created_at).toLocaleDateString("en-ZA")  : "N/A";
+    const resolvedOn = c.resolved_at ? new Date(c.resolved_at).toLocaleDateString("en-ZA") : "N/A";
+
+    let daysLabel = "<span style='color:#9ca3af;'>—</span>";
+    if (c.created_at && c.resolved_at) {
+      const days = Math.max(0, Math.round(
+        (new Date(c.resolved_at) - new Date(c.created_at)) / (1000 * 60 * 60 * 24)
+      ));
+      daysLabel = `<span class="days-badge">${days}&nbsp;day${days !== 1 ? "s" : ""}</span>`;
+    }
+
+    const reopenBtn = isAdmin
+      ? `<button class="tbl-btn tbl-btn-outline" onclick="reopenCase('${c.id}')">Reopen</button>`
+      : "";
+
+    // Investigators see no actions column at all
+    const actionCell = isAdmin
+      ? `<td>
+          <button class="tbl-btn tbl-btn-purple" onclick="goReport('${c.id}')">Report</button>
+          ${reopenBtn}
+        </td>`
+      : "";
+
+    return `
+      <tr>
+        <td class="case-num-cell">${displayId}</td>
+        <td style="font-weight:500;color:#1f2937;">${c.suspect_name || "Unknown"}</td>
+        <td><span class="badge ${riskClass}">${riskLabel}</span></td>
+        <td>
+          <div class="inv-cell">
+            <div class="inv-avatar">${invInitial}</div>
+            <span class="inv-name">${invName}</span>
+          </div>
+        </td>
+        <td class="date-cell">${reported}</td>
+        <td class="date-cell" style="color:#15803d;font-weight:600;">${resolvedOn}</td>
+        <td>${daysLabel}</td>
+        ${actionCell}
+      </tr>`;
+  }).join("");
+
+  renderPagination(currentPage, totalPages);
+  lucide.createIcons();
+}
+
+// ── PAGINATION ────────────────────────────────────────────────
+function renderPagination(page, totalPages) {
+  document.getElementById("pageInfo").textContent =
+    totalPages ? `Page ${page} of ${totalPages}` : "No results";
+  const btns = document.getElementById("pageBtns");
+  btns.innerHTML = "";
+
+  if (!totalPages) return;
+
+  const prev = document.createElement("button");
+  prev.className = "page-btn";
+  prev.textContent = "← Prev";
+  prev.disabled    = page <= 1;
+  prev.onclick = () => { currentPage--; renderTable(); };
+  btns.appendChild(prev);
+
+  const start = Math.max(1, page - 2);
+  const end   = Math.min(totalPages, start + 4);
+  for (let i = start; i <= end; i++) {
+    const b = document.createElement("button");
+    b.className   = `page-btn${i === page ? " active" : ""}`;
+    b.textContent = i;
+    b.onclick     = ((pg) => () => { currentPage = pg; renderTable(); })(i);
+    btns.appendChild(b);
+  }
+
+  const next = document.createElement("button");
+  next.className = "page-btn";
+  next.textContent = "Next →";
+  next.disabled    = page >= totalPages;
+  next.onclick = () => { currentPage++; renderTable(); };
+  btns.appendChild(next);
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────
+function viewDetail(caseId) {
+  localStorage.setItem("preselectedCaseId", caseId);
+  window.location.href = "caseList.html";
+}
+
+function goReport(caseId) {
+  localStorage.setItem("selectedCaseId", caseId);
+  window.location.href = "report.html";
+}
+
+async function reopenCase(caseId) {
+  const c = allResolved.find(x => String(x.id) === String(caseId));
+  const displayId = c ? (c.case_number || c.id) : caseId;
+  if (!confirm(`Reopen case ${displayId}? It will be set back to OPEN.`)) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases/${caseId}/reopen`, {
+      method: "POST",
+      headers: authHeaders,
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
+    alert(`Case ${displayId} has been reopened.`);
+    await loadResolvedCases();
+  } catch (err) {
+    alert(`Failed to reopen: ${err.message}`);
+  }
+}
+
+// ── LISTENERS ─────────────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input",  applyFilters);
+document.getElementById("filterRisk").addEventListener("change",  applyFilters);
+
+// ── INIT ──────────────────────────────────────────────────────
+loadResolvedCases();
+</script>
+<script src="../js/sidebar.js"></script>
+  <script src="../js/shared-navbar.js"></script>
+</body>
+</html>

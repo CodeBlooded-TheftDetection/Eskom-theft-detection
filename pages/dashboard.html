@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Eskom Theft Detection</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+      <link rel="stylesheet" href="../css/shared-navbar.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Places API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4OWWhPrqkjlRMg3HYaAVvuHp5SK9ykqM&libraries=places"></script>
+  <style>
+    /* ── TOPBAR ROLE COLORS ─────────────────────────────────── */
+    body.role-admin .topbar,
+    body.role-commander .topbar { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+    body.role-investigator .topbar { background: linear-gradient(135deg, #15803d 0%, #10b981 100%); }
+
+    .role-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* ── PAGE BODY ──────────────────────────────────────────── */
+    .main { overflow: hidden; background: #f1f5f9; display: flex; flex-direction: column; }
+
+    .page-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 24px 28px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── KPI CARDS ──────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 22px 20px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .kpi-card:hover {
+      box-shadow: 0 6px 24px rgba(15,23,42,0.09);
+      transform: translateY(-2px);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .kpi-blue::before  { background: #2563eb; }
+    .kpi-red::before   { background: #ef4444; }
+    .kpi-amber::before { background: #f59e0b; }
+    .kpi-green::before { background: #10b981; }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 10px;
+    }
+
+    .kpi-value {
+      font-size: 38px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .kpi-sub { font-size: 12px; color: #94a3b8; }
+
+    .kpi-icon {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px; height: 48px;
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    .kpi-blue .kpi-icon  { background: #dbeafe; color: #2563eb; }
+    .kpi-red .kpi-icon   { background: #fee2e2; color: #ef4444; }
+    .kpi-amber .kpi-icon { background: #fef3c7; color: #d97706; }
+    .kpi-green .kpi-icon { background: #dcfce7; color: #16a34a; }
+
+    /* Stat card interactivity hook (used by dashboard.js) */
+    .stat-card-interactive:hover {
+      box-shadow: 0 6px 24px rgba(37,99,235,0.15) !important;
+      transform: translateY(-3px) !important;
+    }
+
+    /* ── SECTION CARDS ──────────────────────────────────────── */
+    .section-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .section-card-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-card-head h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .section-card-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      margin: 3px 0 0;
+    }
+
+    .section-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2563eb;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .section-link:hover { background: #dbeafe; }
+
+    /* ── QUICK ACTIONS BAR ──────────────────────────────────── */
+    .quick-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 16px 20px;
+    }
+
+    .quick-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1.5px solid #e2e8f0;
+      color: #374151;
+      background: white;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .quick-btn:hover {
+      border-color: #2563eb;
+      color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .quick-btn-primary {
+      border-color: #16a34a;
+      color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .quick-btn-primary:hover {
+      background: #dcfce7;
+      border-color: #16a34a;
+      color: #16a34a;
+    }
+
+    /* ── CHARTS ROW ─────────────────────────────────────────── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .chart-wrap { height: 210px; position: relative; }
+
+    /* ── CASE CARDS ─────────────────────────────────────────── */
+    #casesContainer { display: grid; gap: 12px; padding: 16px 20px; }
+
+    .case-card {
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+      transition: box-shadow 0.2s;
+    }
+
+    .case-card:hover { box-shadow: 0 2px 12px rgba(15,23,42,0.06); }
+
+    .case-card-info { display: grid; gap: 8px; min-width: 0; }
+
+    .case-card-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    .case-card-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+    .case-tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      letter-spacing: 0.02em;
+    }
+
+    .case-tag.high { background: #fee2e2; color: #991b1b; }
+    .case-tag.mid  { background: #fef3c7; color: #92400e; }
+    .case-tag.low  { background: #dcfce7; color: #166534; }
+    .case-tag.open     { background: #dbeafe; color: #0c4a6e; }
+    .case-tag.pending  { background: #e0f2fe; color: #0369a1; }
+    .case-tag.resolved { background: #dcfce7; color: #166534; }
+
+    .case-card-subtitle { font-size: 13px; font-weight: 700; margin: 0; color: #111827; }
+    .case-card-description { margin: 0; color: #475569; font-size: 12.5px; line-height: 1.5; }
+
+    .case-card-meta {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      color: #64748b; font-size: 12px; align-items: center;
+    }
+
+    .case-card-meta span { display: inline-flex; align-items: center; gap: 5px; }
+    .case-card-actions { display: flex; align-items: center; }
+
+    .section-note {
+      padding: 10px 14px; border-radius: 10px;
+      background: #f8fafc; color: #475569;
+      font-size: 12.5px; border: 1px solid #e2e8f0;
+      margin-bottom: 10px;
+    }
+
+    .case-view-btn {
+      padding: 8px 16px; background: #2563eb; color: #ffffff;
+      border-radius: 10px; text-decoration: none;
+      font-size: 12px; font-weight: 700; transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .case-view-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    /* ── TEAM ROWS ──────────────────────────────────────────── */
+    #teamContainer { padding: 16px 20px; display: grid; gap: 12px; }
+
+    .team-list { display: grid; gap: 12px; }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 16px;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .team-row:hover { background: #eff6ff; border-color: #bfdbfe; }
+
+    .team-row-info { display: flex; gap: 12px; min-width: 0; align-items: center; }
+
+    .team-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 16px;
+      color: #1d4ed8; background: #eff6ff; flex-shrink: 0;
+    }
+
+    .team-text { min-width: 0; }
+
+    .team-name  { margin: 0; font-size: 13px; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .team-email { margin: 2px 0 0; font-size: 12px; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .team-stats { display: grid; gap: 6px; min-width: 160px; text-align: right; }
+    .team-stats span { display: inline-flex; justify-content: flex-end; gap: 8px; font-size: 12px; color: #475569; }
+    .team-progress { background: #e5e7eb; border-radius: 999px; height: 6px; overflow: hidden; }
+    .team-progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb); transition: width 0.4s ease; }
+    .team-rate { font-size: 14px; font-weight: 800; color: #2563eb; min-width: 44px; text-align: right; }
+
+    /* ── MODAL STYLES ───────────────────────────────────────── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:100; display:flex; align-items:center; justify-content:center; overflow-y:auto; }
+    .modal { background:#fff; border-radius:14px; padding:28px 32px; width:500px; max-width:95vw; box-shadow:0 8px 40px rgba(0,0,0,.18); margin:auto; }
+    .modal h3 { font-size:17px; font-weight:700; margin-bottom:12px; }
+    .modal h4 { font-size:13px; font-weight:600; color:#6b7280; margin:20px 0 12px; text-transform:uppercase; letter-spacing:.05em; }
+    .modal-row { margin-bottom:14px; }
+    .modal-row label { display:block; font-size:12px; font-weight:600; color:#6b7280; margin-bottom:5px; text-transform:uppercase; }
+    .modal-row input,.modal-row select,.modal-row textarea { width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid #e5e9f5; font-family:inherit; font-size:13.5px; box-sizing:border-box; }
+    .modal-row textarea { resize:vertical; min-height:80px; }
+    .modal-row input:focus,.modal-row select:focus,.modal-row textarea:focus { outline:none; border-color:#2563eb; }
+    .autocomplete-suggestions { position:absolute; top:100%; left:0; right:0; background:#fff; border:1.5px solid #e5e9f5; border-top:none; border-radius:0 0 8px 8px; max-height:200px; overflow-y:auto; z-index:101; display:none; }
+    .autocomplete-suggestions.active { display:block; }
+    .autocomplete-item { padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9; font-size:13px; }
+    .autocomplete-item:hover { background:#f8fafc; }
+    .autocomplete-item-address { font-weight:600; color:#0f1a3e; }
+    .autocomplete-item-city { font-size:12px; color:#6b7280; }
+    .case-number-preview { background:#f0f4ff; padding:12px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2563eb; display:none; }
+    .case-number-preview.active { display:block; }
+    .case-number-preview p { font-size:12px; color:#6b7280; margin:0 0 4px; }
+    .case-number-preview .number { font-size:18px; font-weight:700; color:#2563eb; font-family:'DM Mono',monospace; margin:0; }
+    .modal-actions { display:flex; gap:10px; margin-top:20px; }
+    .modal-status { font-size:13px; margin-top:10px; padding:10px; border-radius:8px; display:none; }
+    .modal-status.success { background:#dcfce7; color:#15803d; }
+    .modal-status.error   { background:#fee2e2; color:#b91c1c; }
+    .relative { position:relative; }
+    .btn-create-case { padding:12px 20px; background:linear-gradient(135deg,#16a34a 0%,#10b981 100%); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all .3s; }
+    .btn-create-case:hover { transform:translateY(-2px); box-shadow:0 8px 16px rgba(22,163,74,0.3); }
+    .btn-create-case:disabled { opacity:.5; cursor:not-allowed; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+
+    /* Section-note always spans full grid width */
+    .section-note { grid-column: 1 / -1; margin-bottom: 0; }
+
+    /* ── CUSTOM SCROLLBAR ─────────────────────────────────── */
+    .page-body::-webkit-scrollbar,
+    #casesContainer::-webkit-scrollbar,
+    #teamContainer::-webkit-scrollbar,
+    #notifList::-webkit-scrollbar {
+      width: 6px;
+    }
+    .page-body::-webkit-scrollbar-track,
+    #casesContainer::-webkit-scrollbar-track,
+    #teamContainer::-webkit-scrollbar-track,
+    #notifList::-webkit-scrollbar-track {
+      background: transparent;
+      border-radius: 99px;
+    }
+    .page-body::-webkit-scrollbar-thumb,
+    #casesContainer::-webkit-scrollbar-thumb,
+    #teamContainer::-webkit-scrollbar-thumb,
+    #notifList::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 99px;
+      transition: background 0.2s;
+    }
+    .page-body::-webkit-scrollbar-thumb:hover,
+    #casesContainer::-webkit-scrollbar-thumb:hover,
+    #teamContainer::-webkit-scrollbar-thumb:hover,
+    #notifList::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    * { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      #casesContainer { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .page-body { padding: 16px; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+      .quick-bar { gap: 8px; }
+    }
+    @media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+      #evalSidePanel { width: 100% !important; right: -100% !important; }
+      #evalSidePanel.open { right: 0 !important; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div><h2>Eskom</h2><p>Theft Detection</p></div>
+    </div>
+
+    <nav class="menu" id="sidebarMenu">
+      <p style="opacity:0.5; font-size:12px; padding:12px;">Loading…</p>
+    </nav>
+
+    <div class="role-box">
+      <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Logged in as</div>
+      <div id="roleName" class="role-badge">Loading…</div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main">
+
+    <header class="topbar">
+      <div>
+        <h1 id="topbarTitle">Dashboard</h1>
+        <p id="topbarSub">Full system overview</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+
+        <!-- Notification Bell -->
+        <div style="position:relative;">
+          <button id="notifBell" onclick="toggleNotifPanel()" title="Notifications" style="position:relative;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;width:38px;height:38px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+            <i class="fa-solid fa-bell"></i>
+            <span id="notifBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;font-size:9px;font-weight:800;padding:2px 5px;border-radius:99px;min-width:17px;text-align:center;border:2px solid white;font-family:inherit;">0</span>
+          </button>
+          <!-- Notification Dropdown Panel -->
+          <div id="notifPanel" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:340px;background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(15,23,42,0.18);border:1px solid #e2e8f0;z-index:200;overflow:hidden;">
+            <div style="padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;font-weight:700;color:#0f172a;">Notifications</span>
+              <span id="notifPanelCount" style="font-size:11px;color:#6b7280;background:#f1f5f9;padding:2px 10px;border-radius:99px;">0 alerts</span>
+            </div>
+            <div id="notifList" style="max-height:380px;overflow-y:auto;"></div>
+            <div style="padding:10px 18px;border-top:1px solid #f1f5f9;text-align:center;">
+              <a href="caseList.html" style="font-size:12px;font-weight:600;color:#2563eb;text-decoration:none;">View all cases →</a>
+            </div>
+          </div>
+        </div>
+
+        <button id="communityBell" onclick="toggleCommunityInbox()" title="Community Report Submissions" style="position:relative;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;width:38px;height:38px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+          <i class="fa-solid fa-inbox"></i>
+          <span id="communityBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;font-size:9px;font-weight:800;padding:2px 5px;border-radius:99px;min-width:17px;text-align:center;border:2px solid white;font-family:inherit;">0</span>
+        </button>
+        <div id="roleBadge" style="background:rgba(255,255,255,0.15);padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.3);">…</div>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- ── KPI CARDS ── -->
+      <div class="kpi-grid" id="statsGrid">
+
+        <div class="kpi-card kpi-blue" data-stat-card="totalCases">
+          <div class="kpi-label">Total Cases</div>
+          <div class="kpi-value" id="statTotal">0</div>
+          <div class="kpi-sub">Registered in the system</div>
+          <div class="kpi-icon"><i class="fa-solid fa-chart-simple"></i></div>
+        </div>
+
+        <div class="kpi-card kpi-red" data-stat-card="highRisk">
+          <div class="kpi-label">High Risk</div>
+          <div class="kpi-value" id="statHigh">0</div>
+          <div class="kpi-sub">Require urgent attention</div>
+          <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        </div>
+
+        <div class="kpi-card kpi-amber" data-stat-card="inProgress">
+          <div class="kpi-label">In Progress</div>
+          <div class="kpi-value" id="statOpen">0</div>
+          <div class="kpi-sub">Active investigations</div>
+          <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+        </div>
+
+        <div class="kpi-card kpi-green" data-stat-card="resolved">
+          <div class="kpi-label">Resolved</div>
+          <div class="kpi-value" id="statResolved">0</div>
+          <div class="kpi-sub">Successfully closed</div>
+          <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+
+        <!-- Hidden stat IDs for backward compatibility with dashboard.js -->
+        <span id="statMid" style="display:none;">0</span>
+        <span id="statLow" style="display:none;">0</span>
+      </div>
+
+      <!-- ── QUICK ACTIONS (Admin / Commander) ── -->
+      <div class="section-card" data-roles="admin,commander">
+        <div class="section-card-head">
+          <h2>Quick Actions</h2>
+          <span class="section-card-sub">Common tasks &amp; navigation</span>
+        </div>
+        <div class="quick-bar">
+          <a href="admin.html" class="quick-btn" data-roles="admin">
+            <i class="fa-solid fa-users"></i> User Management
+          </a>
+          <a href="assign.html" class="quick-btn">
+            <i class="fa-solid fa-user-check"></i> Assign Cases
+          </a>
+          <a href="report.html" class="quick-btn">
+            <i class="fa-solid fa-chart-bar"></i> Reports
+          </a>
+          <a href="evaluations.html" class="quick-btn">
+            <i class="fa-solid fa-star"></i> Evaluations
+          </a>
+          <a href="caseList.html" class="quick-btn">
+            <i class="fa-solid fa-list"></i> Case List
+          </a>
+          <button onclick="openCreateCaseModal()" class="quick-btn quick-btn-primary">
+            <i class="fa-solid fa-plus"></i> New Case
+          </button>
+        </div>
+      </div>
+
+      <!-- ── ANALYTICS CHARTS (Admin / Commander) ── -->
+      <div class="charts-row" data-roles="admin,commander">
+        <div class="section-card">
+          <div class="section-card-head">
+            <div>
+              <h2>Case Trends</h2>
+              <p class="section-card-sub">Monthly filings — last 6 months</p>
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-head">
+            <div>
+              <h2>Risk Distribution</h2>
+              <p class="section-card-sub">Breakdown by risk level</p>
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <div class="chart-wrap"><canvas id="adminChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RECENT CASES ── -->
+      <div class="section-card">
+        <div class="section-card-head">
+          <div>
+            <h2>Recent Cases</h2>
+            <p class="section-card-sub">Latest activity in the system</p>
+          </div>
+          <a href="caseList.html" class="section-link">View all →</a>
+        </div>
+        <div id="casesContainer">
+          <p style="color:#9ca3af;padding:28px;text-align:center;font-size:13px;">Loading cases…</p>
+        </div>
+      </div>
+
+      <!-- ── TEAM PERFORMANCE (Admin only) ── -->
+      <div class="section-card" data-roles="admin">
+        <div class="section-card-head">
+          <div>
+            <h2>Team Performance</h2>
+            <p class="section-card-sub">Investigator activity &amp; resolution rates</p>
+          </div>
+          <a href="evaluations.html" class="section-link">Evaluations →</a>
+        </div>
+        <div id="teamContainer">
+          <p style="color:#9ca3af;padding:28px;text-align:center;font-size:13px;">Loading team data…</p>
+        </div>
+      </div>
+
+      <!-- ── MY EVALUATIONS (Investigator only) ── -->
+      <div class="section-card" data-roles="investigator">
+        <div class="section-card-head">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fa-solid fa-star" style="color:#fff;font-size:15px;"></i>
+            </div>
+            <div>
+              <h2>My Evaluations</h2>
+              <p class="section-card-sub">Performance reviews from your team lead</p>
+            </div>
+          </div>
+        </div>
+        <div id="myEvalSidebarContent" style="padding:16px 20px;">
+          <div style="text-align:center;padding:24px 0;color:#9ca3af;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:8px;"></i>
+            <span style="font-size:13px;">Loading…</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- CREATE CASE MODAL -->
+<div class="modal-overlay" id="caseModalOverlay" style="display:none;" onclick="closeCaseModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>📋 Create New Case</h3>
+    <p style="font-size:12px;color:#6b7280;margin-bottom:16px;">Add a new case to the system with property details and address autocomplete</p>
+    
+    <!-- Case Number Preview -->
+    <div class="case-number-preview" id="caseNumberPreview">
+      <p>Auto-generated Case Number:</p>
+      <p class="number" id="previewCaseNumber">Case —</p>
+    </div>
+
+    <!-- Case Details Section -->
+    <h4>Case Details</h4>
+    
+    <div class="modal-row">
+      <label>Suspect Name *</label>
+      <input type="text" id="caseModalSuspectName" placeholder="Enter suspect full name">
+    </div>
+
+    <div class="modal-row">
+      <label>Description *</label>
+      <textarea id="caseModalDescription" placeholder="Provide details about the theft case..."></textarea>
+    </div>
+
+    <div class="modal-row">
+      <label>Risk Level *</label>
+      <select id="caseModalRiskLevel">
+        <option value="">— Select risk level —</option>
+        <option value="LOW">Low</option>
+        <option value="MID">Medium</option>
+        <option value="HIGH">High</option>
+      </select>
+    </div>
+
+    <!-- Property Details Section -->
+    <h4>Property Information</h4>
+    
+    <div class="modal-row relative">
+      <label>Property Address</label>
+      <input type="text" id="caseModalAddress" placeholder="Start typing address..." autocomplete="off">
+      <div class="autocomplete-suggestions" id="autocompleteList"></div>
+    </div>
+
+    <div class="modal-row">
+      <label>Additional Property Details</label>
+      <textarea id="caseModalPropertyDetails" placeholder="Notes about the property (e.g., location notes, access details)"></textarea>
+    </div>
+
+    <!-- Location Data (hidden) -->
+    <input type="hidden" id="caseModalLat">
+    <input type="hidden" id="caseModalLng">
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn-create-case" id="caseSaveBtn" onclick="saveCase()" style="flex:1;justify-content:center;">✔ Create Case</button>
+      <button style="flex:1;padding:10px;background:#f3f4f6;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;" onclick="closeCaseModal()">Cancel</button>
+    </div>
+    <div class="modal-status" id="caseModalStatus"></div>
+  </div>
+</div>
+
+<!-- ── EVALUATIONS SIDE PANEL ── -->
+<div id="evalPanelOverlay"
+     onclick="closeEvalPanel()"
+     style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:299;display:none;backdrop-filter:blur(2px);"></div>
+
+<div id="evalSidePanel" style="
+  position: fixed;
+  top: 0;
+  right: -460px;
+  width: 440px;
+  height: 100vh;
+  background: #f8fafc;
+  z-index: 300;
+  box-shadow: -12px 0 40px rgba(15,23,42,0.18);
+  transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
+">
+  <!-- Panel header -->
+  <div style="
+    padding: 22px 24px;
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 60%, #a855f7 100%);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+  ">
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;opacity:0.75;margin-bottom:4px;">
+        <i class="fa-solid fa-star" style="margin-right:5px;"></i>Performance Evaluations
+      </div>
+      <h3 id="evalPanelTitle" style="margin:0;font-size:17px;font-weight:800;letter-spacing:-0.01em;">Investigator</h3>
+      <p id="evalPanelSub" style="margin:3px 0 0;font-size:12px;opacity:0.75;">Performance records</p>
+    </div>
+    <button onclick="closeEvalPanel()" style="
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    " onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+       onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Panel body — scrollable -->
+  <div id="evalPanelContent" style="
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  ">
+    <p style="color:#9ca3af;text-align:center;padding:40px 0;">Loading evaluations…</p>
+  </div>
+
+  <!-- Panel footer -->
+  <div style="
+    padding: 14px 20px;
+    border-top: 1.5px solid #e2e8f0;
+    background: #fff;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  ">
+    <a href="evaluations.html" style="
+      font-size: 12px;
+      font-weight: 700;
+      color: #7c3aed;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    ">
+      <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i>Open Full Evaluations Page
+    </a>
+    <button onclick="closeEvalPanel()" style="
+      padding: 8px 16px;
+      background: #f1f5f9;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+    ">Close</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+<script src="../js/sidebar.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../js/dashboard.js"></script>
+<script>
+  document.body.classList.add(`role-${localStorage.getItem("userRole") || "investigator"}`);
+
+  // ── GOOGLE PLACES AUTOCOMPLETE ─────────────────────────────────
+  let autocompleteService = null;
+  let sessionToken = new google.maps.places.AutocompleteSessionToken();
+  let selectedPlace = null;
+  const token = localStorage.getItem('token');
+  const BASE_URL = 'http://localhost:3000';
+  const authHeaders = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
+
+  function initAutocomplete() {
+    if (typeof google !== 'undefined' && google.maps) {
+      autocompleteService = new google.maps.places.AutocompleteService();
+      const addressInput = document.getElementById('caseModalAddress');
+      
+      addressInput.addEventListener('input', async (e) => {
+        const value = e.target.value;
+        if (value.length < 2) {
+          document.getElementById('autocompleteList').classList.remove('active');
+          return;
+        }
+        
+        try {
+          const response = await autocompleteService.getPlacePredictions({
+            input: value,
+            sessionToken: sessionToken,
+            types: ['address'],
+            componentRestrictions: { country: 'za' }
+          });
+          displaySuggestions(response.predictions);
+        } catch (err) {
+          console.error('Autocomplete error:', err);
+        }
+      });
+
+      addressInput.addEventListener('blur', () => {
+        setTimeout(() => {
+          document.getElementById('autocompleteList').classList.remove('active');
+        }, 150);
+      });
+    }
+  }
+
+  function displaySuggestions(predictions) {
+    const list = document.getElementById('autocompleteList');
+    list.innerHTML = '';
+    
+    if (!predictions || predictions.length === 0) {
+      list.classList.remove('active');
+      return;
+    }
+
+    predictions.forEach((pred) => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.innerHTML = `
+        <div class="autocomplete-item-address">${pred.main_text}</div>
+        <div class="autocomplete-item-city">${pred.secondary_text || ''}</div>
+      `;
+      item.onclick = () => selectSuggestion(pred);
+      list.appendChild(item);
+    });
+
+    list.classList.add('active');
+  }
+
+  function selectSuggestion(prediction) {
+    document.getElementById('caseModalAddress').value = prediction.description;
+    document.getElementById('autocompleteList').classList.remove('active');
+    selectedPlace = prediction;
+    
+    if (typeof google !== 'undefined' && google.maps) {
+      const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+      placesService.getDetails({ placeId: prediction.place_id }, (place, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+          document.getElementById('caseModalLat').value = place.geometry.location.lat();
+          document.getElementById('caseModalLng').value = place.geometry.location.lng();
+        }
+      });
+    }
+  }
+
+  async function openCreateCaseModal() {
+    const userRole = (localStorage.getItem('userRole')||'').toLowerCase();
+    if (userRole !== 'admin' && userRole !== 'commander') {
+      alert('Only admins and commanders can create cases');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/cases/next-number`, { headers: authHeaders });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('previewCaseNumber').textContent = data.nextCaseNumber;
+        document.getElementById('caseNumberPreview').classList.add('active');
+      }
+    } catch (err) {
+      console.error('Error fetching next case number:', err);
+    }
+
+    document.getElementById('caseModalSuspectName').value = '';
+    document.getElementById('caseModalDescription').value = '';
+    document.getElementById('caseModalRiskLevel').value = '';
+    document.getElementById('caseModalAddress').value = '';
+    document.getElementById('caseModalPropertyDetails').value = '';
+    document.getElementById('caseModalLat').value = '';
+    document.getElementById('caseModalLng').value = '';
+    document.getElementById('caseModalStatus').style.display = 'none';
+    selectedPlace = null;
+
+    document.getElementById('caseModalOverlay').style.display = 'flex';
+    
+    if (!autocompleteService) {
+      setTimeout(initAutocomplete, 100);
+    }
+  }
+
+  function closeCaseModal(e) {
+    if (e && e.target !== document.getElementById('caseModalOverlay')) return;
+    document.getElementById('caseModalOverlay').style.display = 'none';
+  }
+
+  async function saveCase() {
+    const suspectName = document.getElementById('caseModalSuspectName').value.trim();
+    const description = document.getElementById('caseModalDescription').value.trim();
+    const riskLevel = document.getElementById('caseModalRiskLevel').value;
+    const address = document.getElementById('caseModalAddress').value.trim();
+    const propertyDetails = document.getElementById('caseModalPropertyDetails').value.trim();
+    const btn = document.getElementById('caseSaveBtn');
+
+    if (!suspectName) { showCaseStatus('Suspect name is required.', 'error'); return; }
+    if (!description) { showCaseStatus('Description is required.', 'error'); return; }
+    if (!riskLevel) { showCaseStatus('Risk level is required.', 'error'); return; }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Creating...';
+
+    try {
+      const caseRes = await fetch(`${BASE_URL}/api/cases`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({
+          suspect_name: suspectName,
+          description: description,
+          risk_level: riskLevel,
+          outcome: 'OPEN'
+        })
+      });
+
+      if (!caseRes.ok) {
+        const errData = await caseRes.json();
+        throw new Error(errData.error || 'Failed to create case');
+      }
+
+      const caseData = await caseRes.json();
+      const caseId = caseData.id;
+
+      if (address) {
+        await fetch(`${BASE_URL}/api/cases/${caseId}/properties`, {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({
+            address: address,
+            additional_details: propertyDetails || null,
+            latitude: document.getElementById('caseModalLat').value || null,
+            longitude: document.getElementById('caseModalLng').value || null
+          })
+        }).catch(err => console.error('Property creation warning:', err));
+      }
+
+      showCaseStatus(`✔ Case ${caseData.case_number} created successfully!`, 'success');
+      setTimeout(() => {
+        document.getElementById('caseModalOverlay').style.display = 'none';
+      }, 1500);
+    } catch (err) {
+      showCaseStatus(`❌ ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✔ Create Case';
+    }
+  }
+
+  function showCaseStatus(msg, type) {
+    const el = document.getElementById('caseModalStatus');
+    el.textContent = msg;
+    el.className = `modal-status ${type}`;
+    el.style.display = 'block';
+  }
+
+  initAutocomplete();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     COMMUNITY REPORTS INBOX PANEL
+     Slides in from the right when the bell icon is clicked.
+     Reads GET /api/admin/community-reports — all PENDING cases.
+     Admins can click any report to go to record.html for review.
+═══════════════════════════════════════════════════════════════ -->
+<div id="communityOverlay" onclick="closeCommunityInbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:290;backdrop-filter:blur(2px);"></div>
+
+<div id="communityPanel" style="
+  position:fixed;top:0;right:-480px;width:460px;height:100vh;
+  background:#f8fafc;z-index:291;
+  box-shadow:-12px 0 40px rgba(15,23,42,0.16);
+  transition:right 0.35s cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;
+  font-family:'Inter',sans-serif;
+">
+  <!-- Header -->
+  <div style="padding:22px 24px;background:linear-gradient(135deg,#064e3b 0%,#059669 100%);color:#fff;display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;opacity:0.7;margin-bottom:4px;">
+        <i class="fa-solid fa-inbox" style="margin-right:5px;"></i>Community Reports Queue
+      </div>
+      <h3 id="communityPanelTitle" style="margin:0;font-size:18px;font-weight:800;letter-spacing:-0.01em;">Pending Review</h3>
+      <p id="communityPanelSub" style="margin:3px 0 0;font-size:12px;opacity:0.75;">Community-submitted reports awaiting assignment</p>
+    </div>
+    <button onclick="closeCommunityInbox()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Stats strip -->
+  <div id="communityStatsStrip" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff;">
+    <div style="padding:14px 16px;text-align:center;border-right:1px solid #e2e8f0;">
+      <div style="font-size:22px;font-weight:800;color:#059669;" id="csTotal">—</div>
+      <div style="font-size:11px;color:#94a3b8;font-weight:600;">Total Pending</div>
+    </div>
+    <div style="padding:14px 16px;text-align:center;border-right:1px solid #e2e8f0;">
+      <div style="font-size:22px;font-weight:800;color:#dc2626;" id="csHigh">—</div>
+      <div style="font-size:11px;color:#94a3b8;font-weight:600;">High Risk</div>
+    </div>
+    <div style="padding:14px 16px;text-align:center;">
+      <div style="font-size:22px;font-weight:800;color:#d97706;" id="csMid">—</div>
+      <div style="font-size:11px;color:#94a3b8;font-weight:600;">Medium Risk</div>
+    </div>
+  </div>
+
+  <!-- Scrollable body -->
+  <div id="communityPanelBody" style="flex:1;overflow-y:auto;padding:14px 16px;">
+    <div style="text-align:center;padding:40px 0;color:#9ca3af;">
+      <i class="fa-solid fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:8px;"></i>
+      <span style="font-size:13px;">Loading community reports…</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding:14px 20px;border-top:1.5px solid #e2e8f0;background:#fff;flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
+    <a href="caseList.html" style="font-size:12px;font-weight:700;color:#059669;text-decoration:none;display:flex;align-items:center;gap:6px;">
+      <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i>Open Full Case List
+    </a>
+    <button onclick="closeCommunityInbox()" style="padding:8px 16px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:700;color:#475569;cursor:pointer;">Close</button>
+  </div>
+</div>
+
+<script>
+// ── COMMUNITY REPORTS INBOX ─────────────────────────────────────
+(function () {
+  const BASE_URL     = 'http://localhost:3000';
+  const authHeaders  = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+  };
+
+  let communityOpen    = false;
+  let communityReports = [];
+
+  // Show/hide the panel
+  window.toggleCommunityInbox = function () {
+    communityOpen ? closeCommunityInbox() : openCommunityInbox();
+  };
+
+  window.openCommunityInbox = async function () {
+    communityOpen = true;
+    document.getElementById('communityOverlay').style.display = 'block';
+    document.getElementById('communityPanel').style.right = '0';
+    await loadCommunityReports();
+  };
+
+  window.closeCommunityInbox = function () {
+    communityOpen = false;
+    document.getElementById('communityOverlay').style.display = 'none';
+    document.getElementById('communityPanel').style.right = '-480px';
+  };
+
+  // Fetch pending community reports
+  async function loadCommunityReports() {
+    const body = document.getElementById('communityPanelBody');
+    body.innerHTML = '<div style="text-align:center;padding:40px 0;color:#9ca3af;"><i class="fa-solid fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:8px;"></i><span style="font-size:13px;">Loading…</span></div>';
+
+    try {
+      const res = await fetch(BASE_URL + '/api/admin/community-reports', { headers: authHeaders });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      communityReports = await res.json();
+      renderCommunityReports();
+    } catch (err) {
+      body.innerHTML = '<div style="text-align:center;padding:40px 0;color:#ef4444;font-size:13px;"><i class="fa-solid fa-circle-exclamation" style="display:block;font-size:22px;margin-bottom:8px;"></i>Failed to load: ' + err.message + '</div>';
+    }
+  }
+
+  function renderCommunityReports() {
+    const body   = document.getElementById('communityPanelBody');
+    const reports = communityReports;
+
+    // Update stats strip
+    document.getElementById('csTotal').textContent = reports.length;
+    document.getElementById('csHigh').textContent  = reports.filter(r => r.risk_level === 'HIGH').length;
+    document.getElementById('csMid').textContent   = reports.filter(r => r.risk_level === 'MID').length;
+    document.getElementById('communityPanelSub').textContent =
+      reports.length === 1 ? '1 community report awaiting assignment'
+                           : reports.length + ' community reports awaiting assignment';
+
+    // Update notification badge
+    updateCommunityBadge(reports.length);
+
+    if (!reports.length) {
+      body.innerHTML = '<div style="text-align:center;padding:48px 0;">' +
+        '<div style="width:56px;height:56px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#9ca3af;margin:0 auto 12px;">' +
+        '<i class="fa-solid fa-inbox"></i></div>' +
+        '<div style="font-size:14px;font-weight:700;color:#475569;margin-bottom:6px;">All clear — no pending reports</div>' +
+        '<div style="font-size:12.5px;color:#94a3b8;">Community reports will appear here as they are submitted.</div>' +
+        '</div>';
+      return;
+    }
+
+    const riskColors = {
+      HIGH: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b', label: 'High Risk' },
+      MID:  { bg: '#fffbeb', border: '#fcd34d', text: '#92400e', label: 'Medium Risk' },
+      LOW:  { bg: '#f0fdf4', border: '#86efac', text: '#166534', label: 'Low Risk' },
+    };
+
+    // Build cards with createElement to avoid any quote-escaping issues
+    body.innerHTML = '';
+    reports.forEach(function(r) {
+      var rc = riskColors[r.risk_level] || riskColors.LOW;
+
+      // Parse title stored as "[Community Report] {title}\n\n{desc}"
+      var titleMatch = (r.description || '').match(/^\[Community Report\] (.+?)(?:\n|$)/);
+      var title    = titleMatch ? titleMatch[1] : (r.case_number || 'Community Report');
+      var excerpt  = (r.description || '')
+        .replace(/^\[Community Report\] .+?\n+/, '')
+        .replace(/\nDate first observed:.*/g, '')
+        .replace(/\nProvince:.*/g, '')
+        .replace(/\nEvidence files.*/g, '')
+        .trim()
+        .slice(0, 90);
+      var reported = r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA') : 'N/A';
+      var location = r.location || r.suburb || 'No address provided';
+      var isAnon   = (r.suspect_name || '').includes('Anonymous');
+      var locShort = location.length > 40 ? location.slice(0, 40) + '\u2026' : location;
+      var exShort  = excerpt.length >= 90 ? excerpt + '\u2026' : excerpt;
+
+      // Outer card div
+      var card = document.createElement('div');
+      card.style.cssText = 'background:#fff;border:1.5px solid #e2e8f0;border-left:4px solid ' + rc.border + ';border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:default;transition:box-shadow 0.2s;';
+      card.addEventListener('mouseenter', function() { this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; });
+      card.addEventListener('mouseleave', function() { this.style.boxShadow = 'none'; });
+
+      card.innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">' +
+          '<div style="font-size:13.5px;font-weight:800;color:#0f172a;line-height:1.3;flex:1;">' + escHtml(title) + '</div>' +
+          '<span style="background:' + rc.bg + ';color:' + rc.text + ';border:1px solid ' + rc.border + ';font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;text-transform:uppercase;">' + escHtml(rc.label) + '</span>' +
+        '</div>' +
+        '<div style="font-size:12px;color:#64748b;margin-bottom:10px;line-height:1.5;">' + escHtml(exShort) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">' +
+          '<span style="font-size:11.5px;color:#64748b;display:inline-flex;align-items:center;gap:4px;">' +
+            '<i class="fa-solid fa-map-pin" style="font-size:10px;color:#94a3b8;"></i>' + escHtml(locShort) +
+          '</span>' +
+          '<span style="font-size:11px;color:#94a3b8;font-family:monospace;">' + escHtml(r.case_number || '') + '</span>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<div style="font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:8px;">' +
+            '<i class="fa-solid fa-' + (isAnon ? 'user-secret' : 'user') + '" style="font-size:10px;"></i>' +
+            escHtml(isAnon ? 'Anonymous' : 'Named Reporter') + ' \u00b7 ' + escHtml(reported) +
+          '</div>' +
+          '<button class="comm-assign-btn" data-id="' + escHtml(r.id) + '" style="padding:7px 14px;background:linear-gradient(135deg,#064e3b,#059669);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:transform 0.2s;">' +
+            '<i class="fa-solid fa-user-plus"></i> Assign &amp; Review' +
+          '</button>' +
+        '</div>';
+
+      // Attach assign button listener after innerHTML is set
+      var btn = card.querySelector('.comm-assign-btn');
+      btn.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-1px)'; });
+      btn.addEventListener('mouseleave', function() { this.style.transform = 'none'; });
+      btn.addEventListener('click', function() { assignCommunityReport(this.getAttribute('data-id')); });
+
+      body.appendChild(card);
+    });
+  }
+
+  window.assignCommunityReport = function (caseId) {
+    localStorage.setItem('preselectedCaseId', caseId);
+    window.location.href = 'record.html';
+  };
+
+  function updateCommunityBadge(count) {
+    const badge = document.getElementById('communityBadge');
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Auto-load badge count on page load (without opening the panel)
+  async function initBadge() {
+    try {
+      const role = (localStorage.getItem('userRole') || '').toLowerCase();
+      if (role !== 'admin' && role !== 'commander') return;
+      const res = await fetch(BASE_URL + '/api/admin/community-reports', { headers: authHeaders });
+      if (!res.ok) return;
+      const data = await res.json();
+      updateCommunityBadge(data.length);
+    } catch (_) { /* silent fail */ }
+  }
+
+  // Run on load
+  window.addEventListener('DOMContentLoaded', () => { initBadge(); });
+  // Also run after a short delay to catch dynamic page loads
+  setTimeout(() => { initBadge(); }, 1800);
+})();
+</script>
+
+  <script src="../js/shared-navbar.js"></script>
+</body>
+</html>

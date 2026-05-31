@@ -1,0 +1,9 @@
+{
+    "liveServer.settings.port": 5502,
+    "chat.tools.terminal.autoApprove": {
+        "/^node --check js/dashboard\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
