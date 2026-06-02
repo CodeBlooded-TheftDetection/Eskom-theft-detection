@@ -1,4 +1,4 @@
-const BASE_URL = window.location.origin;
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
 const token     = localStorage.getItem('token');
 const userRole  = (localStorage.getItem('userRole') || '').toLowerCase();
 const userId    = localStorage.getItem('userId');

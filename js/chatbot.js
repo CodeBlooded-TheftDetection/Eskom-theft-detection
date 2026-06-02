@@ -8,6 +8,8 @@
    • App navigation guidance built into system prompt
 ═══════════════════════════════════════════════════════════════ */
 
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
+
 let aiOpen   = false;
 let isTyping = false;
 let typeTimer = null;
@@ -256,7 +258,7 @@ async function sendAIMessage() {
 
   try {
     // Send current message + prior conversation history (last 20 messages)
-    const res = await fetch(`${window.location.origin}/api/chatbot`, {
+    const res = await fetch(`${BASE_URL}/api/chatbot`, {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',

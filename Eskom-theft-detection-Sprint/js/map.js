@@ -10,7 +10,7 @@
 //   4. Marker IDs are now UUIDs returned by the DB (not local ints).
 // ============================================================
 
-const BASE_URL = window.location.origin;
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
 const token       = localStorage.getItem('token');
 if (!token) window.location.href = 'login.html';
 const authHeaders = {

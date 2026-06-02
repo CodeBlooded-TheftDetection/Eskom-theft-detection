@@ -27,7 +27,7 @@
 //     → POST /api/evaluations   → save/update an evaluation
 // ============================================================
 
-const BASE_URL = window.location.origin;
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
 
 // ── GUARD: Redirect if not logged in ─────────────────────────
 const token    = localStorage.getItem("token");

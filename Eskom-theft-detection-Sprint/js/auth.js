@@ -12,7 +12,7 @@
 // Login / signup logic lives inline in pages/login.html.
 // ============================================================
 
-const BASE_URL = window.location.origin;
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
 
 // ── HELPERS ───────────────────────────────────────────────────
 

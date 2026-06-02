@@ -19,7 +19,7 @@
 //   requirement to show whether a case is Open or Resolved.
 // ============================================================
 
-const BASE_URL = window.location.origin;
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
 
 // ── GUARD: Must be logged in ──────────────────────────────────
 const token = localStorage.getItem("token");
