@@ -6,6 +6,7 @@ const csv       = require('csv-parser');
 const PDFKit    = require('pdfkit');
 const stream    = require('stream');
 const { createClient } = require('@supabase/supabase-js');
+const ws        = require('ws');
 const jwt       = require('jsonwebtoken');
 const bcrypt    = require('bcrypt');
 const https     = require('https');
@@ -70,7 +71,12 @@ app.use(express.static(__dirname)); // For index.html in root
 
 // ── SUPABASE CLIENT ───────────────────────────────────────────
 // Using service_role key — bypasses RLS so our own RBAC controls access
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// Pass ws transport for Node.js 20 compatibility
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+    realtime: {
+        transport: ws
+    }
+});
 
 const upload = multer({ storage: multer.memoryStorage() });
 
