@@ -12,7 +12,7 @@
 // Login / signup logic lives inline in pages/login.html.
 // ============================================================
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = window.location.origin;
 
 // ── HELPERS ───────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 // assign.js — Assign Investigator Page
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = window.location.origin;
 
 const token    = localStorage.getItem("token");
 const userRole = localStorage.getItem("userRole") || "";

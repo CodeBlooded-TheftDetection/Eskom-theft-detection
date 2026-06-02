@@ -256,7 +256,7 @@ async function sendAIMessage() {
 
   try {
     // Send current message + prior conversation history (last 20 messages)
-    const res = await fetch('http://localhost:3000/api/chatbot', {
+    const res = await fetch(`${window.location.origin}/api/chatbot`, {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
