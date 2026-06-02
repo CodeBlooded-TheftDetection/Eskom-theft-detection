@@ -189,6 +189,7 @@
 lucide.createIcons();
 
 // ── AUTH ──────────────────────────────────────────────────────
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
 const token    = localStorage.getItem('token');
 const userRole = (localStorage.getItem('userRole') || '').toLowerCase();
 if (!token) window.location.href = 'login.html';
@@ -197,8 +198,6 @@ if (userRole === 'investigator') {
   alert('Access denied. Investigators cannot access evaluations.');
   window.location.href = 'dashboard.html';
 }
-
-const BASE_URL    = 'http://localhost:3000';
 const authHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
 // ── STATE ─────────────────────────────────────────────────────

@@ -786,7 +786,7 @@
   let sessionToken = new google.maps.places.AutocompleteSessionToken();
   let selectedPlace = null;
   const token = localStorage.getItem('token');
-  const BASE_URL = 'http://localhost:3000';
+  const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
   const authHeaders = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
 
   function initAutocomplete() {
@@ -1037,7 +1037,7 @@
 <script>
 // ── COMMUNITY REPORTS INBOX ─────────────────────────────────────
 (function () {
-  const BASE_URL     = 'http://localhost:3000';
+  const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
   const authHeaders  = {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')

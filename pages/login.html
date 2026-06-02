@@ -465,6 +465,11 @@
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+// UNIVERSAL API ENDPOINT - Works Locally & In Production
+// ═══════════════════════════════════════════════════════════════
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
+
 /* ── TAB SWITCHING ───────────────────────────────── */
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));

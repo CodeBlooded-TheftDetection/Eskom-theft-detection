@@ -565,7 +565,7 @@ const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCas
 if (!token) window.location.href = "login.html";
 if (userRole === "user") window.location.href = "user-dashboard.html";
 
-const BASE_URL    = "http://localhost:3000";
+const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
 const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
 
 // Hide the Actions column header for investigators
