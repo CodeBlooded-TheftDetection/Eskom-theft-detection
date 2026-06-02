@@ -1,22 +1,22 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Record Outcome — Eskom Theft Detection</title>
+  <title>Record Outcome - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* ── Reset & Base ─────────────────────────────────────────── */
+    /* â”€â”€ Reset & Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     *, *::before, *::after { box-sizing: border-box; }
     html, body, .layout, .main { height: 100%; }
     body { font-family: 'DM Sans', sans-serif; background: #f0f4f8; }
 
     .main { display: flex; flex-direction: column; overflow: hidden; }
 
-    /* ── Topbar ──────────────────────────────────────────────── */
+    /* â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .topbar {
       background: linear-gradient(135deg, #0c1f3f 0%, #1a3a6b 60%, #1e4080 100%) !important;
       padding: 22px 28px !important;
@@ -89,7 +89,7 @@
       box-shadow: 0 0 6px #60a5fa;
     }
 
-    /* ── Page scroll area ─────────────────────────────────────── */
+    /* â”€â”€ Page scroll area â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .page-scroll {
       flex: 1;
       overflow-y: auto;
@@ -100,7 +100,7 @@
     .page-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     .page-scroll::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-    /* ── Two-column layout ───────────────────────────────────── */
+    /* â”€â”€ Two-column layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .record-layout {
       display: grid;
       grid-template-columns: 1fr 340px;
@@ -110,7 +110,7 @@
       align-items: start;
     }
 
-    /* ── Step progress header ────────────────────────────────── */
+    /* â”€â”€ Step progress header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .steps-header {
       display: flex;
       align-items: center;
@@ -173,10 +173,10 @@
       min-width: 12px;
     }
 
-    /* ── Form column ─────────────────────────────────────────── */
+    /* â”€â”€ Form column â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .form-col { display: flex; flex-direction: column; gap: 16px; }
 
-    /* ── Cards ───────────────────────────────────────────────── */
+    /* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .record-card {
       background: #fff;
       border-radius: 16px;
@@ -239,7 +239,7 @@
 
     .card-body { padding: 22px; }
 
-    /* ── Form fields ─────────────────────────────────────────── */
+    /* â”€â”€ Form fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .form-row { margin-bottom: 0; }
     .form-row + .form-row { margin-top: 18px; }
 
@@ -300,7 +300,7 @@
       line-height: 1.5;
     }
 
-    /* ── Risk option cards ───────────────────────────────────── */
+    /* â”€â”€ Risk option cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .risk-options {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -384,7 +384,7 @@
     /* hover for all */
     .risk-opt-label:hover { border-color: #93c5fd; background: #fff; }
 
-    /* ── Action row ──────────────────────────────────────────── */
+    /* â”€â”€ Action row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .action-card {
       background: #fff;
       border-radius: 16px;
@@ -431,7 +431,7 @@
     }
     .btn-ghost:hover { background: #f8fafd; color: #374151; border-color: #d1d5db; }
 
-    /* ── Status banner ───────────────────────────────────────── */
+    /* â”€â”€ Status banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .status-banner {
       display: none;
       align-items: center;
@@ -456,7 +456,7 @@
       border: 1px solid #fecaca;
     }
 
-    /* ── Right column — Case detail panel ───────────────────── */
+    /* â”€â”€ Right column - Case detail panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .detail-col { display: flex; flex-direction: column; gap: 16px; }
 
     .detail-panel {
@@ -633,7 +633,7 @@
     }
     .guide-item strong { color: #374151; }
 
-    /* ── Case search widget ──────────────────────────────────── */
+    /* â”€â”€ Case search widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .case-search-wrap {
       position: relative;
       margin-bottom: 0;
@@ -703,16 +703,16 @@
     }
     .cs-selected-chip svg { width: 13px; height: 13px; cursor: pointer; color: #3b82f6; }
 
-    /* ── Notes — admin hidden ────────────────────────────────── */
+    /* â”€â”€ Notes - admin hidden â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .notes-admin-hidden { display: none !important; }
 
-    /* ── Animations ──────────────────────────────────────────── */
+    /* â”€â”€ Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Responsive ──────────────────────────────────────────── */
+    /* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @media (max-width: 900px) {
       .record-layout {
         grid-template-columns: 1fr;
@@ -743,7 +743,7 @@
   <!-- MAIN -->
   <main class="main">
 
-    <!-- ── Topbar ─────────────────────────────────────────────── -->
+    <!-- â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <header class="topbar" style="flex-shrink:0;">
       <div class="topbar-inner">
         <div class="topbar-title">
@@ -754,7 +754,7 @@
       </div>
     </header>
 
-    <!-- ── Scrollable content ─────────────────────────────────── -->
+    <!-- â”€â”€ Scrollable content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="page-scroll">
 
       <!-- Step progress indicator -->
@@ -790,10 +790,10 @@
 
       <div class="record-layout">
 
-        <!-- ── LEFT: Form steps ──────────────────────────────── -->
+        <!-- â”€â”€ LEFT: Form steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div class="form-col">
 
-          <!-- Step 1 — Case selection -->
+          <!-- Step 1 - Case selection -->
           <div class="record-card">
             <div class="card-head">
               <div class="card-head-icon blue">
@@ -817,7 +817,7 @@
                 <div class="case-search-wrap">
                   <svg class="cs-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input type="text" id="caseSearchInput" class="form-control cs-input"
-                    placeholder="Search by case number or suspect name…"
+                    placeholder="Search by case number or suspect nameâ€¦"
                     autocomplete="off"
                     oninput="onCaseSearch(this.value)" />
                   <svg class="cs-clear-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" onclick="clearCaseSearch()"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -828,7 +828,7 @@
             </div>
           </div>
 
-          <!-- Step 2 — Outcome -->
+          <!-- Step 2 - Outcome -->
           <div class="record-card">
             <div class="card-head">
               <div class="card-head-icon indigo">
@@ -848,17 +848,17 @@
                   <div class="required-dot" title="Required"></div>
                 </label>
                 <select id="outcomeSelect" class="form-control">
-                  <option value="">— Choose new status —</option>
-                  <option value="OPEN">OPEN — Case is open and active</option>
-                  <option value="PENDING">PENDING — Awaiting action or information</option>
-                  <option value="RESOLVED">RESOLVED — Case has been concluded</option>
+                  <option value="">- Choose new status -</option>
+                  <option value="OPEN">OPEN - Case is open and active</option>
+                  <option value="PENDING">PENDING - Awaiting action or information</option>
+                  <option value="RESOLVED">RESOLVED - Case has been concluded</option>
                 </select>
                 <p class="form-hint">Choose one of the three valid statuses. Setting to RESOLVED will timestamp the closure date automatically.</p>
               </div>
             </div>
           </div>
 
-          <!-- Step 3 — Risk level -->
+          <!-- Step 3 - Risk level -->
           <div class="record-card">
             <div class="card-head">
               <div class="card-head-icon amber">
@@ -913,7 +913,7 @@
             </div>
           </div>
 
-          <!-- Step 4 — Notes (investigator only) -->
+          <!-- Step 4 - Notes (investigator only) -->
           <div class="record-card" id="notesCard">
             <div class="card-head">
               <div class="card-head-icon slate">
@@ -921,7 +921,7 @@
               </div>
               <div class="card-head-text">
                 <h3>Investigation Notes</h3>
-                <p>Optional — document findings, evidence, and actions taken</p>
+                <p>Optional - document findings, evidence, and actions taken</p>
               </div>
               <div class="step-badge">4</div>
             </div>
@@ -955,7 +955,7 @@
 
         </div>
 
-        <!-- ── RIGHT: Case detail panel ──────────────────────── -->
+        <!-- â”€â”€ RIGHT: Case detail panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div class="detail-col">
 
           <!-- Selected case card -->
@@ -978,41 +978,41 @@
             <div class="detail-content" id="detailContent">
               <div class="case-id-block">
                 <div class="case-id-label">Case Number</div>
-                <div class="case-id-value" id="infoNum">—</div>
+                <div class="case-id-value" id="infoNum">-</div>
               </div>
 
               <div class="detail-fields">
                 <div class="detail-field">
                   <div class="detail-field-label">Suspect</div>
-                  <div class="detail-field-value" id="infoSuspect">—</div>
+                  <div class="detail-field-value" id="infoSuspect">-</div>
                 </div>
 
                 <div class="detail-divider"></div>
 
                 <div class="detail-field">
                   <div class="detail-field-label">Current Status</div>
-                  <div class="detail-field-value" id="infoStatus">—</div>
+                  <div class="detail-field-value" id="infoStatus">-</div>
                 </div>
 
                 <div class="detail-divider"></div>
 
                 <div class="detail-field">
                   <div class="detail-field-label">Risk Level</div>
-                  <div class="detail-field-value" id="infoRisk">—</div>
+                  <div class="detail-field-value" id="infoRisk">-</div>
                 </div>
 
                 <div class="detail-divider"></div>
 
                 <div class="detail-field">
                   <div class="detail-field-label">Investigator</div>
-                  <div class="detail-field-value" id="infoInvestigator">—</div>
+                  <div class="detail-field-value" id="infoInvestigator">-</div>
                 </div>
 
                 <div class="detail-divider"></div>
 
                 <div class="detail-field">
                   <div class="detail-field-label">Reported</div>
-                  <div class="detail-field-value" id="infoReported">—</div>
+                  <div class="detail-field-value" id="infoReported">-</div>
                 </div>
               </div>
             </div>
@@ -1032,11 +1032,11 @@
               </div>
               <div class="guide-item">
                 <div class="guide-dot"></div>
-                <p><strong>Risk level</strong> defaults to "Keep" — only change it if the threat assessment has changed.</p>
+                <p><strong>Risk level</strong> defaults to "Keep" - only change it if the threat assessment has changed.</p>
               </div>
               <div class="guide-item">
                 <div class="guide-dot"></div>
-                <p><strong>Notes</strong> are optional but recommended — they become part of the permanent case record.</p>
+                <p><strong>Notes</strong> are optional but recommended - they become part of the permanent case record.</p>
               </div>
             </div>
           </div>
@@ -1050,7 +1050,7 @@
 <script>
 lucide.createIcons();
 
-// ── AUTH ──────────────────────────────────────────────────────
+// â”€â”€ AUTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const token    = localStorage.getItem("token");
 const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
 if (!token) { window.location.href = "login.html"; }
@@ -1061,7 +1061,7 @@ const authHeaders = { "Content-Type": "application/json", "Authorization": `Bear
 let allCases = [];
 let selectedCaseId = null;
 
-// ── ROLE: hide notes card from admin ─────────────────────────
+// â”€â”€ ROLE: hide notes card from admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if (userRole === "admin") {
   document.getElementById("notesCard").classList.add("notes-admin-hidden");
   // Also hide step pill 4 connector visually
@@ -1069,7 +1069,7 @@ if (userRole === "admin") {
   if (pill4) pill4.closest(".step-item").style.display = "none";
 }
 
-// ── STEP PROGRESS ─────────────────────────────────────────────
+// â”€â”€ STEP PROGRESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function updateSteps(activeStep) {
   const maxStep = userRole === "admin" ? 3 : 4;
   for (let i = 1; i <= maxStep; i++) {
@@ -1081,7 +1081,7 @@ function updateSteps(activeStep) {
   }
 }
 
-// ── LOAD CASES ────────────────────────────────────────────────
+// â”€â”€ LOAD CASES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadCases() {
   try {
     const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
@@ -1109,7 +1109,7 @@ async function loadCases() {
   }
 }
 
-// ── CASE SEARCH ───────────────────────────────────────────────
+// â”€â”€ CASE SEARCH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function onCaseSearch(query) {
   const q = query.trim().toLowerCase();
   const resultsEl = document.getElementById("caseResultsList");
@@ -1156,7 +1156,7 @@ function pickCase(c) {
 
   // Show selected chip in search box
   const displayId = c.case_number || c.id;
-  document.getElementById("caseSearchInput").value = `${displayId} — ${c.suspect_name || "Unknown"}`;
+  document.getElementById("caseSearchInput").value = `${displayId} - ${c.suspect_name || "Unknown"}`;
   document.getElementById("caseResultsList").classList.remove("open");
 
   showCaseInfo(c.id);
@@ -1183,7 +1183,7 @@ document.addEventListener("click", e => {
   }
 });
 
-// ── SHOW CASE INFO ────────────────────────────────────────────
+// â”€â”€ SHOW CASE INFO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function showCaseInfo(caseId) {
   const c = allCases.find(x => String(x.id) === String(caseId));
   const empty   = document.getElementById("detailEmpty");
@@ -1236,7 +1236,7 @@ document.querySelectorAll('input[name="riskLevel"]').forEach(radio => {
   radio.addEventListener("change", () => updateSteps(userRole === "admin" ? 3 : 4));
 });
 
-// ── SAVE ──────────────────────────────────────────────────────
+// â”€â”€ SAVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById("btnSave").addEventListener("click", async () => {
   const caseId  = document.getElementById("caseSelect").value;
   const outcome = document.getElementById("outcomeSelect").value;
@@ -1251,7 +1251,7 @@ document.getElementById("btnSave").addEventListener("click", async () => {
   btn.disabled = true;
   btn.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-    Saving…`;
+    Savingâ€¦`;
 
   const payload = { outcome };
   if (risk)  payload.risk_level = risk;
@@ -1284,12 +1284,12 @@ document.getElementById("btnSave").addEventListener("click", async () => {
   }
 });
 
-// ── CANCEL ────────────────────────────────────────────────────
+// â”€â”€ CANCEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById("btnCancel").addEventListener("click", () => {
   window.location.href = "caseList.html";
 });
 
-// ── BANNER ────────────────────────────────────────────────────
+// â”€â”€ BANNER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function showBanner(msg, type) {
   const banner = document.getElementById("statusBanner");
   const icon   = document.getElementById("bannerIcon");
@@ -1314,15 +1314,51 @@ function escHtml(str) {
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-// ── SPINNER KEYFRAME ──────────────────────────────────────────
+// â”€â”€ SPINNER KEYFRAME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const style = document.createElement("style");
 style.textContent = "@keyframes spin { to { transform: rotate(360deg); } }";
 document.head.appendChild(style);
 
-// ── INIT ──────────────────────────────────────────────────────
+// â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 loadCases();
 </script>
 <script src="../js/sidebar.js"></script>
-  <script src="../js/shared-navbar.js"></script>
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
 </body>
 </html>

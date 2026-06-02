@@ -6,16 +6,229 @@
   <title>Admin Dashboard — Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
+       <link rel="stylesheet" href="../css/chatbot.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Places API -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4OWWhPrqkjlRMg3HYaAVvuHp5SK9ykqM&libraries=places"></script>
   <style>
-    /* ── TOPBAR ROLE COLORS ─────────────────────────────────── */
-    body.role-admin .topbar,
-    body.role-commander .topbar { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
-    body.role-investigator .topbar { background: linear-gradient(135deg, #15803d 0%, #10b981 100%); }
+    /* ── TOPBAR — WHITE / CLEAN ────────────────────────────── */
+    .topbar {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border-bottom: 1.5px solid #e2e8f0 !important;
+      box-shadow: 0 2px 12px rgba(15,23,42,0.06) !important;
+    }
 
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .topbar-page-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+      flex-shrink: 0;
+      /* colour set per-role by JS */
+    }
+    body.role-admin     .topbar-page-icon { background: linear-gradient(135deg,#1e3a8a,#2563eb); }
+    body.role-commander .topbar-page-icon { background: linear-gradient(135deg,#1e3a8a,#2563eb); }
+    body.role-investigator .topbar-page-icon { background: linear-gradient(135deg,#15803d,#10b981); }
+
+    .topbar h1 { color: #0f172a !important; font-size: 20px !important; }
+    .topbar p  { color: #64748b !important; font-size: 13px !important; opacity: 1 !important; }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Icon action buttons (bells) */
+    .topbar-icon-btn {
+      position: relative;
+      background: #f1f5f9;
+      border: 1.5px solid #e2e8f0;
+      color: #475569;
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      transition: background .18s, color .18s, border-color .18s;
+    }
+    .topbar-icon-btn:hover { background: #e2e8f0; color: #0f172a; border-color: #cbd5e1; }
+
+    /* ── USER PROFILE DROPDOWN ──────────────────────────────── */
+    .topbar-user { position: relative; }
+
+    .topbar-user-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      border: none;
+      border-radius: 12px;
+      padding: 4px 8px 4px 4px;
+      cursor: pointer;
+      transition: background .18s;
+    }
+    .topbar-user-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .topbar-user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: -0.02em;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      background: linear-gradient(135deg,#1e3a8a,#059669);
+    }
+    body.role-admin        .topbar-user-avatar { background: linear-gradient(135deg,#1e3a8a,#059669); }
+    body.role-commander    .topbar-user-avatar { background: linear-gradient(135deg,#1e3a8a,#059669); }
+    body.role-investigator .topbar-user-avatar { background: linear-gradient(135deg,#1e3a8a,#059669); }
+
+    .topbar-user-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+    }
+    .topbar-user-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .topbar-user-role {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+    }
+    .topbar-user-chevron {
+      font-size: 11px;
+      color: #94a3b8;
+      transition: transform .22s cubic-bezier(.175,.885,.32,1.275);
+    }
+    .topbar-user-btn.open .topbar-user-chevron { transform: rotate(180deg); }
+
+    /* Dropdown panel */
+    .topbar-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 230px;
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(15,23,42,0.14);
+      z-index: 500;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.97);
+      pointer-events: none;
+      transform-origin: top right;
+      transition: opacity .2s ease, transform .2s cubic-bezier(.175,.885,.32,1.275);
+    }
+    .topbar-dropdown.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+
+    .topbar-dropdown-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 16px 14px;
+    }
+    .topbar-dropdown-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      background: linear-gradient(135deg,#1e3a8a,#059669);
+    }
+    body.role-admin        .topbar-dropdown-avatar { background: linear-gradient(135deg,#1e3a8a,#059669); }
+    body.role-commander    .topbar-dropdown-avatar { background: linear-gradient(135deg,#1e3a8a,#059669); }
+    body.role-investigator .topbar-dropdown-avatar { background: linear-gradient(135deg,#1e3a8a,#059669); }
+
+    .topbar-dropdown-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 130px;
+    }
+    .topbar-dropdown-role {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .topbar-dropdown-divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 0 12px;
+    }
+    .topbar-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 11px 16px;
+      background: none;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      text-align: left;
+      font-family: inherit;
+    }
+    .topbar-dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .topbar-dropdown-logout { color: #dc2626 !important; margin: 4px 0; }
+    .topbar-dropdown-logout:hover { background: #fef2f2 !important; color: #b91c1c !important; }
+
+    /* ── Sidebar role-badge (still used in sidebar) ──────────── */
     .role-badge {
       display: inline-block;
       font-size: 11px;
@@ -26,6 +239,18 @@
       border-radius: 8px;
       background: rgba(255,255,255,0.18);
       border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* ── Responsive: compact header on small screens ──────────── */
+    @media (max-width: 640px) {
+      .topbar-user-info { display: none; }
+      .topbar-user-btn  { padding: 2px; }
+      .topbar-user-avatar { width: 34px; height: 34px; font-size: 13px; }
+      .topbar-page-icon   { width: 38px; height: 38px; font-size: 17px; }
+    }
+    @media (max-width: 420px) {
+      .topbar-right { gap: 5px; }
+      .topbar-icon-btn { width: 36px; height: 36px; font-size: 14px; border-radius: 9px; }
     }
 
     /* ── PAGE BODY ──────────────────────────────────────────── */
@@ -419,9 +644,7 @@
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
 
-    <nav class="menu" id="sidebarMenu">
-      <p style="opacity:0.5; font-size:12px; padding:12px;">Loading…</p>
-    </nav>
+    <nav class="menu" id="sidebarMenu"></nav>
 
     <div class="role-box">
       <div style="font-size:11px; opacity:0.7; margin-bottom:4px;">Logged in as</div>
@@ -433,15 +656,23 @@
   <main class="main">
 
     <header class="topbar">
-      <div>
-        <h1 id="topbarTitle">Dashboard</h1>
-        <p id="topbarSub">Full system overview</p>
+      <!-- Left: page icon + title -->
+      <div class="topbar-left">
+        <div class="topbar-page-icon">
+          <i class="fa-solid fa-gauge-high" id="topbarIconInner"></i>
+        </div>
+        <div>
+          <h1 id="topbarTitle">Dashboard</h1>
+          <p id="topbarSub">Full system overview</p>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;">
+
+      <!-- Right: notification bells + user profile -->
+      <div class="topbar-right">
 
         <!-- Notification Bell -->
         <div style="position:relative;">
-          <button id="notifBell" onclick="toggleNotifPanel()" title="Notifications" style="position:relative;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;width:38px;height:38px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+          <button id="notifBell" onclick="toggleNotifPanel()" title="Notifications" class="topbar-icon-btn">
             <i class="fa-solid fa-bell"></i>
             <span id="notifBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;font-size:9px;font-weight:800;padding:2px 5px;border-radius:99px;min-width:17px;text-align:center;border:2px solid white;font-family:inherit;">0</span>
           </button>
@@ -458,11 +689,42 @@
           </div>
         </div>
 
-        <button id="communityBell" onclick="toggleCommunityInbox()" title="Community Report Submissions" style="position:relative;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;width:38px;height:38px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+        <!-- Community Reports Bell -->
+        <button id="communityBell" onclick="toggleCommunityInbox()" title="Community Report Submissions" class="topbar-icon-btn" style="position:relative;">
           <i class="fa-solid fa-inbox"></i>
           <span id="communityBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;font-size:9px;font-weight:800;padding:2px 5px;border-radius:99px;min-width:17px;text-align:center;border:2px solid white;font-family:inherit;">0</span>
         </button>
-        <div id="roleBadge" style="background:rgba(255,255,255,0.15);padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.3);">…</div>
+
+        <!-- Hidden role badge kept for dashboard.js backward-compat -->
+        <span id="roleBadge" style="display:none;"></span>
+
+        <!-- User Profile Dropdown -->
+        <div class="topbar-user" id="topbarUserMenu">
+          <button class="topbar-user-btn" onclick="toggleUserMenu()" id="topbarUserBtn">
+            <div class="topbar-user-avatar" id="topbarUserAvatar">A</div>
+            <div class="topbar-user-info">
+              <span class="topbar-user-name" id="topbarUserName">Loading…</span>
+              <span class="topbar-user-role" id="topbarUserRole">—</span>
+            </div>
+            <i class="fa-solid fa-chevron-down topbar-user-chevron"></i>
+          </button>
+          <!-- Dropdown -->
+          <div class="topbar-dropdown" id="topbarUserDropdown">
+            <div class="topbar-dropdown-header">
+              <div class="topbar-dropdown-avatar" id="topbarDropdownAvatar">A</div>
+              <div>
+                <div class="topbar-dropdown-name" id="topbarDropdownName">Loading…</div>
+                <div class="topbar-dropdown-role" id="topbarDropdownRole">—</div>
+              </div>
+            </div>
+            <div class="topbar-dropdown-divider"></div>
+            <button class="topbar-dropdown-item topbar-dropdown-logout" onclick="doLogout()">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              Sign out
+            </button>
+          </div>
+        </div>
+
       </div>
     </header>
 
@@ -1206,6 +1468,108 @@
   // Also run after a short delay to catch dynamic page loads
   setTimeout(() => { initBadge(); }, 1800);
 })();
+</script>
+<div id="adminChatbot">
+<!-- FLOATING BUTTON -->
+<button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+</button>
+
+<!-- CHATBOT CONTAINER -->
+<div id="aiChatContainer">
+    <div id="aiChatWindow">
+
+        <div id="aiChatHeader">
+            <div class="chat-header-left">
+                <div class="chat-avatar">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="chat-header-info">
+                    <h3>AI Operations Assistant</h3>
+                    <div class="chat-status">
+                        <span class="status-dot"></span>
+                        <span id="aiStatusText">Connected &middot; Live data</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-buttons">
+                <button onclick="clearAIChat()" title="Clear chat">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+                <button onclick="toggleAIChat()" title="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="aiMessages">
+            <div class="ai-message">
+                Hello! I am your AI Operations Assistant.<br><br>
+                I can answer questions about cases and investigators, or perform actions like creating cases, adding users, and assigning investigators.
+            </div>
+        </div>
+
+        <div id="aiSuggestions">
+            <!-- Populated by renderSuggestions() in chatbot.js based on user role -->
+        </div>
+
+        <div id="aiInputArea">
+            <input
+                type="text"
+                id="aiInput"
+                placeholder="Ask AI assistant..."
+                onkeypress="handleAIKey(event)"
+            >
+
+            <button onclick="sendAIMessage()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+
+    </div>
+</div>
+</div>
+<script src="../js/chatbot.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Chatbot is available to all authenticated roles.
+    // renderSuggestions() in chatbot.js handles role-specific actions.
+    const role = localStorage.getItem("userRole");
+    if (!role) {
+        document.getElementById("adminChatbot")?.remove();
+    }
+});
+
+// ── USER MENU ─────────────────────────────────────────────────
+function toggleUserMenu() {
+  const btn      = document.getElementById('topbarUserBtn');
+  const dropdown = document.getElementById('topbarUserDropdown');
+  const open     = dropdown.classList.contains('open');
+  if (open) {
+    dropdown.classList.remove('open');
+    btn.classList.remove('open');
+  } else {
+    dropdown.classList.add('open');
+    btn.classList.add('open');
+    // Close when clicking outside
+    setTimeout(() => {
+      document.addEventListener('click', function handler(e) {
+        if (!document.getElementById('topbarUserMenu').contains(e.target)) {
+          dropdown.classList.remove('open');
+          btn.classList.remove('open');
+          document.removeEventListener('click', handler);
+        }
+      });
+    }, 0);
+  }
+}
+
+function doLogout() {
+  localStorage.clear();
+  window.location.href = '../pages/login.html';
+}
 </script>
 
   <script src="../js/shared-navbar.js"></script>

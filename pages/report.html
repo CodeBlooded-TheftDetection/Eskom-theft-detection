@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Report Generator — Eskom Theft Detection</title>
+  <title>Report Generator - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -11,10 +11,10 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* ═══════════════════════════════════════════════════════
-       BASE OVERRIDES — keep sidebar/topbar as-is from
+    /*
+       BASE OVERRIDES - keep sidebar/topbar as-is from
        dashboard.css and only style the report content area
-    ═══════════════════════════════════════════════════════ */
+    */
     *, *::before, *::after { box-sizing: border-box; }
 
     body { font-family: 'IBM Plex Sans', sans-serif; }
@@ -26,14 +26,14 @@
       background: #f0f2f8;
     }
 
-    /* ── Page shell ──────────────────────────────────────── */
+    /* Page shell */
     .rpt-shell {
       max-width: 900px;
       margin: 0 auto;
       padding: 28px 24px 60px;
     }
 
-    /* ── Section label ───────────────────────────────────── */
+    /* Section label  */
     .rpt-eyebrow {
       font-size: 11px;
       font-weight: 700;
@@ -49,9 +49,7 @@
       margin: 0 0 24px;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       SEARCH PANEL
-    ═══════════════════════════════════════════════════════ */
+    /* SEARCH PANEL */
     .search-panel {
       background: #fff;
       border-radius: 16px;
@@ -148,9 +146,7 @@
     }
     .hint-chip:hover { background: #dbe4ff; }
 
-    /* ═══════════════════════════════════════════════════════
-       SEARCH RESULTS LIST
-    ═══════════════════════════════════════════════════════ */
+    /* SEARCH RESULTS LIST */
     #searchResults { margin-bottom: 20px; }
 
     .results-header {
@@ -267,9 +263,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ═══════════════════════════════════════════════════════
-       REPORT PREVIEW
-    ═══════════════════════════════════════════════════════ */
+    /* REPORT PREVIEW */
     #reportPreview { display: none; }
 
     .report-card {
@@ -453,7 +447,7 @@
     .dl-status.ok  { color: #15803d; display: inline; }
     .dl-status.err { color: #b91c1c; display: inline; }
 
-    /* ── Watermark area in body ───────────────────────────── */
+    /* Watermark area in body */
     .official-seal {
       display: flex;
       align-items: center;
@@ -468,9 +462,7 @@
     .seal-text { font-size: 11px; color: #6b7280; line-height: 1.5; }
     .seal-text strong { color: #374151; display: block; margin-bottom: 1px; }
 
-    /* ═══════════════════════════════════════════════════════
-       PRINT STYLES — clean PDF output
-    ═══════════════════════════════════════════════════════ */
+    /* PRINT STYLES - clean PDF output */
     @media print {
       .sidebar, .topbar, .search-panel, #searchResults,
       .report-footer, .rpt-eyebrow, .rpt-page-title { display: none !important; }
@@ -496,7 +488,7 @@
 <body>
 <div class="layout">
 
-  <!-- ── SIDEBAR (populated by sidebar.js) ─────────────────── -->
+  <!--  SIDEBAR (populated by sidebar.js)  -->
   <aside class="sidebar">
     <div class="logo">
       <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -505,7 +497,7 @@
     <nav class="menu" id="sidebarMenu"></nav>
   </aside>
 
-  <!-- ── MAIN ──────────────────────────────────────────────── -->
+  <!-- MAIN -->
   <main class="main">
     <header class="topbar">
       <div>
@@ -521,9 +513,7 @@
         <div class="rpt-eyebrow">Official Documentation</div>
         <div class="rpt-page-title">Case Report Generator</div>
 
-        <!-- ══════════════════════════════════════════════════
-             SEARCH PANEL
-        ══════════════════════════════════════════════════ -->
+        <!-- SEARCH PANEL -->
         <div class="search-panel">
           <div class="search-panel-label">Search cases</div>
 
@@ -533,7 +523,7 @@
               <input
                 type="text"
                 id="caseSearch"
-                placeholder="Enter case number, suspect name, or keyword…"
+                placeholder="Enter case number, suspect name, or keyword"
                 autocomplete="off"
                 spellcheck="false"
               >
@@ -551,9 +541,7 @@
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════════════
-             SEARCH RESULTS
-        ══════════════════════════════════════════════════ -->
+        <!-- SEARCH RESULTS -->
         <div id="searchResults">
           <!-- Populated by JS -->
           <div class="state-box">
@@ -563,9 +551,7 @@
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════════════
-             REPORT PREVIEW (shown when a case is selected)
-        ══════════════════════════════════════════════════ -->
+        <!-- REPORT PREVIEW (shown when a case is selected) -->
         <div id="reportPreview">
           <div class="report-card" id="reportCard">
 
@@ -576,11 +562,11 @@
                   <div class="band-logo-icon"><i class="fa-solid fa-bolt"></i></div>
                   <div>
                     <div class="band-logo-text">Eskom Theft Detection System</div>
-                    <div class="band-logo-sub">Confidential — Official Use Only</div>
+                    <div class="band-logo-sub">Confidential - Official Use Only</div>
                   </div>
                 </div>
                 <div class="band-title" id="rTitle">Case Report</div>
-                <div class="band-sub" id="rSubtitle">—</div>
+                <div class="band-sub" id="rSubtitle">-</div>
               </div>
             </div>
 
@@ -588,19 +574,19 @@
             <div class="meta-strip">
               <div class="meta-cell">
                 <div class="mc-label">Case Number</div>
-                <div class="mc-value" id="rCaseNum">—</div>
+                <div class="mc-value" id="rCaseNum">-</div>
               </div>
               <div class="meta-cell">
                 <div class="mc-label">Risk Level</div>
-                <div class="mc-value" id="rRisk">—</div>
+                <div class="mc-value" id="rRisk">-</div>
               </div>
               <div class="meta-cell">
                 <div class="mc-label">Status</div>
-                <div class="mc-value" id="rStatus">—</div>
+                <div class="mc-value" id="rStatus">-</div>
               </div>
               <div class="meta-cell">
                 <div class="mc-label">Date Reported</div>
-                <div class="mc-value" id="rDate">—</div>
+                <div class="mc-value" id="rDate">-</div>
               </div>
             </div>
 
@@ -622,31 +608,31 @@
               <div class="field-grid">
                 <div class="fi">
                   <div class="fi-label">Suspect Name</div>
-                  <div class="fi-value" id="rSuspect">—</div>
+                  <div class="fi-value" id="rSuspect">-</div>
                 </div>
                 <div class="fi">
                   <div class="fi-label">Assigned Investigator</div>
-                  <div class="fi-value" id="rInvestigator">—</div>
+                  <div class="fi-value" id="rInvestigator">-</div>
                 </div>
                 <div class="fi">
                   <div class="fi-label">Date Reported</div>
-                  <div class="fi-value mono" id="rDateFull">—</div>
+                  <div class="fi-value mono" id="rDateFull">-</div>
                 </div>
                 <div class="fi">
                   <div class="fi-label">Date Resolved</div>
-                  <div class="fi-value mono" id="rResolved">—</div>
+                  <div class="fi-value mono" id="rResolved">-</div>
                 </div>
                 <div class="fi">
                   <div class="fi-label">Risk Level</div>
-                  <div class="fi-value" id="rRiskDetail">—</div>
+                  <div class="fi-value" id="rRiskDetail">-</div>
                 </div>
                 <div class="fi">
                   <div class="fi-label">Outcome</div>
-                  <div class="fi-value" id="rOutcome">—</div>
+                  <div class="fi-value" id="rOutcome">-</div>
                 </div>
                 <div class="fi span-2">
                   <div class="fi-label">Description</div>
-                  <div class="fi-value prose" id="rDesc">—</div>
+                  <div class="fi-value prose" id="rDesc">-</div>
                 </div>
               </div>
 
@@ -665,11 +651,11 @@
               <div class="field-grid">
                 <div class="fi">
                   <div class="fi-label">Report Generated</div>
-                  <div class="fi-value mono" id="rGenerated">—</div>
+                  <div class="fi-value mono" id="rGenerated">-</div>
                 </div>
                 <div class="fi">
                   <div class="fi-label">Generated By</div>
-                  <div class="fi-value" id="rGeneratedBy">System — Eskom ETD</div>
+                  <div class="fi-value" id="rGeneratedBy">System - Eskom ETD</div>
                 </div>
               </div>
 
@@ -698,13 +684,11 @@
 
 </div><!-- end .layout -->
 
-<!-- ═════════════════════════════════════════════════════════
-     SCRIPT
-═════════════════════════════════════════════════════════ -->
+<!-- SCRIPT -->
 <script>
 lucide.createIcons();
 
-// ── AUTH ───────────────────────────────────────────────────
+// AUTH 
 const token    = localStorage.getItem("token");
 const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
 if (!token) window.location.href = "login.html";
@@ -715,13 +699,11 @@ const authHeaders = {
   "Authorization": `Bearer ${token}`
 };
 
-// ── STATE ──────────────────────────────────────────────────
+// STATE 
 let allCases     = [];   // full list from API (loaded once)
 let selectedCase = null; // currently previewed case
 
-// ══════════════════════════════════════════════════════════
-//  LOAD ALL CASES FROM API (called once on boot)
-// ══════════════════════════════════════════════════════════
+// LOAD ALL CASES FROM API (called once on boot)
 async function fetchAllCases() {
   try {
     const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
@@ -739,9 +721,9 @@ async function fetchAllCases() {
   }
 }
 
-// ══════════════════════════════════════════════════════════
+
 //  SEARCH LOGIC
-// ══════════════════════════════════════════════════════════
+
 function doSearch() {
   const query = document.getElementById("caseSearch").value.trim().toLowerCase();
   const el    = document.getElementById("searchResults");
@@ -824,9 +806,9 @@ function doSearch() {
   }
 }
 
-// ══════════════════════════════════════════════════════════
-//  SELECT A CASE → RENDER REPORT PREVIEW
-// ══════════════════════════════════════════════════════════
+
+//  SELECT A CASE - RENDER REPORT PREVIEW
+
 function selectCase(caseId) {
   const c = allCases.find(x => String(x.id) === String(caseId));
   if (!c) return;
@@ -840,9 +822,9 @@ function selectCase(caseId) {
   renderReport(c);
 }
 
-// ══════════════════════════════════════════════════════════
+
 //  RENDER REPORT PREVIEW
-// ══════════════════════════════════════════════════════════
+
 function renderReport(c) {
   const displayId   = c.case_number || String(c.id);
   const riskRaw     = (c.risk_level || "LOW").toUpperCase();
@@ -863,8 +845,8 @@ function renderReport(c) {
     ? (c.investigators.full_name || c.investigators.email || "Assigned")
     : (c.assigned_to || "Unassigned");
 
-  // ── Populate fields ──────────────────────────────────────
-  document.getElementById("rTitle").textContent      = `Case Report — ${displayId}`;
+  //Populate fields 
+  document.getElementById("rTitle").textContent      = `Case Report - ${displayId}`;
   document.getElementById("rSubtitle").textContent   = `Generated ${new Date().toLocaleDateString("en-ZA", { day:"numeric", month:"long", year:"numeric" })} · Eskom ETD System`;
 
   document.getElementById("rCaseNum").textContent    = displayId;
@@ -889,7 +871,7 @@ function renderReport(c) {
   document.getElementById("rOutcome").textContent    = c.outcome || statusRaw;
   document.getElementById("rDesc").textContent       = c.description || "No description recorded";
   document.getElementById("rGenerated").textContent  = new Date().toLocaleString("en-ZA", { day:"numeric", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" });
-  document.getElementById("rGeneratedBy").textContent = "System — Eskom ETD";
+  document.getElementById("rGeneratedBy").textContent = "System - Eskom ETD";
 
   // Notes
   if (c.notes && c.notes.trim()) {
@@ -911,11 +893,11 @@ function renderReport(c) {
   }, 80);
 }
 
-// ══════════════════════════════════════════════════════════
+
 //  DOWNLOAD PDF
 //  Tries the backend /api/reports/:id endpoint first.
 //  Falls back to window.print() if that fails.
-// ══════════════════════════════════════════════════════════
+
 document.getElementById("btnDownload").addEventListener("click", async () => {
   if (!selectedCase) { alert("Please select a case first."); return; }
 
@@ -923,7 +905,7 @@ document.getElementById("btnDownload").addEventListener("click", async () => {
   const dlStatus = document.getElementById("dlStatus");
 
   btn.disabled      = true;
-  btn.innerHTML     = `<i class="fa-solid fa-spinner fa-spin"></i> Generating…`;
+  btn.innerHTML     = `<i class="fa-solid fa-spinner fa-spin"></i> Generatingâ€¦`;
   dlStatus.className   = "dl-status";
   dlStatus.textContent = "";
 
@@ -934,18 +916,18 @@ document.getElementById("btnDownload").addEventListener("click", async () => {
       const data = await res.json();
       if (data.url) {
         window.open(data.url, "_blank");
-        dlStatus.textContent = "✓ PDF opened in a new tab";
+        dlStatus.textContent = "âœ“ PDF opened in a new tab";
         dlStatus.className   = "dl-status ok";
         return;
       }
     }
-    // Server didn't supply a URL — fall through to print
+    // Server didn't supply a URL - fall through to print
     throw new Error("No URL from server");
 
   } catch (_) {
     // Fallback: use the browser print dialog (report.css hides UI chrome)
     window.print();
-    dlStatus.textContent = "✓ Print dialog opened — save as PDF";
+    dlStatus.textContent = "âœ“ Print dialog opened - save as PDF";
     dlStatus.className   = "dl-status ok";
 
   } finally {
@@ -954,7 +936,7 @@ document.getElementById("btnDownload").addEventListener("click", async () => {
   }
 });
 
-// ── CLEAR / NEW SEARCH ─────────────────────────────────────
+// â”€â”€ CLEAR / NEW SEARCH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById("btnClear").addEventListener("click", () => {
   selectedCase = null;
   document.getElementById("caseSearch").value = "";
@@ -968,18 +950,18 @@ document.getElementById("btnClear").addEventListener("click", () => {
   document.getElementById("caseSearch").focus();
 });
 
-// ── BACK TO CASES ──────────────────────────────────────────
+// â”€â”€ BACK TO CASES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById("btnBack").addEventListener("click", () => {
   window.location.href = "caseList.html";
 });
 
-// ── SEARCH TRIGGERS ────────────────────────────────────────
+// â”€â”€ SEARCH TRIGGERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById("btnSearch").addEventListener("click", doSearch);
 document.getElementById("caseSearch").addEventListener("keydown", e => {
   if (e.key === "Enter") doSearch();
 });
 
-// Hint chips → populate search field and auto-search
+// Hint chips â†’ populate search field and auto-search
 document.querySelectorAll(".hint-chip").forEach(chip => {
   chip.addEventListener("click", () => {
     document.getElementById("caseSearch").value = chip.dataset.hint;
@@ -987,7 +969,7 @@ document.querySelectorAll(".hint-chip").forEach(chip => {
   });
 });
 
-// ── PRE-SELECT FROM DASHBOARD/CASES ───────────────────────
+// â”€â”€ PRE-SELECT FROM DASHBOARD/CASES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // If another page stored a selectedCaseId in localStorage,
 // auto-load that case immediately.
 async function init() {
@@ -1011,7 +993,7 @@ function showLoading() {
   document.getElementById("searchResults").innerHTML = `
     <div class="state-box">
       <div class="spinner"></div>
-      <h3>Loading cases…</h3>
+      <h3>Loading casesâ€¦</h3>
       <p>Connecting to the database.</p>
     </div>`;
 }
@@ -1024,14 +1006,14 @@ function hideLoading() {
     </div>`;
 }
 
-// ── HTML ESCAPE HELPER ─────────────────────────────────────
+// â”€â”€ HTML ESCAPE HELPER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function escHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;")
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// ── LOGOUT (wired up by sidebar.js, but guard here too) ───
+// â”€â”€ LOGOUT (wired up by sidebar.js, but guard here too) â”€â”€â”€
 document.addEventListener("click", e => {
   if (e.target.id === "logoutLink" || e.target.closest("#logoutLink")) {
     e.preventDefault();
@@ -1044,6 +1026,42 @@ init();
 </script>
 
 <script src="../js/sidebar.js"></script>
-  <script src="../js/shared-navbar.js"></script>
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
 </body>
 </html>

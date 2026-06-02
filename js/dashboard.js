@@ -14,18 +14,39 @@ const authHeaders = {
 function setRoleInfo() {
   // Topbar title per role
   const titles = {
-    admin:       { title: 'Admin Dashboard',      sub: 'Full system control' },
-    commander:   { title: 'Commander Dashboard',  sub: 'Team oversight & reports' },
-    investigator:{ title: 'My Cases',             sub: 'Your assigned investigations' },
+    admin:       { title: 'Admin Dashboard',      sub: 'Full system control',            icon: 'fa-gauge-high' },
+    commander:   { title: 'Commander Dashboard',  sub: 'Team oversight & reports',       icon: 'fa-shield-halved' },
+    investigator:{ title: 'My Cases',             sub: 'Your assigned investigations',   icon: 'fa-magnifying-glass' },
   };
   const t = titles[userRole] || titles.investigator;
   const titleEl = document.getElementById('topbarTitle');
   const subEl   = document.getElementById('topbarSub');
+  const iconEl  = document.getElementById('topbarIconInner');
   if (titleEl) titleEl.textContent = t.title;
   if (subEl)   subEl.textContent   = t.sub;
+  if (iconEl)  { iconEl.className = ''; iconEl.classList.add('fa-solid', t.icon); }
 
-  // Role badge (topbar + sidebar)
+  // User display name from localStorage (set on login)
+  const fullName  = localStorage.getItem('full_name') || '';
   const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  const initial   = fullName ? fullName.trim().charAt(0).toUpperCase() : roleLabel.charAt(0);
+
+  // Populate user profile elements
+  ['topbarUserAvatar', 'topbarDropdownAvatar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = initial;
+  });
+  const nameShort = fullName || roleLabel;
+  const nameEl    = document.getElementById('topbarUserName');
+  const dropName  = document.getElementById('topbarDropdownName');
+  const roleEl    = document.getElementById('topbarUserRole');
+  const dropRole  = document.getElementById('topbarDropdownRole');
+  if (nameEl)   nameEl.textContent   = nameShort;
+  if (dropName) dropName.textContent = fullName || roleLabel;
+  if (roleEl)   roleEl.textContent   = roleLabel;
+  if (dropRole) dropRole.textContent = roleLabel;
+
+  // Role badge (sidebar) — backward compat
   const badge1 = document.getElementById('roleBadge');
   const badge2 = document.getElementById('roleName');
   if (badge1) badge1.textContent = roleLabel;

@@ -1,16 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resolved Cases — Eskom Theft Detection</title>
+  <title>Resolved Cases - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* ── Reset & Base ─────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; }
+    /* Reset & Base */
     html, body, .layout, .main { height: 100%; }
     body { font-family: 'DM Sans', sans-serif; background: #f1f5f9; }
 
@@ -25,7 +24,7 @@
       gap: 0;
     }
 
-    /* ── Header ────────────────────────────────────────────── */
+    /* Header*/
     .topbar { flex-shrink: 0; }
     .topbar-inner {
       display: flex;
@@ -55,7 +54,7 @@
       background: #93c5fd;
     }
 
-    /* ── Section label ────────────────────────────────────────── */
+    /* Section label */
     .section-label {
       font-size: 10.5px;
       font-weight: 700;
@@ -65,7 +64,7 @@
       margin: 20px 0 10px;
     }
 
-    /* ── Stats Ribbon ─────────────────────────────────────────── */
+    /*Stats Ribbon*/
     .resolution-stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -143,7 +142,7 @@
       display: block;
     }
 
-    /* ── Toolbar ─────────────────────────────────────────────── */
+    /* Toolbar */
     .list-toolbar {
       display: flex;
       gap: 10px;
@@ -209,7 +208,7 @@
       font-weight: 500;
     }
 
-    /* ── Table ───────────────────────────────────────────────── */
+    /* Table */
     .table-wrap {
       flex: 1;
       overflow-y: auto;
@@ -364,7 +363,7 @@
     }
     .state-row .state-icon svg { width: 22px; height: 22px; }
 
-    /* ── Pagination ──────────────────────────────────────────── */
+    /* Pagination */
     .pagination {
       display: flex;
       justify-content: space-between;
@@ -404,13 +403,13 @@
       box-shadow: 0 2px 8px rgba(22,163,74,0.30);
     }
 
-    /* ── Animations ──────────────────────────────────────────── */
+    /* Animations */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Scrollbar ───────────────────────────────────────────── */
+    /* Scrollbar */
     .table-wrap::-webkit-scrollbar { width: 6px; }
     .table-wrap::-webkit-scrollbar-track { background: transparent; }
     .table-wrap::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
@@ -437,7 +436,7 @@
       <div class="topbar-inner">
         <div class="topbar-title">
           <h1>Resolved Cases</h1>
-          <p>Closed investigations — resolution history, time-to-close &amp; final reports</p>
+          <p>Closed investigations - resolution history, time-to-close &amp; final reports</p>
         </div>
         <div class="topbar-badge">Archive Active</div>
       </div>
@@ -445,7 +444,7 @@
 
     <div class="page-body">
 
-      <!-- ── Performance Stats ─────────────────────────────── -->
+      <!-- Performance Stats  -->
       <div class="section-label">Resolution Performance</div>
       <div class="resolution-stats">
 
@@ -453,7 +452,7 @@
           <div class="stat-card-top">
             <div>
               <h4>Total Resolved</h4>
-              <p id="statResTotal">—</p>
+              <p id="statResTotal">-</p>
             </div>
             <div class="stat-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -466,7 +465,7 @@
           <div class="stat-card-top">
             <div>
               <h4>Avg. Days to Close</h4>
-              <p id="statAvgDays">—</p>
+              <p id="statAvgDays">-</p>
             </div>
             <div class="stat-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -479,35 +478,35 @@
           <div class="stat-card-top">
             <div>
               <h4>Resolved This Month</h4>
-              <p id="statThisMonth">—</p>
+              <p id="statThisMonth">-</p>
             </div>
             <div class="stat-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
           </div>
-          <span id="statMonthLabel">—</span>
+          <span id="statMonthLabel">-</span>
         </div>
 
         <div class="res-stat-card orange">
           <div class="stat-card-top">
             <div>
               <h4>Fastest Resolution</h4>
-              <p id="statFastest">—</p>
+              <p id="statFastest">-</p>
             </div>
             <div class="stat-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             </div>
           </div>
-          <span>Days — personal best</span>
+          <span>Days - personal best</span>
         </div>
 
       </div>
 
-      <!-- ── Toolbar ─────────────────────────────────────────── -->
+      <!-- Toolbar  -->
       <div class="list-toolbar">
         <div class="search-wrap">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="searchInput" placeholder="Search by case number, suspect, or investigator…"/>
+          <input type="text" id="searchInput" placeholder="Search by case number, suspect, or investigator"/>
         </div>
         <select class="toolbar-select" id="filterRisk">
           <option value="">All Risk Levels</option>
@@ -515,10 +514,10 @@
           <option value="MID">MID Risk</option>
           <option value="LOW">LOW Risk</option>
         </select>
-        <span class="toolbar-count" id="countLabel">Loading…</span>
+        <span class="toolbar-count" id="countLabel">Loadingâ€¦</span>
       </div>
 
-      <!-- ── Resolved Cases Table ───────────────────────────── -->
+      <!--  Resolved Cases Table -->
       <div class="table-wrap">
         <table>
           <thead>
@@ -539,16 +538,16 @@
                 <div class="state-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
-                Loading resolved cases…
+                Loading resolved casesâ€¦
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- ── Pagination ─────────────────────────────────────── -->
+      <!-- Pagination  -->
       <div class="pagination">
-        <span class="page-info" id="pageInfo">—</span>
+        <span class="page-info" id="pageInfo">-</span>
         <div class="page-btns" id="pageBtns"></div>
       </div>
 
@@ -559,7 +558,7 @@
 <script>
 lucide.createIcons();
 
-// ── AUTH ──────────────────────────────────────────────────────
+// AUTH 
 const token    = localStorage.getItem("token");
 const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
 if (!token) window.location.href = "login.html";
@@ -583,14 +582,14 @@ let   currentPage = 1;
 let   allResolved = [];
 let   filtered    = [];
 
-// ── LOAD RESOLVED CASES ───────────────────────────────────────
+//LOAD RESOLVED CASES
 async function loadResolvedCases() {
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = `<tr class="state-row"><td colspan="8">
     <div class="state-icon">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     </div>
-    Loading resolved cases…
+    Loading resolved casesâ€¦
   </td></tr>`;
 
   try {
@@ -614,7 +613,7 @@ async function loadResolvedCases() {
   }
 }
 
-// ── COMPUTE RESOLUTION STATS ──────────────────────────────────
+//COMPUTE RESOLUTION STATS
 function computeStats() {
   const total = allResolved.length;
   document.getElementById("statResTotal").textContent = total;
@@ -648,7 +647,7 @@ function computeStats() {
     now.toLocaleString("en-ZA", { month: "long", year: "numeric" });
 }
 
-// ── FILTER + SEARCH ───────────────────────────────────────────
+// FILTER + SEARCH
 function applyFilters() {
   const search     = document.getElementById("searchInput").value.toLowerCase();
   const riskFilter = document.getElementById("filterRisk").value;
@@ -667,7 +666,7 @@ function applyFilters() {
   renderTable();
 }
 
-// ── RENDER TABLE ──────────────────────────────────────────────
+// RENDER TABLE
 function renderTable() {
   const tbody      = document.getElementById("tableBody");
   const total      = filtered.length;
@@ -704,7 +703,7 @@ function renderTable() {
     const reported   = c.created_at  ? new Date(c.created_at).toLocaleDateString("en-ZA")  : "N/A";
     const resolvedOn = c.resolved_at ? new Date(c.resolved_at).toLocaleDateString("en-ZA") : "N/A";
 
-    let daysLabel = "<span style='color:#9ca3af;'>—</span>";
+    let daysLabel = "<span style='color:#9ca3af;'>-</span>";
     if (c.created_at && c.resolved_at) {
       const days = Math.max(0, Math.round(
         (new Date(c.resolved_at) - new Date(c.created_at)) / (1000 * 60 * 60 * 24)
@@ -746,7 +745,7 @@ function renderTable() {
   lucide.createIcons();
 }
 
-// ── PAGINATION ────────────────────────────────────────────────
+// PAGINATION
 function renderPagination(page, totalPages) {
   document.getElementById("pageInfo").textContent =
     totalPages ? `Page ${page} of ${totalPages}` : "No results";
@@ -757,7 +756,7 @@ function renderPagination(page, totalPages) {
 
   const prev = document.createElement("button");
   prev.className = "page-btn";
-  prev.textContent = "← Prev";
+  prev.textContent = "Prev";
   prev.disabled    = page <= 1;
   prev.onclick = () => { currentPage--; renderTable(); };
   btns.appendChild(prev);
@@ -774,13 +773,13 @@ function renderPagination(page, totalPages) {
 
   const next = document.createElement("button");
   next.className = "page-btn";
-  next.textContent = "Next →";
+  next.textContent = "Next";
   next.disabled    = page >= totalPages;
   next.onclick = () => { currentPage++; renderTable(); };
   btns.appendChild(next);
 }
 
-// ── ACTIONS ───────────────────────────────────────────────────
+// ACTIONS
 function viewDetail(caseId) {
   localStorage.setItem("preselectedCaseId", caseId);
   window.location.href = "caseList.html";
@@ -809,14 +808,50 @@ async function reopenCase(caseId) {
   }
 }
 
-// ── LISTENERS ─────────────────────────────────────────────────
+// LISTENERS
 document.getElementById("searchInput").addEventListener("input",  applyFilters);
 document.getElementById("filterRisk").addEventListener("change",  applyFilters);
 
-// ── INIT ──────────────────────────────────────────────────────
+// INIT
 loadResolvedCases();
 </script>
 <script src="../js/sidebar.js"></script>
-  <script src="../js/shared-navbar.js"></script>
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
 </body>
 </html>

@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Management — Eskom Theft Detection</title>
+  <title>User Management - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
+     
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- No external map API needed — address autocomplete uses Nominatim (same as map.js) -->
+  <!-- No external map API needed - address autocomplete uses Nominatim (same as map.js) -->
   <style>
     html,body,.layout,.main{height:100%;}
     .main{display:flex;flex-direction:column;overflow:hidden;}
@@ -55,7 +56,7 @@
     .modal-row input,.modal-row select,.modal-row textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #e5e9f5;font-family:inherit;font-size:13.5px;box-sizing:border-box;}
     .modal-row textarea{resize:vertical;min-height:80px;}
     .modal-row input:focus,.modal-row select:focus,.modal-row textarea:focus{outline:none;border-color:#2563eb;}
-    /* ── Address autocomplete — mirrors map.html suggestion styles ── */
+    /* â”€â”€ Address autocomplete - mirrors map.html suggestion styles â”€â”€ */
     .addr-suggestions {
       position: absolute;
       top: calc(100% + 2px);
@@ -102,7 +103,7 @@
     .breadcrumb a{color:#2563eb;text-decoration:none;}
     .relative{position:relative;}
     @media(max-width:700px){.stat-row{grid-template-columns:1fr 1fr;}.modal{width:calc(100vw - 40px);}}
-    /* Address field locked state — applied once a suggestion is chosen */
+    /* Address field locked state - applied once a suggestion is chosen */
     #caseModalAddress.addr-locked {
       background: #f0fdf4;
       border-color: #16a34a;
@@ -125,7 +126,7 @@
       <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
-    <nav class="menu" id="sidebarMenu"><p class="menu-title">NAVIGATION</p></nav>
+    <nav class="menu" id="sidebarMenu"></nav>
   </aside>
 
   <main class="main">
@@ -134,19 +135,19 @@
     </header>
 
     <div class="page-body">
-      <div class="breadcrumb"><a href="dashboard.html">Dashboard</a> › User Management</div>
+      <div class="breadcrumb"><a href="dashboard.html">Dashboard</a> User Management</div>
 
       <!-- Stats -->
       <div class="stat-row">
-        <div class="stat-card"><h4>Total Users</h4><p class="blue" id="statTotal">—</p></div>
-        <div class="stat-card red"><h4>Admins</h4><p id="statAdmins">—</p></div>
-        <div class="stat-card"><h4>Commanders</h4><p class="blue" id="statCommanders">—</p></div>
-        <div class="stat-card green"><h4>Investigators</h4><p id="statInvestigators">—</p></div>
+        <div class="stat-card"><h4>Total Users</h4><p class="blue" id="statTotal">-</p></div>
+        <div class="stat-card red"><h4>Admins</h4><p id="statAdmins">-</p></div>
+        <div class="stat-card"><h4>Commanders</h4><p class="blue" id="statCommanders">-</p></div>
+        <div class="stat-card green"><h4>Investigators</h4><p id="statInvestigators">-</p></div>
       </div>
 
       <!-- Toolbar -->
       <div class="toolbar">
-        <input type="text" id="searchInput" placeholder="Search by email or role…" oninput="applyFilters()">
+        <input type="text" id="searchInput" placeholder="Search by email or role" oninput="applyFilters()">
         <select id="filterRole" onchange="applyFilters()">
           <option value="">All Roles</option>
           <option value="admin">Admin</option>
@@ -179,7 +180,7 @@
             </tr>
           </thead>
           <tbody id="userTableBody">
-            <tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">Loading users…</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">Loading usersâ€¦</td></tr>
           </tbody>
         </table>
       </div>
@@ -207,7 +208,7 @@
     <div class="modal-row">
       <label>Role *</label>
       <select id="modalRole">
-        <option value="">— Select role —</option>
+        <option value="">- Select role -</option>
         <option value="admin">Admin</option>
         <option value="investigator">Investigator</option>
       </select>
@@ -223,13 +224,13 @@
 <!-- CREATE CASE MODAL -->
 <div class="modal-overlay" id="caseModalOverlay" style="display:none;" onclick="closeCaseModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
-    <h3>📋 Create New Case</h3>
+    <h3>ðŸ“‹ Create New Case</h3>
     <p style="font-size:12px;color:#6b7280;margin-bottom:16px;">Add a new case to the system with property details and address autocomplete</p>
     
     <!-- Case Number Preview -->
     <div class="case-number-preview" id="caseNumberPreview">
       <p>Auto-generated Case Number:</p>
-      <p class="number" id="previewCaseNumber">Case —</p>
+      <p class="number" id="previewCaseNumber">Case -</p>
     </div>
 
     <!-- Case Details Section -->
@@ -248,7 +249,7 @@
     <div class="modal-row">
       <label>Risk Level *</label>
       <select id="caseModalRiskLevel">
-        <option value="">— Select risk level —</option>
+        <option value="">- Select risk level -</option>
         <option value="LOW">Low</option>
         <option value="MID">Medium</option>
         <option value="HIGH">High</option>
@@ -260,11 +261,11 @@
     
     <div class="modal-row relative">
       <label>Property Address</label>
-      <input type="text" id="caseModalAddress" placeholder="Start typing address…" autocomplete="off">
+      <input type="text" id="caseModalAddress" placeholder="Start typing addressâ€¦" autocomplete="off">
       <div class="addr-suggestions" id="addrSuggestions"></div>
       <div id="addressVerifyStatus" style="font-size:11.5px;margin-top:5px;display:none;"></div>
       <p class="addr-lock-hint" id="addrLockHint">
-        ✏️ Clear the field and retype to pick a different address
+        âœï¸ Clear the field and retype to pick a different address
       </p>
     </div>
 
@@ -279,7 +280,7 @@
 
     <!-- Actions -->
     <div class="modal-actions">
-      <button class="btn btn-green" id="caseSaveBtn" onclick="saveCase()">✔ Create Case</button>
+      <button class="btn btn-green" id="caseSaveBtn" onclick="saveCase()">âœ” Create Case</button>
       <button class="btn btn-outline" onclick="closeCaseModal()">Cancel</button>
     </div>
     <div class="modal-status" id="caseModalStatus"></div>
@@ -311,21 +312,21 @@ function setAddressStatus(type, msg) {
   el.style.display = 'block';
 }
 
-// ── ADDRESS AUTOCOMPLETE — Nominatim (mirrors map.js) ──────────
+// â”€â”€ ADDRESS AUTOCOMPLETE - Nominatim (mirrors map.js) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Same debounce, SA bounding box, icon logic, and dropdown structure
 // as the map page search bar for full consistency.
 
 let _addrSearchTimeout    = null;
 let _addressConfirmed     = false;   // true only when user picks from the suggestions list
 
-/** Pick an emoji icon based on Nominatim category/type — identical to map.js */
+/** Pick an emoji icon based on Nominatim category/type - identical to map.js */
 function getPoiIcon(r) {
   const cat     = r.extratags?.amenity || r.extratags?.leisure || r.type || r.class || '';
   const iconMap = {
-    golf_course: '⛳', sports_centre: '🏟', stadium: '🏟', club: '🏌️',
-    school: '🏫', hospital: '🏥', restaurant: '🍽', cafe: '☕',
-    hotel: '🏨', fuel: '⛽', park: '🌳', place_of_worship: '⛪',
-    residential: '🏘', road: '🛣', administrative: '🏛',
+    golf_course: 'â›³', sports_centre: 'ðŸŸ', stadium: 'ðŸŸ', club: 'ðŸŒï¸',
+    school: 'ðŸ«', hospital: 'ðŸ¥', restaurant: 'ðŸ½', cafe: 'â˜•',
+    hotel: 'ðŸ¨', fuel: 'â›½', park: 'ðŸŒ³', place_of_worship: 'â›ª',
+    residential: 'ðŸ˜', road: 'ðŸ›£', administrative: 'ðŸ›',
   };
   for (const [k, v] of Object.entries(iconMap)) {
     if (cat.toLowerCase().includes(k)) return v;
@@ -339,7 +340,7 @@ function initAutocomplete() {
   if (!input || !suggestEl) return;
 
   input.addEventListener('input', () => {
-    // Any manual edit resets the confirmed state — user must re-pick from suggestions
+    // Any manual edit resets the confirmed state - user must re-pick from suggestions
     _addressConfirmed = false;
     document.getElementById('caseModalLat').value = '';
     document.getElementById('caseModalLng').value = '';
@@ -355,12 +356,12 @@ function initAutocomplete() {
       return;
     }
 
-    setAddressStatus('manual', '⚠️ Type to search, then select an address from the list below');
+    setAddressStatus('manual', 'âš ï¸ Type to search, then select an address from the list below');
 
     clearTimeout(_addrSearchTimeout);
     _addrSearchTimeout = setTimeout(async () => {
       suggestEl.classList.add('active');
-      suggestEl.innerHTML = `<div style="padding:10px;color:#6b7280;font-size:13px;">Searching…</div>`;
+      suggestEl.innerHTML = `<div style="padding:10px;color:#6b7280;font-size:13px;">Searchingâ€¦</div>`;
 
       try {
         const params = new URLSearchParams({
@@ -422,12 +423,12 @@ function initAutocomplete() {
 
             suggestEl.innerHTML = '';
             suggestEl.classList.remove('active');
-            setAddressStatus('verified', '✅ Address confirmed from suggestions — coordinates captured');
+            setAddressStatus('verified', 'âœ… Address confirmed from suggestions - coordinates captured');
           });
         });
 
       } catch (e) {
-        suggestEl.innerHTML = `<div style="padding:10px;color:#dc2626;font-size:13px;">Search error — check connection.</div>`;
+        suggestEl.innerHTML = `<div style="padding:10px;color:#dc2626;font-size:13px;">Search error - check connection.</div>`;
       }
     }, 350);   // same debounce as map.js
   });
@@ -441,7 +442,7 @@ function initAutocomplete() {
   });
 }
 
-/** Nominatim geocode fallback — used in saveCase() when coords weren't captured via autocomplete */
+/** Nominatim geocode fallback - used in saveCase() when coords weren't captured via autocomplete */
 async function geocodeWithNominatim(address) {
   try {
     const params = new URLSearchParams({
@@ -461,7 +462,7 @@ async function geocodeWithNominatim(address) {
 let allUsers   = [];
 let filtered   = [];
 
-// ── LOAD USERS ────────────────────────────────────────────────
+// â”€â”€ LOAD USERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadUsers() {
   try {
     const res = await fetch(`${BASE_URL}/api/users`, { headers: authHeaders });
@@ -521,7 +522,7 @@ function renderTable() {
   }).join('');
 }
 
-// ── CREATE/EDIT USER MODAL ────────────────────────────────────
+// â”€â”€ CREATE/EDIT USER MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openCreateUserModal() {
   document.getElementById('modalTitle').textContent = 'Add New User';
   document.getElementById('editUserId').value       = '';
@@ -553,7 +554,7 @@ function closeModal(e) {
     document.getElementById('modalOverlay').style.display = 'none';
 }
 
-// ── CREATE CASE MODAL ──────────────────────────────────────────
+// â”€â”€ CREATE CASE MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function openCreateCaseModal() {
   // Fetch next case number for preview
   try {
@@ -595,7 +596,7 @@ function closeCaseModal(e) {
   document.getElementById('caseModalOverlay').style.display = 'none';
 }
 
-// ── SAVE CASE ──────────────────────────────────────────────────
+// â”€â”€ SAVE CASE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function saveCase() {
   const suspectName     = document.getElementById('caseModalSuspectName').value.trim();
   const description     = document.getElementById('caseModalDescription').value.trim();
@@ -615,7 +616,7 @@ async function saveCase() {
   }
 
   btn.disabled = true;
-  btn.textContent = '⏳ Creating...';
+  btn.textContent = 'â³ Creating...';
 
   // Use coords from Google Places selection if available.
   // Otherwise geocode the typed address via Google Geocoder before saving.
@@ -623,14 +624,14 @@ async function saveCase() {
   let lng = document.getElementById('caseModalLng').value || null;
 
   if (address && (!lat || !lng)) {
-    setAddressStatus('loading', '⏳ Geocoding address…');
+    setAddressStatus('loading', 'â³ Geocoding addressâ€¦');
     const coords = await geocodeWithNominatim(address);
     if (coords) {
       lat = coords.lat;
       lng = coords.lng;
-      setAddressStatus('verified', '📍 Address geocoded successfully');
+      setAddressStatus('verified', 'ðŸ“ Address geocoded successfully');
     } else {
-      setAddressStatus('manual', '⚠️ Could not geocode — address saved as text only');
+      setAddressStatus('manual', 'âš ï¸ Could not geocode - address saved as text only');
     }
   }
 
@@ -665,13 +666,13 @@ async function saveCase() {
       }).catch(err => console.error('Property creation warning:', err));
     }
 
-    showCaseStatus(`✔ Case ${caseData.case_number} created successfully!`, 'success');
+    showCaseStatus(`âœ” Case ${caseData.case_number} created successfully!`, 'success');
     setTimeout(() => { document.getElementById('caseModalOverlay').style.display = 'none'; }, 1500);
   } catch (err) {
-    showCaseStatus(`❌ ${err.message}`, 'error');
+    showCaseStatus(`âŒ ${err.message}`, 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = '✔ Create Case';
+    btn.textContent = 'âœ” Create Case';
   }
 }
 
@@ -682,7 +683,7 @@ function showCaseStatus(msg, type) {
   el.style.display = 'block';
 }
 
-// ── SAVE USER ──────────────────────────────────────────────────
+// â”€â”€ SAVE USER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function saveUser() {
   const id        = document.getElementById('editUserId').value;
   const email     = document.getElementById('modalEmail').value.trim();
@@ -695,7 +696,7 @@ async function saveUser() {
   if (!full_name)         { showModalStatus('Full name is required.', 'error'); return; }
   if (!id && !pass)       { showModalStatus('Password is required for new users.', 'error'); return; }
 
-  btn.disabled = true; btn.textContent = 'Saving…';
+  btn.disabled = true; btn.textContent = 'Savingâ€¦';
   try {
     if (id) {
       const res = await fetch(`${BASE_URL}/api/users/${id}/role`, {
@@ -710,7 +711,7 @@ async function saveUser() {
       });
       if (!res.ok) { const e=await res.json(); throw new Error(e.message||e.error); }
     }
-    showModalStatus('✔ Saved successfully.', 'success');
+    showModalStatus('âœ” Saved successfully.', 'success');
     setTimeout(() => {
       document.getElementById('modalOverlay').style.display = 'none';
       loadUsers();
@@ -727,7 +728,7 @@ function showModalStatus(msg, type) {
   el.textContent = msg; el.className = `modal-status ${type}`; el.style.display = 'block';
 }
 
-// ── TOGGLE STATUS ──────────────────────────────────────────────
+// â”€â”€ TOGGLE STATUS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function toggleStatus(id, currentlyActive) {
   const action = currentlyActive ? 'deactivate' : 'activate';
   if (!confirm(`${action.charAt(0).toUpperCase()+action.slice(1)} this user?`)) return;
@@ -740,7 +741,7 @@ async function toggleStatus(id, currentlyActive) {
   } catch(e) { alert(`Failed: ${e.message}`); }
 }
 
-// ── DELETE USER ────────────────────────────────────────────────
+// â”€â”€ DELETE USER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function deleteUser(id, email) {
   if (!confirm(`Permanently delete user:\n${email}\n\nThis cannot be undone.`)) return;
   try {
@@ -750,10 +751,48 @@ async function deleteUser(id, email) {
   } catch(e) { alert(`Failed: ${e.message}`); }
 }
 
-// ── INIT ───────────────────────────────────────────────────────
+// â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 loadUsers();
 initAutocomplete();
 </script>
-  <script src="../js/shared-navbar.js"></script>
+
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
+  
 </body>
 </html>

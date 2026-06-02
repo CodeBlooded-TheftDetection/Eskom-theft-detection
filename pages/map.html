@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Map View — Eskom Theft Detection</title>
+  <title>Map View - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* ── Layout ─────────────────────────────────────────────── */
+    /* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     html, body, .layout, .main { height: 100%; }
 
     #mapWrapper {
@@ -24,7 +24,7 @@
       overflow: hidden;
     }
 
-    /* ── Toolbar ─────────────────────────────────────────────── */
+    /* â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .map-toolbar {
       display: flex;
       gap: 10px;
@@ -36,7 +36,7 @@
       position: relative;
     }
 
-    /* Search input — wider so full addresses are visible */
+    /* Search input - wider so full addresses are visible */
     .map-toolbar input#addressSearch {
       flex: 2 1 360px;      /* grows generously; minimum 360px */
       max-width: 560px;
@@ -94,7 +94,7 @@
     .sug-text strong { color: #0f1a3e; font-weight: 600; }
     .sug-context { color: #6b7280; font-size: 11px; margin-top: 1px; }
 
-    /* ── Toolbar buttons ──────────────────────────────────────── */
+    /* â”€â”€ Toolbar buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .btn-map {
       padding: 10px 16px;
       border-radius: 9px;
@@ -137,14 +137,14 @@
       display: none;
     }
 
-    /* ── Map ─────────────────────────────────────────────────── */
+    /* â”€â”€ Map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     #map {
       flex: 1;
       width: 100%;
       min-height: 0;
     }
 
-    /* ── Stats bar ───────────────────────────────────────────── */
+    /* â”€â”€ Stats bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .map-stats-bar {
       display: flex;
       background: #0f1a3e;
@@ -161,9 +161,9 @@
     .stat-pill:last-child { border-right: none; }
     .stat-pill strong { display: block; font-size: 18px; margin-bottom: 2px; }
 
-    /* ── Marker Manager panel ─────────────────────────────────
+    /* â”€â”€ Marker Manager panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        Slides in from the right as a drawer.
-    ─────────────────────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     #markerManagerPanel {
       position: fixed;
       inset: 0;
@@ -331,7 +331,7 @@
     <header class="topbar" style="flex-shrink:0;">
       <div>
         <h1>Map View</h1>
-        <p>Search an address to place a marker — click any case marker to view details</p>
+        <p>Search an address to place a marker - click any case marker to view details</p>
       </div>
     </header>
 
@@ -339,20 +339,20 @@
 
       <!-- Area stats bar -->
       <div class="map-stats-bar" id="statsBar">
-        <div class="stat-pill"><strong id="statTotal">—</strong>Total Cases</div>
-        <div class="stat-pill"><strong id="statHigh">—</strong>High Risk</div>
-        <div class="stat-pill"><strong id="statMid">—</strong>Med Risk</div>
-        <div class="stat-pill"><strong id="statLow">—</strong>Low Risk</div>
+        <div class="stat-pill"><strong id="statTotal">-</strong>Total Cases</div>
+        <div class="stat-pill"><strong id="statHigh">-</strong>High Risk</div>
+        <div class="stat-pill"><strong id="statMid">-</strong>Med Risk</div>
+        <div class="stat-pill"><strong id="statLow">-</strong>Low Risk</div>
       </div>
 
-      <!-- ── Toolbar ──────────────────────────────────────────── -->
+      <!-- â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="map-toolbar">
 
-        <!-- Address search — wider input -->
+        <!-- Address search - wider input -->
         <input
           type="text"
           id="addressSearch"
-          placeholder="Search address or place (e.g. White River Country Club, 123 Vilakazi St Soweto)…"
+          placeholder="Search address or place (e.g. White River Country Club, 123 Vilakazi St Soweto)â€¦"
           autocomplete="off"
         />
         <!-- Autocomplete dropdown (positioned by CSS) -->
@@ -377,7 +377,7 @@
         <div id="mapStatus"></div>
       </div>
 
-      <!-- ── Map ─────────────────────────────────────────────── -->
+      <!-- â”€â”€ Map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div id="map"></div>
 
     </div><!-- /mapWrapper -->
@@ -389,6 +389,42 @@
 
 <script src="../js/sidebar.js"></script>
 <script src="../js/map.js"></script>
-  <script src="../js/shared-navbar.js"></script>
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
 </body>
 </html>

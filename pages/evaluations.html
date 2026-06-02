@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evaluations — Eskom Theft Detection</title>
+  <title>Evaluations - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -82,7 +82,7 @@
 
     <div class="page-body">
       <div class="breadcrumb">
-        <a href="dashboard.html">Dashboard</a> › Evaluations
+        <a href="dashboard.html">Dashboard</a> Evaluations
       </div>
 
       <div class="page-grid">
@@ -94,14 +94,14 @@
             <div class="form-row">
               <label>Investigator *</label>
               <select id="investigatorSelect">
-                <option value="">Loading investigators…</option>
+                <option value="">Loading investigators</option>
               </select>
             </div>
 
             <div class="form-row">
               <label>Case Reference (optional)</label>
               <select id="caseSelect">
-                <option value="">— Link to a case (optional) —</option>
+                <option value="">- Link to a case (optional) -</option>
               </select>
             </div>
 
@@ -142,22 +142,22 @@
 
             <div class="form-row">
               <label>Written Feedback</label>
-              <textarea id="writtenFeedback" placeholder="General performance notes…"></textarea>
+              <textarea id="writtenFeedback" placeholder="General performance notes"></textarea>
             </div>
 
             <div class="form-row">
               <label>Strengths</label>
-              <textarea id="strengths" placeholder="What this investigator does well…" style="min-height:60px;"></textarea>
+              <textarea id="strengths" placeholder="What this investigator does well" style="min-height:60px;"></textarea>
             </div>
 
             <div class="form-row">
               <label>Areas for Improvement</label>
-              <textarea id="weaknesses" placeholder="Areas to develop…" style="min-height:60px;"></textarea>
+              <textarea id="weaknesses" placeholder="Areas to develop" style="min-height:60px;"></textarea>
             </div>
 
             <div class="form-row">
               <label>Recommendations</label>
-              <textarea id="recommendations" placeholder="Suggested actions, training, reassignment…" style="min-height:60px;"></textarea>
+              <textarea id="recommendations" placeholder="Suggested actions, training, reassignment" style="min-height:60px;"></textarea>
             </div>
 
             <button class="btn-submit" id="submitBtn" onclick="submitEvaluation()">
@@ -172,10 +172,10 @@
           <div class="card">
             <h3><i class="fa-solid fa-folder-open" style="margin-right:8px;color:#2563eb;"></i>Previous Evaluations</h3>
             <div class="search-bar">
-              <input type="text" id="searchInput" placeholder="Search by investigator name…" oninput="filterEvals()">
+              <input type="text" id="searchInput" placeholder="Search by investigator name" oninput="filterEvals()">
             </div>
             <div id="evalsList">
-              <p style="color:#9ca3af;font-size:13px;">Loading evaluations…</p>
+              <p style="color:#9ca3af;font-size:13px;">Loading evaluations</p>
             </div>
           </div>
         </div>
@@ -188,7 +188,7 @@
 <script>
 lucide.createIcons();
 
-// ── AUTH ──────────────────────────────────────────────────────
+// â”€â”€ AUTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const token    = localStorage.getItem('token');
 const userRole = (localStorage.getItem('userRole') || '').toLowerCase();
 if (!token) window.location.href = 'login.html';
@@ -201,11 +201,11 @@ if (userRole === 'investigator') {
 const BASE_URL    = 'http://localhost:3000';
 const authHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
-// ── STATE ─────────────────────────────────────────────────────
+// â”€â”€ STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let allInvestigators = [];
 let allEvals         = [];
 
-// ── STAR RATING ───────────────────────────────────────────────
+// â”€â”€ STAR RATING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderStars(containerId, fieldId, value = 0) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -228,13 +228,13 @@ function renderStars(containerId, fieldId, value = 0) {
   }
 }
 
-// ── LOAD INVESTIGATORS ────────────────────────────────────────
+// â”€â”€ LOAD INVESTIGATORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadInvestigators() {
   const sel = document.getElementById('investigatorSelect');
   try {
     const res  = await fetch(`${BASE_URL}/api/investigators`, { headers: authHeaders });
     allInvestigators = await res.json();
-    sel.innerHTML = `<option value="">— Select investigator —</option>` +
+    sel.innerHTML = `<option value="">- Select investigator -</option>` +
       allInvestigators.map(inv =>
         `<option value="${inv.id}">${inv.full_name || inv.email}</option>`
       ).join('');
@@ -247,7 +247,7 @@ async function loadInvestigators() {
   }
 }
 
-// ── LOAD CASES (all, stored globally for filtering) ───────────
+// â”€â”€ LOAD CASES (all, stored globally for filtering) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let allCasesForEval = [];
 
 async function loadCases() {
@@ -255,37 +255,37 @@ async function loadCases() {
     const res   = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
     allCasesForEval = await res.json();
     if (!Array.isArray(allCasesForEval)) allCasesForEval = [];
-    // Start with empty dropdown — cases populate once an investigator is picked
+    // Start with empty dropdown - cases populate once an investigator is picked
     filterCasesByInvestigator('');
   } catch(e) {
     allCasesForEval = [];
   }
 }
 
-// ── FILTER CASES BY SELECTED INVESTIGATOR ─────────────────────
+// â”€â”€ FILTER CASES BY SELECTED INVESTIGATOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Only shows cases assigned to or resolved by this investigator.
 function filterCasesByInvestigator(investigatorId) {
   const sel = document.getElementById('caseSelect');
   if (!investigatorId) {
-    sel.innerHTML = `<option value="">— Select an investigator first —</option>`;
+    sel.innerHTML = `<option value="">- Select an investigator first -</option>`;
     return;
   }
   const filtered = allCasesForEval.filter(c =>
     String(c.assigned_investigator_id) === String(investigatorId)
   );
   if (filtered.length === 0) {
-    sel.innerHTML = `<option value="">— No cases assigned to this investigator —</option>`;
+    sel.innerHTML = `<option value="">- No cases assigned to this investigator -</option>`;
     return;
   }
-  sel.innerHTML = `<option value="">— Link to a case (optional) —</option>` +
+  sel.innerHTML = `<option value="">- Link to a case (optional) -</option>` +
     filtered.map(c => {
       const status = c.outcome || c.status || 'OPEN';
-      const label  = `${c.case_number || c.id} — ${c.suspect_name || 'Unknown'} (${status})`;
+      const label  = `${c.case_number || c.id} - ${c.suspect_name || 'Unknown'} (${status})`;
       return `<option value="${c.id}">${label}</option>`;
     }).join('');
 }
 
-// ── CHECK EXISTING EVAL FOR SELECTED INVESTIGATOR ─────────────
+// â”€â”€ CHECK EXISTING EVAL FOR SELECTED INVESTIGATOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function checkExistingEval(invId) {
   const existing = allEvals.find(e => String(e.investigator_id) === String(invId));
   if (existing) {
@@ -304,11 +304,11 @@ async function checkExistingEval(invId) {
     renderStars('starsCaseHandling',  'ratingCaseHandling',  existing.rating_case_handling || 0);
     renderStars('starsProfessional',  'ratingProfessional',  existing.rating_professionalism || 0);
     renderStars('starsSpeed',         'ratingSpeed',         existing.rating_speed || 0);
-    showStatus('Existing evaluation loaded — updating it.', 'info');
+    showStatus('Existing evaluation loaded - updating it.', 'info');
   }
 }
 
-// ── LOAD EVALUATIONS ──────────────────────────────────────────
+// â”€â”€ LOAD EVALUATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadEvals() {
   const list = document.getElementById('evalsList');
   try {
@@ -367,7 +367,7 @@ function filterEvals() {
   }));
 }
 
-// ── SUBMIT EVALUATION ─────────────────────────────────────────
+// â”€â”€ SUBMIT EVALUATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function submitEvaluation() {
   const invId = document.getElementById('investigatorSelect').value;
   if (!invId)                              { showStatus('Please select an investigator.', 'error'); return; }
@@ -375,7 +375,7 @@ async function submitEvaluation() {
   if (!overall)                            { showStatus('Please give at least an overall rating.', 'error'); return; }
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = 'Saving…';
+  btn.disabled = true; btn.textContent = 'Savingâ€¦';
 
   try {
     const res = await fetch(`${BASE_URL}/api/evaluations`, {
@@ -394,7 +394,7 @@ async function submitEvaluation() {
       })
     });
     if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
-    showStatus('✔ Evaluation saved successfully.', 'success');
+    showStatus('âœ” Evaluation saved successfully.', 'success');
     await loadEvals();
   } catch(e) {
     showStatus(`Failed: ${e.message}`, 'error');
@@ -409,7 +409,7 @@ function showStatus(msg, type) {
   if (type === 'success') setTimeout(() => el.style.display='none', 4000);
 }
 
-// ── INIT ──────────────────────────────────────────────────────
+// â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Set today's date as default
 document.getElementById('evalDate').value = new Date().toISOString().split('T')[0];
 // Render blank star inputs
@@ -420,13 +420,49 @@ renderStars('starsProfessional',  'ratingProfessional');
 renderStars('starsSpeed',         'ratingSpeed');
 
 // Await investigators first so allInvestigators is populated before
-// renderEvals() tries to look up names — prevents the "Unknown" race condition.
+// renderEvals() tries to look up names - prevents the "Unknown" race condition.
 (async () => {
   await loadInvestigators();
   await loadCases();
   await loadEvals();
 })();
 </script>
-  <script src="../js/shared-navbar.js"></script>
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
 </body>
 </html>

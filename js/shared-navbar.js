@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const isInPagesFolder = rootPath.includes('/pages/');
   const basePath = isInPagesFolder ? '../' : '';
 
+  // Only inject the landing navbar on the public landing page (index.html / root).
+  // All authenticated app pages (dashboard, caseList, etc.) have their own nav/sidebar.
+  const isLandingPage = !isInPagesFolder &&
+    (rootPath.endsWith('/index.html') || rootPath.endsWith('/') || rootPath === '');
+  if (!isLandingPage) return;
+
   if (document.querySelector('.global-navbar')) {
     document.body.classList.add('has-global-navbar');
     return;

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assign Investigator — Eskom Theft Detection</title>
+  <title>Assign Investigator - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     body { font-family: 'DM Sans', sans-serif; background: #f8fafc; }
     .main { display: flex; flex-direction: column; overflow: hidden; }
 
-    /* ── Header ──────────────────────────────────────────────── */
+    /* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .topbar {
       background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #2563eb 100%) !important;
       padding: 22px 28px !important;
@@ -60,7 +60,7 @@
       box-shadow: 0 0 6px #60a5fa;
     }
 
-    /* ── Page body ───────────────────────────────────────────── */
+    /* â”€â”€ Page body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .page-body {
       flex: 1; overflow: hidden;
       display: grid;
@@ -69,7 +69,7 @@
       padding: 24px 28px;
     }
 
-    /* ── Cards ───────────────────────────────────────────────── */
+    /* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .panel {
       background: #fff;
       border-radius: 16px;
@@ -109,7 +109,7 @@
       flex-shrink: 0;
     }
 
-    /* ── Filter tabs ─────────────────────────────────────────── */
+    /* â”€â”€ Filter tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .filter-tabs {
       display: flex;
       gap: 6px;
@@ -153,7 +153,7 @@
     .filter-tab.tab-available.active { background: #2563eb; border-color: #2563eb; }
     .filter-tab.tab-occupied.active  { background: #d97706; border-color: #d97706; }
 
-    /* ── Investigator cards ──────────────────────────────────── */
+    /* â”€â”€ Investigator cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .inv-card {
       padding: 14px 16px;
       border: 1.5px solid #e5e9ee;
@@ -230,7 +230,7 @@
     }
     .progress-fill.occupied { background: linear-gradient(90deg, #d97706, #fbbf24); }
 
-    /* ── Case search ─────────────────────────────────────────── */
+    /* â”€â”€ Case search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .search-wrap {
       position: relative;
       margin-bottom: 12px;
@@ -318,7 +318,7 @@
       color: #9ca3af; font-size: 13px;
     }
 
-    /* ── Case summary ────────────────────────────────────────── */
+    /* â”€â”€ Case summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     #caseSummary {
       background: #f8fafc;
       border: 1px solid #e5e9ee;
@@ -355,7 +355,7 @@
     }
     .summary-inv strong { color: #374151; }
 
-    /* ── Assign button + message ─────────────────────────────── */
+    /* â”€â”€ Assign button + message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .btn-assign {
       width: 100%;
       padding: 13px;
@@ -390,17 +390,17 @@
     #message.error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     #message.info    { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
-    /* ── Selected cases bar ─────────────────────────────────── */
+    /* â”€â”€ Selected cases bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     #selectedCasesBar { display: none !important; }
     #selectedCasesBar.visible { display: flex !important; }
 
-    /* ── Animations ──────────────────────────────────────────── */
+    /* â”€â”€ Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Legend ─────────────────────────────────────────────── */
+    /* â”€â”€ Legend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .legend {
       display: flex; gap: 14px; flex-wrap: wrap;
       font-size: 11px; color: #9ca3af;
@@ -432,7 +432,7 @@
       <div class="topbar-inner">
         <div>
           <h1>Assign Investigator</h1>
-          <p>Case Assignment Panel — select an investigator and search for a case</p>
+          <p>Case Assignment Panel - select an investigator and search for a case</p>
         </div>
         <div class="topbar-badge">Admin Panel</div>
       </div>
@@ -440,9 +440,9 @@
 
     <div class="page-body">
 
-      <!-- ══════════════════════════════════════════════════════
-           LEFT PANEL — Investigators
-      ══════════════════════════════════════════════════════ -->
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           LEFT PANEL - Investigators
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
       <div class="panel">
         <div class="panel-header">
           <h2>Investigators</h2>
@@ -453,10 +453,10 @@
         <div class="filter-tabs">
           <span style="font-size:11.5px;color:#6b7280;font-weight:600;align-self:center;white-space:nowrap;">Sort by cases:</span>
           <button class="filter-tab active" data-sort="desc" onclick="setSortOrder('desc')">
-            Most assigned <span class="tab-count" id="sortDescIcon">↓</span>
+            Most assigned <span class="tab-count" id="sortDescIcon"></span>
           </button>
           <button class="filter-tab" data-sort="asc" onclick="setSortOrder('asc')">
-            Least assigned <span class="tab-count" id="sortAscIcon">↑</span>
+            Least assigned <span class="tab-count" id="sortAscIcon"></span>
           </button>
         </div>
 
@@ -467,18 +467,18 @@
           </div>
 
           <div id="investigatorList">
-            <p style="color:#9ca3af; font-size:13px;">Loading investigators…</p>
+            <p style="color:#9ca3af; font-size:13px;">Loading investigatorsâ€¦</p>
           </div>
         </div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════
-           RIGHT PANEL — Case Search & Assignment
-      ══════════════════════════════════════════════════════ -->
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           RIGHT PANEL - Case Search & Assignment
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
       <div class="panel">
         <div class="panel-header">
           <h2>Select Cases</h2>
-          <p>Search and click cases to select them — multiple selections allowed</p>
+          <p>Search and click cases to select them - multiple selections allowed</p>
         </div>
 
         <div class="panel-body">
@@ -486,7 +486,7 @@
           <!-- Case search -->
           <div class="search-wrap" style="margin-bottom:10px;">
             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="caseSearch" placeholder="Search by case number or suspect name…" oninput="filterCases()"/>
+            <input type="text" id="caseSearch" placeholder="Search by case number or suspect name" oninput="filterCases()"/>
             <svg class="clear-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" onclick="clearCaseSearch()"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </div>
 
@@ -498,7 +498,7 @@
 
           <!-- Results list -->
           <div class="case-results" id="caseResults">
-            <div class="case-empty">Loading cases…</div>
+            <div class="case-empty">Loading casesâ€¦</div>
           </div>
 
           <!-- Case summary -->
@@ -528,6 +528,42 @@
 <script>lucide.createIcons();</script>
 <script src="../js/sidebar.js"></script>
 <script src="../js/assign.js"></script>
-  <script src="../js/shared-navbar.js"></script>
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
 </body>
 </html>

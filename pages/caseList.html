@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Case List — Eskom Theft Detection</title>
+  <title>Case List - Eskom Theft Detection</title>
   <link rel="stylesheet" href="../css/dashboard.css">
       <link rel="stylesheet" href="../css/shared-navbar.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* ── Reset & Base ─────────────────────────────────────────── */
+    /* â”€â”€ Reset & Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     *, *::before, *::after { box-sizing: border-box; }
     html, body, .layout, .main { height: 100%; }
     body { font-family: 'DM Sans', sans-serif; background: #f0f4f0; }
@@ -25,7 +25,7 @@
       gap: 0;
     }
 
-    /* ── Topbar ──────────────────────────────────────────────── */
+    /* â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .topbar {
       background: linear-gradient(135deg, #0c1f3f 0%, #1a3a6b 60%, #1e4080 100%) !important;
       padding: 22px 28px !important;
@@ -107,7 +107,7 @@
       box-shadow: 0 0 6px #60a5fa;
     }
 
-    /* ── Stats Strip ─────────────────────────────────────────── */
+    /* â”€â”€ Stats Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .stats-strip {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -184,7 +184,7 @@
       display: block;
     }
 
-    /* ── Toolbar ─────────────────────────────────────────────── */
+    /* â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .list-toolbar {
       display: flex;
       gap: 10px;
@@ -257,7 +257,7 @@
       border: 1px solid #e4eaf4;
     }
 
-    /* ── Spinner ─────────────────────────────────────────────── */
+    /* â”€â”€ Spinner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .spinner {
       display: inline-block;
       width: 13px; height: 13px;
@@ -269,7 +269,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Table ───────────────────────────────────────────────── */
+    /* â”€â”€ Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .table-wrap {
       flex: 1;
       overflow-y: auto;
@@ -317,7 +317,7 @@
       white-space: nowrap;
     }
 
-    /* ── Risk Badges ─────────────────────────────────────────── */
+    /* â”€â”€ Risk Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .badge {
       display: inline-flex;
       align-items: center;
@@ -347,7 +347,7 @@
     .badge.low    { background: #dcfce7; color: #15803d; }
     .badge.low::before    { background: #22c55e; }
 
-    /* Status badges — no dot */
+    /* Status badges - no dot */
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -373,7 +373,7 @@
     .status-badge.resolved { background: #dcfce7; color: #15803d; }
     .status-badge.resolved::before { background: #22c55e; }
 
-    /* ── Investigator Cell ───────────────────────────────────── */
+    /* â”€â”€ Investigator Cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .inv-cell {
       display: flex;
       align-items: center;
@@ -393,7 +393,7 @@
 
     .date-cell { font-size: 12.5px; color: #6b7280; white-space: nowrap; }
 
-    /* ── Action Buttons ──────────────────────────────────────── */
+    /* â”€â”€ Action Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .tbl-btn {
       display: inline-flex;
       align-items: center;
@@ -421,7 +421,7 @@
     }
     .tbl-btn-outline:hover { background: #f5f8ff; border-color: #93c5fd; color: #1d4ed8; }
 
-    /* ── Empty / Loading / Error States ─────────────────────── */
+    /* â”€â”€ Empty / Loading / Error States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .state-row td {
       text-align: center;
       padding: 72px 20px;
@@ -445,7 +445,7 @@
     }
     .state-subtitle { font-size: 13px; color: #9ca3af; }
 
-    /* ── Pagination ──────────────────────────────────────────── */
+    /* â”€â”€ Pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .pagination {
       display: flex;
       justify-content: space-between;
@@ -485,19 +485,19 @@
       box-shadow: 0 2px 8px rgba(37,99,235,0.30);
     }
 
-    /* ── Animations ──────────────────────────────────────────── */
+    /* â”€â”€ Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Scrollbar ───────────────────────────────────────────── */
+    /* â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .table-wrap::-webkit-scrollbar { width: 6px; }
     .table-wrap::-webkit-scrollbar-track { background: transparent; }
     .table-wrap::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     .table-wrap::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-    /* ── Responsive ──────────────────────────────────────────── */
+    /* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @media (max-width: 1100px) {
       .stats-strip { grid-template-columns: repeat(2, 1fr); }
     }
@@ -520,9 +520,7 @@
       <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
-    <nav class="menu" id="sidebarMenu">
-      <p style="opacity:0.5; font-size:12px; padding:12px;">Loading…</p>
-    </nav>
+    <nav class="menu" id="sidebarMenu"></nav>
   </aside>
 
   <!-- MAIN -->
@@ -533,7 +531,7 @@
       <div class="topbar-inner">
         <div class="topbar-title">
           <h1>Case List</h1>
-          <p>Active and pending investigations — search, filter, and manage cases</p>
+          <p>Active and pending investigations - search, filter, and manage cases</p>
         </div>
         <div class="topbar-meta">
           <div class="topbar-badge">Live Cases</div>
@@ -543,13 +541,13 @@
 
     <div class="page-body">
 
-      <!-- ── Stats Strip ─────────────────────────────────────── -->
+      <!-- â”€â”€ Stats Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="stats-strip">
         <div class="stat-card blue">
           <div class="stat-top">
             <div>
               <h4>Total Active</h4>
-              <div class="stat-num" id="statTotal">—</div>
+              <div class="stat-num" id="statTotal">-</div>
             </div>
             <div class="stat-ico">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -562,7 +560,7 @@
           <div class="stat-top">
             <div>
               <h4>High Risk</h4>
-              <div class="stat-num" id="statHigh">—</div>
+              <div class="stat-num" id="statHigh">-</div>
             </div>
             <div class="stat-ico">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -575,7 +573,7 @@
           <div class="stat-top">
             <div>
               <h4>Pending</h4>
-              <div class="stat-num" id="statPending">—</div>
+              <div class="stat-num" id="statPending">-</div>
             </div>
             <div class="stat-ico">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -588,7 +586,7 @@
           <div class="stat-top">
             <div>
               <h4>Open</h4>
-              <div class="stat-num" id="statOpen">—</div>
+              <div class="stat-num" id="statOpen">-</div>
             </div>
             <div class="stat-ico">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -598,11 +596,11 @@
         </div>
       </div>
 
-      <!-- ── Toolbar ─────────────────────────────────────────── -->
+      <!-- â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="list-toolbar">
         <div class="search-wrap">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="searchInput" placeholder="Search by case #, suspect, or description…"/>
+          <input type="text" id="searchInput" placeholder="Search by case #, suspect, or description"/>
         </div>
         <select class="toolbar-select" id="filterRisk">
           <option value="">All Risk Levels</option>
@@ -616,11 +614,11 @@
           <option value="PENDING">Pending</option>
         </select>
         <span class="toolbar-count" id="countLabel">
-          <span class="spinner"></span> Loading…
+          <span class="spinner"></span> Loadingâ€¦
         </span>
       </div>
 
-      <!-- ── Case Table ─────────────────────────────────────── -->
+      <!-- â”€â”€ Case Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="table-wrap">
         <table>
           <thead>
@@ -640,7 +638,7 @@
                 <div class="state-icon-wrap">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
-                <div class="state-title">Loading cases…</div>
+                <div class="state-title">Loading casesâ€¦</div>
                 <div class="state-subtitle">Fetching data from the database</div>
               </td>
             </tr>
@@ -648,9 +646,9 @@
         </table>
       </div>
 
-      <!-- ── Pagination ─────────────────────────────────────── -->
+      <!-- â”€â”€ Pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="pagination">
-        <span class="page-info" id="pageInfo">—</span>
+        <span class="page-info" id="pageInfo">-</span>
         <div class="page-btns" id="pageBtns"></div>
       </div>
 
@@ -661,7 +659,7 @@
 <script>
   lucide.createIcons();
 
-  // ── AUTH ──────────────────────────────────────────────────────
+  // â”€â”€ AUTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const token    = localStorage.getItem("token");
   const userRole = (localStorage.getItem("userRole") || "investigator").toLowerCase();
   if (!localStorage.getItem("token")) { window.location.href = "login.html"; }
@@ -679,19 +677,19 @@
     if (actionsHeader) actionsHeader.style.display = "none";
   }
 
-  // ── PAGINATION STATE ──────────────────────────────────────────
+  // â”€â”€ PAGINATION STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const PAGE_SIZE  = 15;
   let   currentPage = 1;
   let   allCases    = [];
   let   filtered    = [];
 
-  // ── LOAD CASES ────────────────────────────────────────────────
+  // â”€â”€ LOAD CASES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function loadCases() {
     const tbody      = document.getElementById("caseTableBody");
     const countLabel = document.getElementById("countLabel");
 
     try {
-      countLabel.innerHTML = '<span class="spinner"></span> Loading…';
+      countLabel.innerHTML = '<span class="spinner"></span> Loadingâ€¦';
 
       const res = await fetch(`${BASE_URL}/api/cases`, { headers: authHeaders });
 
@@ -705,7 +703,7 @@
 
       const raw = await res.json();
 
-      // Show only OPEN and PENDING — resolved.html handles RESOLVED cases
+      // Show only OPEN and PENDING - resolved.html handles RESOLVED cases
       allCases = (Array.isArray(raw) ? raw : [])
         .filter(c => (c.outcome || "OPEN").toUpperCase() !== "RESOLVED");
 
@@ -739,7 +737,7 @@
     }
   }
 
-  // ── COMPUTE STATS ─────────────────────────────────────────────
+  // â”€â”€ COMPUTE STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function computeStats() {
     const total   = allCases.length;
     const high    = allCases.filter(c => (c.risk_level || "").toUpperCase() === "HIGH").length;
@@ -752,7 +750,7 @@
     document.getElementById("statOpen").textContent    = open;
   }
 
-  // ── FILTER + SEARCH ───────────────────────────────────────────
+  // â”€â”€ FILTER + SEARCH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function applyFilters() {
     const search     = document.getElementById("searchInput").value.toLowerCase();
     const riskFilter = document.getElementById("filterRisk").value;
@@ -772,7 +770,7 @@
     renderTable();
   }
 
-  // ── RENDER TABLE ──────────────────────────────────────────────
+  // â”€â”€ RENDER TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function renderTable() {
     const tbody      = document.getElementById("caseTableBody");
     const countLabel = document.getElementById("countLabel");
@@ -841,7 +839,7 @@
     lucide.createIcons();
   }
 
-  // ── PAGINATION ────────────────────────────────────────────────
+  // â”€â”€ PAGINATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function renderPagination(page, totalPages) {
     document.getElementById("pageInfo").textContent =
       totalPages > 0 ? `Page ${page} of ${totalPages}` : "No results";
@@ -875,7 +873,7 @@
     btns.appendChild(next);
   }
 
-  // ── ACTIONS ───────────────────────────────────────────────────
+  // â”€â”€ ACTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function viewDetail(caseId) {
     localStorage.setItem("preselectedCaseId", caseId);
     window.location.href = "caseList.html";
@@ -891,15 +889,51 @@
     window.location.href = "report.html";
   }
 
-  // ── FILTER LISTENERS ──────────────────────────────────────────
+  // â”€â”€ FILTER LISTENERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   document.getElementById("searchInput").addEventListener("input",  applyFilters);
   document.getElementById("filterRisk").addEventListener("change",  applyFilters);
   document.getElementById("filterStatus").addEventListener("change", applyFilters);
 
-  // ── INIT ──────────────────────────────────────────────────────
+  // â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   document.addEventListener("DOMContentLoaded", loadCases);
 </script>
 <script src="../js/sidebar.js"></script>
-  <script src="../js/shared-navbar.js"></script>
+  <div id="adminChatbot">
+  <!-- FLOATING BUTTON -->
+  <button id="aiAssistantBtn" onclick="toggleAIChat()">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+  <!-- CHATBOT WINDOW -->
+  <div id="aiChatContainer">
+    <div id="aiChatWindow">
+      <div id="aiChatHeader">
+        <div class="chat-header-left">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>AI Operations Assistant</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Connected &middot; Live data</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="clearAIChat()" title="Clear chat"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="toggleAIChat()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div id="aiMessages">
+        <div class="ai-message">Hello! I am your AI Operations Assistant.<br><br>Ask me about cases, investigators, or request an action.</div>
+      </div>
+      <div id="aiSuggestions"></div>
+      <div id="aiInputArea">
+        <input type="text" id="aiInput" placeholder="Ask AI assistant..." onkeypress="handleAIKey(event)">
+        <button onclick="sendAIMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/chatbot.js"></script>
+<script src="../js/shared-navbar.js"></script>
 </body>
 </html>

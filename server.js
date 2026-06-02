@@ -979,6 +979,467 @@ app.get('/api/admin/community-reports', authenticateToken, requireRole(['admin',
     const enriched = await enrichCasesWithInvestigators(data || []);
     res.json(enriched);
 });
+// ─────────────────────────────────────────────────────────────
+// CHATBOT AGENT — Real-time DB context, OpenAI function calling, conversation history
+// ─────────────────────────────────────────────────────────────
+
+// ── AGENT TOOL DEFINITIONS (sent to OpenAI) ──────────────────
+const AGENT_TOOLS = [
+    {
+        type: 'function',
+        function: {
+            name: 'add_user',
+            description: 'Create a new user account in the system. Admin only. Ask for all required fields before calling.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    full_name: { type: 'string', description: 'Full name of the new user' },
+                    email:     { type: 'string', description: 'Email address' },
+                    password:  { type: 'string', description: 'Initial password' },
+                    role:      { type: 'string', enum: ['admin', 'commander', 'investigator', 'user'], description: 'Role to assign' }
+                },
+                required: ['full_name', 'email', 'password', 'role']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'delete_user',
+            description: 'Permanently delete a user account. Admin only. Always confirm with the user before calling — state the email/name that will be deleted and wait for confirmation.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    email:   { type: 'string', description: 'Email of the user to delete' },
+                    user_id: { type: 'string', description: 'ID of the user to delete (use email if ID unknown)' }
+                }
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'toggle_user_status',
+            description: 'Activate or deactivate a user account. Admin only.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    email:     { type: 'string', description: 'Email of the user' },
+                    user_id:   { type: 'string', description: 'ID of the user' },
+                    is_active: { type: 'boolean', description: 'true to activate, false to deactivate' }
+                },
+                required: ['is_active']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'create_case',
+            description: 'Create a new electricity theft case. Admin and commander only.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    suspect_name: { type: 'string', description: 'Name of the suspect' },
+                    description:  { type: 'string', description: 'Description of the incident' },
+                    risk_level:   { type: 'string', enum: ['HIGH', 'MID', 'LOW'], description: 'Risk level' },
+                    location:     { type: 'string', description: 'Location of the incident (optional)' }
+                },
+                required: ['suspect_name', 'description', 'risk_level']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'assign_investigator',
+            description: 'Assign an investigator to a case. Admin and commander only.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    case_number:         { type: 'string', description: 'Case number, e.g. "Case 5"' },
+                    investigator_email:  { type: 'string', description: 'Email of the investigator' },
+                    investigator_name:   { type: 'string', description: 'Full name of the investigator (used if email unknown)' }
+                },
+                required: ['case_number']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'update_case_outcome',
+            description: 'Update the outcome/status of a case to OPEN, PENDING, or RESOLVED.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    case_number: { type: 'string', description: 'Case number, e.g. "Case 5"' },
+                    outcome:     { type: 'string', enum: ['OPEN', 'PENDING', 'RESOLVED'] }
+                },
+                required: ['case_number', 'outcome']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'delete_case',
+            description: 'Permanently delete a case. Admin only. Always confirm with the user before calling — state the case number that will be deleted and wait for confirmation.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    case_number: { type: 'string', description: 'Case number to delete, e.g. "Case 5"' }
+                },
+                required: ['case_number']
+            }
+        }
+    }
+];
+
+// ── AGENT TOOL EXECUTOR ───────────────────────────────────────
+async function executeAgentTool(toolName, args, userId, userRole) {
+    switch (toolName) {
+        case 'add_user': {
+            if (userRole !== 'admin') return { error: 'Only admins can add users.' };
+            const validRoles = ['admin', 'commander', 'investigator', 'user'];
+            if (!validRoles.includes(args.role?.toLowerCase()))
+                return { error: `Invalid role. Must be one of: ${validRoles.join(', ')}` };
+            const password_hash = await bcrypt.hash(args.password, 10);
+            const { data, error } = await supabase.from('users').insert([{
+                email:        args.email.trim().toLowerCase(),
+                full_name:    args.full_name.trim(),
+                password_hash,
+                role:         args.role.toLowerCase(),
+                is_active:    true,
+                created_at:   new Date().toISOString()
+            }]).select('id, email, full_name, role, is_active');
+            if (error) return { error: error.message };
+            return { success: true, user: data[0] };
+        }
+
+        case 'delete_user': {
+            if (userRole !== 'admin') return { error: 'Only admins can delete users.' };
+            let targetId = args.user_id || null;
+            if (!targetId && args.email) {
+                const { data: found } = await supabase.from('users')
+                    .select('id, full_name').eq('email', args.email.trim().toLowerCase()).single();
+                if (!found) return { error: `No user found with email "${args.email}".` };
+                targetId = found.id;
+            }
+            if (!targetId) return { error: 'Provide email or user_id to identify the user.' };
+            if (targetId === userId) return { error: 'You cannot delete your own account.' };
+            const { error } = await supabase.from('users').delete().eq('id', targetId);
+            if (error) return { error: error.message };
+            return { success: true, message: 'User deleted successfully.' };
+        }
+
+        case 'toggle_user_status': {
+            if (userRole !== 'admin') return { error: 'Only admins can change user status.' };
+            let targetId = args.user_id || null;
+            if (!targetId && args.email) {
+                const { data: found } = await supabase.from('users')
+                    .select('id').eq('email', args.email.trim().toLowerCase()).single();
+                if (!found) return { error: `No user found with email "${args.email}".` };
+                targetId = found.id;
+            }
+            if (!targetId) return { error: 'Provide email or user_id.' };
+            const { data, error } = await supabase.from('users')
+                .update({ is_active: args.is_active })
+                .eq('id', targetId)
+                .select('id, full_name, email, is_active');
+            if (error) return { error: error.message };
+            return { success: true, user: data[0] };
+        }
+
+        case 'create_case': {
+            if (!['admin', 'commander'].includes(userRole))
+                return { error: 'Only admins and commanders can create cases.' };
+            const riskResult = normaliseRiskLevel(args.risk_level);
+            if (!riskResult.ok) return { error: riskResult.error };
+            const caseNumber = await generateCaseNumber();
+            if (!caseNumber) return { error: 'Failed to generate case number.' };
+            let lat = null, lon = null;
+            if (args.location) {
+                const coords = await geocodeAddress(args.location);
+                if (coords) { lat = coords.lat; lon = coords.lon; }
+            }
+            const { data, error } = await supabase.from('cases').insert([{
+                case_number:  caseNumber,
+                suspect_name: args.suspect_name,
+                description:  args.description,
+                risk_level:   riskResult.value,
+                outcome:      'OPEN',
+                created_by:   userId,
+                created_at:   new Date().toISOString(),
+                ...(args.location ? { location: args.location } : {}),
+                ...(lat !== null  ? { latitude:  lat.toString() } : {}),
+                ...(lon !== null  ? { longitude: lon.toString() } : {})
+            }]).select();
+            if (error) return { error: error.message };
+            return { success: true, case_number: caseNumber, case: data[0] };
+        }
+
+        case 'assign_investigator': {
+            if (!['admin', 'commander'].includes(userRole))
+                return { error: 'Only admins and commanders can assign investigators.' };
+            const { data: caseData } = await supabase.from('cases')
+                .select('id, case_number').eq('case_number', args.case_number).single();
+            if (!caseData) return { error: `Case "${args.case_number}" not found.` };
+            let invQuery = supabase.from('users').select('id, full_name, email').eq('role', 'investigator').eq('is_active', true);
+            if (args.investigator_email)
+                invQuery = invQuery.eq('email', args.investigator_email.trim().toLowerCase());
+            else if (args.investigator_name)
+                invQuery = invQuery.ilike('full_name', `%${args.investigator_name.trim()}%`);
+            else
+                return { error: 'Provide investigator_email or investigator_name.' };
+            const { data: invData } = await invQuery.single();
+            if (!invData) return { error: 'Investigator not found or is not active.' };
+            const { error } = await supabase.from('cases')
+                .update({ assigned_investigator_id: invData.id }).eq('id', caseData.id);
+            if (error) return { error: error.message };
+            return { success: true, case_number: args.case_number, assigned_to: invData.full_name };
+        }
+
+        case 'update_case_outcome': {
+            const outcomeResult = normaliseOutcome(args.outcome);
+            if (!outcomeResult.ok) return { error: outcomeResult.error };
+            const { data: caseData } = await supabase.from('cases')
+                .select('id, assigned_investigator_id').eq('case_number', args.case_number).single();
+            if (!caseData) return { error: `Case "${args.case_number}" not found.` };
+            if (userRole === 'investigator' && caseData.assigned_investigator_id !== userId)
+                return { error: 'You can only update cases assigned to you.' };
+            const updates = { outcome: outcomeResult.value };
+            if (outcomeResult.value === 'RESOLVED') updates.resolved_at = new Date().toISOString();
+            const { error } = await supabase.from('cases').update(updates).eq('id', caseData.id);
+            if (error) return { error: error.message };
+            return { success: true, case_number: args.case_number, new_outcome: outcomeResult.value };
+        }
+
+        case 'delete_case': {
+            if (userRole !== 'admin') return { error: 'Only admins can delete cases.' };
+            const { data: caseData } = await supabase.from('cases')
+                .select('id').eq('case_number', args.case_number).single();
+            if (!caseData) return { error: `Case "${args.case_number}" not found.` };
+            const { error } = await supabase.from('cases').delete().eq('id', caseData.id);
+            if (error) return { error: error.message };
+            return { success: true, deleted_case: args.case_number };
+        }
+
+        default:
+            return { error: `Unknown tool: ${toolName}` };
+    }
+}
+
+app.post('/api/chatbot', authenticateToken, async (req, res) => {
+    const { message, history = [] } = req.body;
+    if (!message || !message.trim())
+        return res.status(400).json({ error: 'Message is required' });
+
+    const userId   = req.user.id;
+    const userRole = req.user.role;
+
+    try {
+        // ── FETCH LIVE DATA ──────────────────────────────────────
+        let casesQuery = supabase.from('cases').select('*').order('created_at', { ascending: false });
+        if (userRole === 'investigator') casesQuery = casesQuery.eq('assigned_investigator_id', userId);
+
+        const [casesResult, investigatorsResult, allUsersResult] = await Promise.all([
+            casesQuery,
+            supabase.from('users').select('id, full_name, email, is_active').eq('role', 'investigator'),
+            userRole === 'admin'
+                ? supabase.from('users').select('id, full_name, email, role, is_active')
+                : Promise.resolve({ data: [], error: null })
+        ]);
+
+        const cases    = casesResult.data        || [];
+        const invUsers = investigatorsResult.data || [];
+        const allUsers = allUsersResult.data      || [];
+
+        // ── AGGREGATE STATS ──────────────────────────────────────
+        const totalCases    = cases.length;
+        const openCases     = cases.filter(c => c.outcome === 'OPEN').length;
+        const pendingCases  = cases.filter(c => c.outcome === 'PENDING').length;
+        const resolvedCases = cases.filter(c => c.outcome === 'RESOLVED').length;
+        const highRisk      = cases.filter(c => c.risk_level === 'HIGH').length;
+        const midRisk       = cases.filter(c => c.risk_level === 'MID').length;
+        const lowRisk       = cases.filter(c => c.risk_level === 'LOW').length;
+
+        const investigatorStats = invUsers.map(inv => {
+            const assigned = cases.filter(c => c.assigned_investigator_id === inv.id).length;
+            const open     = cases.filter(c => c.assigned_investigator_id === inv.id && c.outcome === 'OPEN').length;
+            const resolved = cases.filter(c => c.assigned_investigator_id === inv.id && c.outcome === 'RESOLVED').length;
+            return { name: inv.full_name, email: inv.email, active: inv.is_active, assigned, open, resolved,
+                     status: open > 0 ? 'Occupied' : 'Available' };
+        });
+
+        // ── SYSTEM PROMPT ─────────────────────────────────────────
+        const systemPrompt = `You are an AI Operations Assistant and agent for the Eskom Theft Detection System.
+
+CURRENT USER:
+- Role: ${userRole}
+- User ID: ${userId}
+
+LIVE DATABASE SNAPSHOT:
+- Total Cases: ${totalCases}
+- Open: ${openCases} | Pending: ${pendingCases} | Resolved: ${resolvedCases}
+- Risk — HIGH: ${highRisk} | MID: ${midRisk} | LOW: ${lowRisk}
+- Total Investigators: ${invUsers.length} (Active: ${invUsers.filter(i => i.is_active).length})
+
+INVESTIGATOR BREAKDOWN:
+${investigatorStats.length > 0
+    ? investigatorStats.map(i => `  - ${i.name} | Assigned: ${i.assigned}, Open: ${i.open}, Resolved: ${i.resolved}, Status: ${i.status}${!i.active ? ' [INACTIVE]' : ''}`).join('\n')
+    : '  No investigators found.'}
+
+${totalCases > 0 ? `RECENT CASES (latest 10):\n${cases.slice(0, 10).map(c => `  - ${c.case_number}: "${c.suspect_name}" | ${c.risk_level} | ${c.outcome} | ${c.location || 'N/A'}`).join('\n')}` : ''}
+
+${userRole === 'admin' && allUsers.length > 0 ? `ALL USERS (${allUsers.length} total):\n${allUsers.map(u => `  - ${u.full_name} <${u.email}> (${u.role}) — ${u.is_active ? 'Active' : 'Inactive'}`).join('\n')}` : ''}
+
+APP NAVIGATION:
+- Dashboard        → /pages/dashboard.html  — KPI overview and live statistics
+- Case List        → /pages/caseList.html   — Browse, search, filter all cases
+- Create Case      → /pages/record.html     — Log a new theft incident
+- Assign           → /pages/assign.html     — Assign investigators to cases
+- Map View         → /pages/map.html        — Geographic hotspot map
+- Reports          → /pages/report.html     — Export PDF/CSV reports
+- Resolved Cases   → /pages/resolved.html  — Completed investigations
+- Evaluations      → /pages/evaluations.html — Investigator performance
+- Admin Panel      → /pages/admin.html      — User management (admin only)
+- User Dashboard   → /pages/user-dashboard.html — Standard user view
+
+ROLES:
+- admin: full access including user management and case deletion
+- commander: create/manage cases, assign investigators
+- investigator: view and update own assigned cases only
+- user: read-only user dashboard
+
+RESPONSE STYLE RULES:
+1. Always use the live database numbers above — never estimate or guess.
+2. Be direct. Answer the question immediately — no preamble like "Certainly!" or "Great question!".
+3. When giving counts or stats, lead with the number: "There are 4 high-risk cases." not "Based on the data...".
+4. For actions (create, delete, assign), confirm what was done in one clear sentence: "Done. Case 12 has been created and assigned to John Smith."
+5. When you need more info to complete an action, ask for exactly one missing piece at a time.
+6. For destructive actions (delete), state exactly what will be removed and ask "Confirm?" before calling the tool.
+7. Use short bullet points only when listing 3 or more items — not for single answers.
+8. Navigation: when a user asks how to do something, give the page name and path. Example: "Go to Case List (/pages/caseList.html) to browse all cases."
+9. Respect the current user's role — only describe or offer actions they are permitted to perform.
+10. Format bold text using **bold**. Keep answers under 120 words unless the user explicitly asks for detail.`;
+
+        // ── BUILD MESSAGES ARRAY (with conversation history) ─────
+        const messages = [
+            { role: 'system', content: systemPrompt },
+            // Include up to the last 20 history messages (10 turns)
+            ...history.slice(-20).filter(m => m.role && m.content),
+            { role: 'user', content: message.trim() }
+        ];
+
+        // ── FIRST OPENAI CALL ─────────────────────────────────────
+        const firstRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model:       'gpt-4o-mini',
+                messages,
+                tools:       AGENT_TOOLS,
+                tool_choice: 'auto',
+                max_tokens:  700,
+                temperature: 0.3
+            })
+        });
+
+        const firstData = await firstRes.json();
+        if (!firstData.choices?.[0]) {
+            console.error('OpenAI chatbot error:', JSON.stringify(firstData));
+            return res.status(500).json({ error: 'AI response unavailable. Please try again.' });
+        }
+
+        const choice = firstData.choices[0];
+
+        // ── TOOL CALL — execute action then get final reply ───────
+        if (choice.finish_reason === 'tool_calls' && choice.message?.tool_calls?.length) {
+            const toolCall = choice.message.tool_calls[0];
+            let args = {};
+            try { args = JSON.parse(toolCall.function.arguments); } catch { /* empty args */ }
+
+            console.log(`[Agent] Executing tool: ${toolCall.function.name}`, args);
+            const toolResult = await executeAgentTool(toolCall.function.name, args, userId, userRole);
+            console.log(`[Agent] Tool result:`, toolResult);
+
+            // Second call with tool result so the AI can explain what happened
+            const secondRes = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model:       'gpt-4o-mini',
+                    messages: [
+                        ...messages,
+                        choice.message,  // assistant message containing the tool_calls
+                        { role: 'tool', tool_call_id: toolCall.id, content: JSON.stringify(toolResult) }
+                    ],
+                    max_tokens:  400,
+                    temperature: 0.3
+                })
+            });
+
+            const secondData = await secondRes.json();
+            if (!secondData.choices?.[0]?.message) {
+                return res.status(500).json({ error: 'AI response unavailable after performing action.' });
+            }
+            return res.json({ reply: secondData.choices[0].message.content.trim(), action_performed: toolCall.function.name });
+        }
+
+        // ── PLAIN TEXT REPLY ──────────────────────────────────────
+        if (!choice.message?.content) {
+            return res.status(500).json({ error: 'AI response unavailable. Please try again.' });
+        }
+        return res.json({ reply: choice.message.content.trim() });
+
+    } catch (err) {
+        console.error('Chatbot route error:', err);
+        res.status(500).json({ error: 'Internal server error. Please try again.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────
+// OPENAI LEGACY ROUTE (kept for backward compatibility)
+// ─────────────────────────────────────────────────────────────
+app.post('/api/openai', async (req, res) => {
+    const { prompt } = req.body;
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "You are a helpful assistant for the Eskom Theft Detection System." },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 400,
+                temperature: 0.4
+            })
+        });
+
+        const data = await response.json();
+        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+            return res.status(500).json({ reply: "❌ No response from OpenAI." });
+        }
+
+        res.json({ reply: data.choices[0].message.content });
+    } catch (err) {
+        console.error("OpenAI error:", err);
+        res.status(500).json({ reply: "❌ Error connecting to OpenAI." });
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✔ Server on http://localhost:${PORT}`));
