@@ -12,7 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
@@ -24,6 +24,7 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "node-fetch": "^3.3.2",
-    "pdfkit": "^0.18.0"
+    "pdfkit": "^0.18.0",
+    "ws": "^8.14.2"
   }
 }
