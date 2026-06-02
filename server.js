@@ -55,8 +55,18 @@ function detectAnomalies(data, threshold = 2) {
 
 // ── APP & MIDDLEWARE ──────────────────────────────────────────
 const app = express();
+const path = require('path');
+
+// Enable CORS and JSON parsing
 app.use(cors());
 app.use(express.json());
+
+// Serve static frontend files (CSS, JS, HTML pages)
+// This allows the Node.js server to deliver the entire frontend
+app.use(express.static(path.join(__dirname, 'pages')));
+app.use(express.static(path.join(__dirname, 'css')));
+app.use(express.static(path.join(__dirname, 'js')));
+app.use(express.static(__dirname)); // For index.html in root
 
 // ── SUPABASE CLIENT ───────────────────────────────────────────
 // Using service_role key — bypasses RLS so our own RBAC controls access
