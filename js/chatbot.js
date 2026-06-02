@@ -8,7 +8,8 @@
    • App navigation guidance built into system prompt
 ═══════════════════════════════════════════════════════════════ */
 
-const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
+// BASE_URL is defined in each page's HTML or external JS files
+// (e.g., dashboard.js, auth.js, etc.) - don't redefine here
 
 let aiOpen   = false;
 let isTyping = false;

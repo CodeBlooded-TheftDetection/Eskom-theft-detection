@@ -12,7 +12,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Places API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4OWWhPrqkjlRMg3HYaAVvuHp5SK9ykqM&libraries=places"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4OWWhPrqkjlRMg3HYaAVvuHp5SK9ykqM&libraries=places&loading=async"></script>
   <style>
     /* ── TOPBAR — WHITE / CLEAN ────────────────────────────── */
     .topbar {
@@ -1039,6 +1039,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 <script src="../js/sidebar.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="../js/dashboard.js"></script>
+<script src="../js/chatbot.js"></script>
 <script>
   document.body.classList.add(`role-${localStorage.getItem("userRole") || "investigator"}`);
 
@@ -1046,9 +1047,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
   let autocompleteService = null;
   let sessionToken = new google.maps.places.AutocompleteSessionToken();
   let selectedPlace = null;
-  const token = localStorage.getItem('token');
-  const BASE_URL = ''; // Relative URLs: /api/... resolves to current domain
-  const authHeaders = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
+  // Note: token, BASE_URL, authHeaders are already defined in dashboard.js
 
   function initAutocomplete() {
     if (typeof google !== 'undefined' && google.maps) {
@@ -1529,7 +1528,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     </div>
 </div>
 </div>
-<script src="../js/chatbot.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
