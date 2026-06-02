@@ -688,8 +688,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
           </div>
         </div>
 
-        <!-- Community Reports Bell -->
-        <button id="communityBell" onclick="toggleCommunityInbox()" title="Community Report Submissions" class="topbar-icon-btn" style="position:relative;">
+        <!-- Community Reports Bell (admin/commander only) -->
+        <button id="communityBell" onclick="toggleCommunityInbox()" title="Community Report Submissions" class="topbar-icon-btn" style="position:relative;display:none;">
           <i class="fa-solid fa-inbox"></i>
           <span id="communityBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;font-size:9px;font-weight:800;padding:2px 5px;border-radius:99px;min-width:17px;text-align:center;border:2px solid white;font-family:inherit;">0</span>
         </button>
@@ -735,28 +735,28 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         <div class="kpi-card kpi-blue" data-stat-card="totalCases">
           <div class="kpi-label">Total Cases</div>
           <div class="kpi-value" id="statTotal">0</div>
-          <div class="kpi-sub">Registered in the system</div>
+          <div class="kpi-sub" id="subTotal">Registered in the system</div>
           <div class="kpi-icon"><i class="fa-solid fa-chart-simple"></i></div>
         </div>
 
         <div class="kpi-card kpi-red" data-stat-card="highRisk">
           <div class="kpi-label">High Risk</div>
           <div class="kpi-value" id="statHigh">0</div>
-          <div class="kpi-sub">Require urgent attention</div>
+          <div class="kpi-sub" id="subHigh">Require urgent attention</div>
           <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
         </div>
 
         <div class="kpi-card kpi-amber" data-stat-card="inProgress">
           <div class="kpi-label">In Progress</div>
           <div class="kpi-value" id="statOpen">0</div>
-          <div class="kpi-sub">Active investigations</div>
+          <div class="kpi-sub" id="subOpen">Active investigations</div>
           <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
         </div>
 
         <div class="kpi-card kpi-green" data-stat-card="resolved">
           <div class="kpi-label">Resolved</div>
           <div class="kpi-value" id="statResolved">0</div>
-          <div class="kpi-sub">Successfully closed</div>
+          <div class="kpi-sub" id="subResolved">Successfully closed</div>
           <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
         </div>
 
@@ -1039,9 +1039,107 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 <script src="../js/sidebar.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="../js/dashboard.js"></script>
+<script>
+// ── INVESTIGATOR STATS OVERRIDE ─────────────────────────────────
+// dashboard.js loads stats for all cases (admin view).
+// For investigators, we re-fetch only their assigned cases and
+// overwrite the KPI cards once the page has finished loading.
+(function () {
+  const role = (localStorage.getItem('userRole') || '').toLowerCase();
+  if (role !== 'investigator') return;
+
+  async function loadInvestigatorStats() {
+    try {
+      const token = localStorage.getItem('token') || '';
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      };
+
+      // Try investigator-specific endpoint first, fall back to /api/cases
+      // (the server filters by assigned investigator when role=investigator)
+      let cases = [];
+      const userId = localStorage.getItem('userId') || localStorage.getItem('user_id') || '';
+
+      const endpoints = [
+        '/api/cases/my-cases',
+        '/api/cases/assigned',
+        userId ? `/api/cases?assignedTo=${userId}` : null,
+        '/api/cases'
+      ].filter(Boolean);
+
+      let lastErr = '';
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, { headers });
+          if (res.ok) {
+            cases = await res.json();
+            // If the server returns all cases (admin fallback), filter client-side
+            // by matching the stored user email or id against assigned_to / investigator fields
+            const userEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+            if (cases.length && userEmail && cases[0].assigned_to !== undefined) {
+              const filtered = cases.filter(c =>
+                (c.assigned_to || '').toLowerCase() === userEmail ||
+                (c.investigator_email || '').toLowerCase() === userEmail ||
+                String(c.investigator_id) === String(userId) ||
+                String(c.assigned_to_id) === String(userId)
+              );
+              // Only use filtered result if it narrowed things down meaningfully
+              if (filtered.length < cases.length) cases = filtered;
+            }
+            break;
+          }
+          lastErr = 'HTTP ' + res.status;
+        } catch (e) {
+          lastErr = e.message;
+        }
+      }
+      if (!cases.length && lastErr) console.warn('[Investigator stats] All endpoints failed:', lastErr);
+
+      const total    = cases.length;
+      const high     = cases.filter(c => (c.risk_level || '').toUpperCase() === 'HIGH').length;
+      const resolved = cases.filter(c => (c.outcome || c.status || '').toUpperCase() === 'RESOLVED').length;
+      const open     = cases.filter(c => {
+        const s = (c.outcome || c.status || '').toUpperCase();
+        return s !== 'RESOLVED' && s !== 'CLOSED';
+      }).length;
+
+      document.getElementById('statTotal').textContent    = total;
+      document.getElementById('statHigh').textContent     = high;
+      document.getElementById('statOpen').textContent     = open;
+      document.getElementById('statResolved').textContent = resolved;
+
+      // Update sub-labels to reflect investigator context
+      document.getElementById('subTotal').textContent    = 'Cases assigned to you';
+      document.getElementById('subHigh').textContent     = 'Your high-risk cases';
+      document.getElementById('subOpen').textContent     = 'Your active investigations';
+      document.getElementById('subResolved').textContent = 'Cases you have closed';
+    } catch (err) {
+      console.warn('[Investigator stats] Unexpected error:', err.message);
+    }
+  }
+
+  // Wait for dashboard.js to finish its own fetch, then override
+  window.addEventListener('DOMContentLoaded', () => {
+    // Small delay so dashboard.js initial fetch completes first
+    setTimeout(loadInvestigatorStats, 1200);
+  });
+
+  // Also try immediately in case DOMContentLoaded already fired
+  if (document.readyState !== 'loading') {
+    setTimeout(loadInvestigatorStats, 1200);
+  }
+})();
+</script>
 <script src="../js/chatbot.js"></script>
 <script>
-  document.body.classList.add(`role-${localStorage.getItem("userRole") || "investigator"}`);
+  const _role = (localStorage.getItem("userRole") || "investigator").toLowerCase();
+  document.body.classList.add(`role-${_role}`);
+  // Show community inbox bell only for admin/commander
+  if (_role === 'admin' || _role === 'commander') {
+    const bell = document.getElementById('communityBell');
+    if (bell) bell.style.display = '';
+  }
 
   // ── GOOGLE PLACES AUTOCOMPLETE ─────────────────────────────────
   let autocompleteService = null;

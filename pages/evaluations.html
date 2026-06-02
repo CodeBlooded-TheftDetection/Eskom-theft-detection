@@ -57,6 +57,50 @@
     .breadcrumb{font-size:12px;color:#9ca3af;margin-bottom:16px;}
     .breadcrumb a{color:#2563eb;text-decoration:none;}
     @media(max-width:900px){.page-grid{grid-template-columns:1fr;}}
+  
+    /* ── ADMIN-STYLE TOPBAR OVERRIDE ─────────────────────────── */
+    .topbar {
+      background: linear-gradient(90deg, #1e3a8a, #2563eb) !important;
+      color: white !important;
+      padding: 24px 32px !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      box-shadow: 0 4px 12px rgba(59,130,246,0.15) !important;
+      border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+      flex-shrink: 0;
+      position: static !important;
+      overflow: visible !important;
+    }
+    .topbar::before, .topbar::after { display: none !important; }
+    .topbar h1 { color: #fff !important; font-size: 22px !important; font-weight: 800 !important; margin-bottom: 4px; }
+    .topbar p  { color: rgba(255,255,255,0.85) !important; font-size: 13px !important; opacity: 1 !important; }
+    /* Hide page-specific topbar extras that don't match admin style */
+    .topbar-badge, .topbar-meta { display: none !important; }
+    .topbar-inner { position: static !important; }
+    /* Sidebar role-box */
+    .role-box {
+      background: rgba(255,255,255,0.1);
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+    }
+    .role-box p { font-size: 11px; opacity: 0.75; margin-bottom: 6px; }
+    .role-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+    }
+
   </style>
 </head>
 <body>
@@ -67,9 +111,11 @@
       <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
       <div><h2>Eskom</h2><p>Theft Detection</p></div>
     </div>
-    <nav class="menu" id="sidebarMenu">
-      <p class="menu-title">NAVIGATION</p>
-    </nav>
+    <nav class="menu" id="sidebarMenu"></nav>
+    <div class="role-box">
+      <div style="font-size:11px;opacity:0.7;margin-bottom:4px;">Logged in as</div>
+      <div id="roleName" class="role-badge">Loading…</div>
+    </div>
   </aside>
 
   <!-- MAIN -->
