@@ -134,28 +134,30 @@ function requireRole(allowedRoles) {
 // The database UNIQUE constraint ensures no duplicates
 async function generateCaseNumber() {
     try {
+        // Fetch ALL case numbers — ordering by the string column is wrong
+        // because "Case 9" sorts after "Case 10" lexicographically.
+        // We find the true numerical max instead.
         const { data: cases, error } = await supabase
             .from('cases')
-            .select('case_number')
-            .order('case_number', { ascending: false })
-            .limit(1);
-        
+            .select('case_number');
+
         if (error) {
-            console.error('Error fetching latest case number:', error.message);
+            console.error('Error fetching case numbers:', error.message);
             return null;
         }
 
-        let nextNumber = 1;
-        if (cases && cases.length > 0 && cases[0].case_number) {
-            const lastCase = cases[0].case_number;
-            // Extract number from "Case N" format
-            const match = lastCase.match(/Case\s+(\d+)/);
-            if (match) {
-                nextNumber = parseInt(match[1]) + 1;
+        let maxNumber = 0;
+        if (cases && cases.length > 0) {
+            for (const row of cases) {
+                const match = (row.case_number || '').match(/Case\s+(\d+)/i);
+                if (match) {
+                    const num = parseInt(match[1], 10);
+                    if (num > maxNumber) maxNumber = num;
+                }
             }
         }
 
-        return `Case ${nextNumber}`;
+        return `Case ${maxNumber + 1}`;
     } catch (err) {
         console.error('Error in generateCaseNumber:', err.message);
         return null;
@@ -165,19 +167,26 @@ async function generateCaseNumber() {
 // ── GET LATEST CASE NUMBER (for frontend preview) ────────────
 async function getLatestCaseNumber() {
     try {
+        // Use the same numerical-max approach as generateCaseNumber
+        // to avoid lexicographic sort issues ("Case 9" > "Case 10").
         const { data: cases, error } = await supabase
             .from('cases')
-            .select('case_number')
-            .order('case_number', { ascending: false })
-            .limit(1);
-        
+            .select('case_number');
+
         if (error || !cases || cases.length === 0) {
             return 1;
         }
 
-        const lastCase = cases[0].case_number;
-        const match = lastCase.match(/Case\s+(\d+)/);
-        return match ? parseInt(match[1]) + 1 : 1;
+        let maxNumber = 0;
+        for (const row of cases) {
+            const match = (row.case_number || '').match(/Case\s+(\d+)/i);
+            if (match) {
+                const num = parseInt(match[1], 10);
+                if (num > maxNumber) maxNumber = num;
+            }
+        }
+
+        return maxNumber + 1;
     } catch (err) {
         console.error('Error in getLatestCaseNumber:', err.message);
         return 1;
