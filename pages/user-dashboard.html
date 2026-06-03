@@ -212,6 +212,18 @@
     .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--g500);background:white;box-shadow:0 0 0 3px rgba(16,185,129,.12);}
     .form-textarea{resize:vertical;min-height:90px;line-height:1.5;}
     .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+    /* ─── ADDRESS AUTOCOMPLETE ─── */
+    .address-autocomplete-wrap{position:relative;}
+    #fAddressSuggestions{position:absolute;left:0;top:calc(100% + 4px);z-index:600;width:100%;background:white;border:1.5px solid var(--slate200);border-radius:var(--radius-sm);box-shadow:0 8px 24px rgba(15,26,62,.13);overflow:hidden;display:none;}
+    .addr-suggestion-item{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;cursor:pointer;border-bottom:1px solid var(--slate100);transition:background .12s;}
+    .addr-suggestion-item:last-child{border-bottom:none;}
+    .addr-suggestion-item:hover{background:#f0fdf4;}
+    .addr-sug-icon{color:var(--g600);font-size:13px;margin-top:2px;flex-shrink:0;}
+    .addr-sug-text{display:flex;flex-direction:column;font-size:13px;}
+    .addr-sug-text strong{color:var(--slate900);font-weight:600;}
+    .addr-sug-context{color:var(--slate400);font-size:11px;margin-top:1px;}
+    .fAddress-invalid{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(220,38,38,.12)!important;}
     .priority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
     .priority-option{position:relative;}
     .priority-option input{position:absolute;opacity:0;width:0;height:0;}
@@ -517,8 +529,11 @@
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fa-solid fa-map-pin" style="color:var(--g600)"></i>Property / Location Address <span class="req">*</span></label>
-        <input type="text" class="form-input" id="fAddress" placeholder="Full street address, township, and city">
-        <p class="form-hint">Include stand/erf number if known. Be as specific as possible.</p>
+        <div class="address-autocomplete-wrap">
+          <input type="text" class="form-input" id="fAddress" placeholder="Type to search — select from suggestions" autocomplete="off">
+          <div id="fAddressSuggestions"></div>
+        </div>
+        <p class="form-hint"><i class="fa-solid fa-circle-info"></i> Type an address and select from the dropdown — free text is not accepted.</p>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -618,6 +633,8 @@ function authHeaders() {
 let userReports  = [];   // fetched from API
 let notifications = [];  // derived from reports
 let uploadedFiles = [];  // local file-name tracking
+let addressValidated = false; // true only when a suggestion was picked
+let _addrSearchTimeout = null;
 
 /* ─── CASE → UI MAPPING ─── */
 // Server stores: risk_level (LOW/MID/HIGH), outcome (PENDING/OPEN/RESOLVED)
@@ -739,6 +756,7 @@ async function init() {
     currentUser.name.length > 22 ? currentUser.name.slice(0,20) + '…' : currentUser.name;
 
   await loadData();
+  initAddressSearch();
 }
 
 async function loadData() {
@@ -1137,6 +1155,86 @@ function openDrawer() {
   document.body.style.overflow = 'hidden';
 }
 
+/* ─── ADDRESS AUTOCOMPLETE ─── */
+function initAddressSearch() {
+  const input = document.getElementById('fAddress');
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    addressValidated = false; // invalidate on every keystroke
+    input.classList.remove('fAddress-invalid');
+    clearTimeout(_addrSearchTimeout);
+    const query = input.value.trim();
+    if (query.length < 3) { closeAddressSuggestions(); return; }
+    _addrSearchTimeout = setTimeout(() => searchAddressField(query), 350);
+  });
+
+  // Close dropdown when clicking outside the autocomplete wrapper
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.address-autocomplete-wrap')) closeAddressSuggestions();
+  });
+}
+
+async function searchAddressField(query) {
+  const el = document.getElementById('fAddressSuggestions');
+  if (!el) return;
+  el.style.display = 'block';
+  el.innerHTML = `<div style="padding:9px 13px;color:var(--slate400);font-size:13px;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:6px;"></i>Searching…</div>`;
+
+  try {
+    const params = new URLSearchParams({
+      q: query, format: 'json', limit: 7,
+      addressdetails: 1, extratags: 1, namedetails: 1,
+      'accept-language': 'en', countrycodes: 'za',
+      viewbox: '16.4,-34.9,32.9,-22.1', bounded: 1,
+    });
+    const res  = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: { 'User-Agent': 'EskomTheftDetectionApp/1.0' }
+    });
+    const data = await res.json();
+
+    if (!data.length) {
+      el.innerHTML = `<div style="padding:9px 13px;color:var(--red);font-size:13px;">No results — try a broader search.</div>`;
+      return;
+    }
+
+    el.innerHTML = data.map(r => {
+      const name    = r.namedetails?.name || r.display_name.split(',')[0];
+      const context = r.display_name.split(',').slice(1, 4).join(',').trim();
+      return `<div class="addr-suggestion-item" data-display="${encodeURIComponent(r.display_name)}">
+                <span class="addr-sug-icon"><i class="fa-solid fa-location-dot"></i></span>
+                <span class="addr-sug-text">
+                  <strong>${escHtml(name)}</strong>
+                  ${context ? `<span class="addr-sug-context">${escHtml(context)}</span>` : ''}
+                </span>
+              </div>`;
+    }).join('');
+
+    el.querySelectorAll('.addr-suggestion-item').forEach(item => {
+      item.addEventListener('click', () => {
+        selectAddressResult(decodeURIComponent(item.dataset.display));
+      });
+    });
+  } catch (err) {
+    el.innerHTML = `<div style="padding:9px 13px;color:var(--red);font-size:13px;">Search error — check your connection.</div>`;
+  }
+}
+
+function selectAddressResult(displayName) {
+  const input = document.getElementById('fAddress');
+  if (input) {
+    input.value = displayName;
+    input.classList.remove('fAddress-invalid');
+  }
+  addressValidated = true;
+  closeAddressSuggestions();
+}
+
+function closeAddressSuggestions() {
+  const el = document.getElementById('fAddressSuggestions');
+  if (el) { el.innerHTML = ''; el.style.display = 'none'; }
+}
+
 function closeDrawer() {
   document.getElementById('drawerOverlay').classList.remove('open');
   document.getElementById('reportDrawer').classList.remove('open');
@@ -1148,6 +1246,9 @@ function resetForm() {
   document.getElementById('successState').style.display = 'none';
   document.getElementById('drawerFooter').style.display = 'flex';
   ['fTitle','fDesc','fAddress'].forEach(id => document.getElementById(id).value = '');
+  addressValidated = false;
+  closeAddressSuggestions();
+  document.getElementById('fAddress')?.classList.remove('fAddress-invalid');
   document.getElementById('fProvince').value = '';
   document.getElementById('fObservedDate').value = '';
   document.getElementById('fAnonymity').value = 'named';
@@ -1193,7 +1294,12 @@ async function submitReport() {
 
   if (!title)   { showToast('Please enter a report title','error');            document.getElementById('fTitle').focus();   return; }
   if (!desc)    { showToast('Please describe what you observed','error');       document.getElementById('fDesc').focus();    return; }
-  if (!address) { showToast('Please enter the property address','error');       document.getElementById('fAddress').focus(); return; }
+  if (!address || !addressValidated) {
+    showToast('Please select a valid address from the suggestions','error');
+    const fAddr = document.getElementById('fAddress');
+    if (fAddr) { fAddr.focus(); fAddr.classList.add('fAddress-invalid'); }
+    return;
+  }
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
