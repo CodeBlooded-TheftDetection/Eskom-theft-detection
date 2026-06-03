@@ -482,7 +482,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   letter-spacing: -0.02em;
   color: var(--slate-900);
   margin-bottom: 0.75rem;
-  background: var(--grad-accent);
+  background: linear-gradient(90deg, #0ea5e9 0%, #06b6d4 50%, #0d9488 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -698,21 +698,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 .step-card > i {
-  font-size: 2.2rem;
+  font-size: 3rem;
   color: var(--blue-500);
   margin-bottom: 0.85rem;
   display: block;
 }
 
 .step-card h3 {
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--slate-900);
+  color: var(--blue-700);
   margin-bottom: 0.6rem;
 }
 
 .step-card p {
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--slate-500);
   line-height: 1.65;
 }
@@ -754,10 +754,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 .stat-number {
-  font-size: 2.6rem;
+  font-size: 3.8rem;
   font-weight: 900;
   letter-spacing: -0.03em;
-  background: var(--grad-accent);
+  background: linear-gradient(90deg, #0ea5e9 0%, #06b6d4 50%, #0d9488 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -772,7 +772,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .stat-label {
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--slate-500);
+  color: #0d9488;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
