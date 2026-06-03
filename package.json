@@ -7,7 +7,11 @@
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["eskom", "theft-detection", "case-management"],
+  "keywords": [
+    "eskom",
+    "theft-detection",
+    "case-management"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
